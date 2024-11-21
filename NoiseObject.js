@@ -7,10 +7,21 @@ class NoiseObject {
 		this.value = 0;
 	}
 
-	//compute and return
-	getNoise() {
+	//compute noise
+	compute() {
 		this.time += this.inc;
 		this.value = noise(this.time);
+	}
+
+	//compute and return noise
+	getNoise() {
+		this.compute();
 		return this.value;
+	}
+
+	//compute, map and return noise
+	getMappedNoise(low, high) {
+		this.compute();
+		return map(this.value, 0, 1, low, high);
 	}
 }

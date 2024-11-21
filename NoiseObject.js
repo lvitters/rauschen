@@ -2,9 +2,9 @@
 class NoiseObject {
 	//initialise
 	constructor(t, i) {
-		this.time = t;
-		this.inc = i;
-		this.value = 0;
+		this.time = t;		//keep track of how far we move through the noise field
+		this.inc = i;		//how much are we moving through the noise field per frame
+		this.value = 0;		//what is the current value in the noise field
 	}
 
 	//compute noise

@@ -11,18 +11,21 @@ function setup() {
 	pixelDensity(1);
 
 	//init NoiseObjects
-	gridLines = new NoiseObject(Math.random() * 100, .1);
-	gridLinesRange = new NoiseObject(Math.random() * 100, .1);
+	gridLines = new NoiseObject(Math.random() * 100, .01);
+	gridLinesRange = new NoiseObject(Math.random() * 100, .01);
 
 	//get pixel array for manipulation
 	loadPixels();
 }
 
 function draw() {
-	background(0);
+	//background(0);	//not needed because the pixel array itself gets refreshed
+
+	refreshPixelArray();
 
 	//get gridLines
 	let gridLines = computeGridLines();
+	// let gridLines = 4;
 	console.log(gridLines);
 
 	//manipulate pixel array
@@ -41,13 +44,19 @@ function draw() {
 	updatePixels();
 }
 
+//refresh the pixel array with all black pixels, because background() doesn't do that
+function refreshPixelArray() {
+	for(let p = 0; p < pixels.length; p++) {
+		pixels[p] = 0;
+	}
+}
+
 //compute grid lines to apply to pixel array manipulation, weighted
 function computeGridLines() {
 	let x = floor(gridLines.getMappedNoise(
-		gridLinesRange.getMappedNoise(-5, -10), 
-		gridLinesRange.getMappedNoise(1, 20)
+		gridLinesRange.getMappedNoise(-10, -20), 
+		gridLinesRange.getMappedNoise(1, 40)
 	));
-	if (x < 1) x = 1;	//don't go under one
-	else if (x > 1) x *= 2;		//keep number even
+	if (x < 1) x = 1;	//cap over 0
 	return x;
 }

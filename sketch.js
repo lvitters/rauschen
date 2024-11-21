@@ -2,9 +2,9 @@
 let canvasWidth = 400;
 let canvasHeight = 400;
 
-let gridLinesX;
-let gridLinesY;
-let gridLinesRange;
+let xGridStep;
+let yGridStep;
+let rangeGridStep;
 
 function setup() {
 	createCanvas(canvasWidth, canvasHeight);
@@ -12,9 +12,9 @@ function setup() {
 	pixelDensity(1);
 
 	//init NoiseObjects
-	gridLinesX = new NoiseObject(Math.random() * 100, .01);
-	gridLinesY = new NoiseObject(Math.random() * 100, .01);
-	gridLinesRange = new NoiseObject(Math.random() * 100, .01);
+	xGridStep = new NoiseObject(Math.random() * 100, .01);
+	yGridStep = new NoiseObject(Math.random() * 100, .01);
+	rangeGridStep = new NoiseObject(Math.random() * 100, .01);
 
 	//get pixel array for manipulation
 	loadPixels();
@@ -53,14 +53,14 @@ function refreshPixelArray() {
 
 //compute grid lines to apply to pixel array manipulation, weighted
 function computeGridLines() {
-	let x = floor(gridLinesX.getMappedNoise(
-		gridLinesRange.getMappedNoise(-10, -20), 
-		gridLinesRange.getMappedNoise(1, 40)
+	let x = floor(xGridStep.getMappedNoise(
+		rangeGridStep.getMappedNoise(-10, -20), 
+		rangeGridStep.getMappedNoise(1, 40)
 	));
 	if (x < 1) x = 1;	//cap over 0
-	let y = floor(gridLinesY.getMappedNoise(
-		gridLinesRange.getMappedNoise(-10, -20), 
-		gridLinesRange.getMappedNoise(1, 40)
+	let y = floor(yGridStep.getMappedNoise(
+		rangeGridStep.getMappedNoise(-10, -20), 
+		rangeGridStep.getMappedNoise(1, 40)
 	));
 	if (y < 1) y = 1;	//cap over 0
 	return {x, y};

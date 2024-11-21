@@ -2,11 +2,16 @@
 let canvasWidth = 400;
 let canvasHeight = 400;
 
-let resMutiplierT = 0;
+let resMultiplierX;
+let resMultiplierY;
 
 function setup() {
 	createCanvas(canvasWidth, canvasHeight);
 	frameRate(30);
+	pixelDensity(1);
+
+	resMultiplierX = new NoiseObject(Math.random() * 100, .1);
+	resMultiplierY = new NoiseObject(Math.random() * 100, .1);
 
 	//get pixel array for manipulation
 	loadPixels();
@@ -14,20 +19,26 @@ function setup() {
 
 function draw() {
 
-		//every pixel has 4 values, and 4 indices in the pixels array
-		for  (let i = 0; i < pixels.length; i += 4) {
-			pixels[i] = Math.random() * 255;		//red
-			pixels[i+1] = Math.random() * 255;		//green
-			pixels[i+2] = Math.random() * 255;		//blue
-			pixels[i+3] = Math.random() * 255;		//alpha
+	computeNoiseObjects();
+
+	//manipulate pixel array
+	for (let x = 0; x < canvasWidth; x += floor(map(resMultiplierX.getNoise(), 0, 1, 1, 16))) {
+		for (let y = 0; y < canvasHeight; y += floor(map(resMultiplierY.getNoise(), 0, 1, 1, 16))) {
+			//get index in array from coordinates
+			let index = (x + y * canvasWidth) * 4;
+			pixels[index + 0] = Math.random() * 255;		//red
+			pixels[index + 1] = Math.random() * 255;		//green
+			pixels[index + 2] = Math.random() * 255;		//blue
+			pixels[index + 3] = Math.random() * 255;		//alpha
 		}
+	}
 
 	//write to pixels array
 	updatePixels();
 }
 
-//get noise
-function noisyResMultiplier() {
-	resMutiplierT += .1;
-	return noise(resMutiplierT);
+//compute noise objects
+function computeNoiseObjects() {
+	resMultiplierX.compute();
+	resMultiplierY.compute();
 }

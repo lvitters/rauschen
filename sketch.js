@@ -2,7 +2,8 @@
 let canvasWidth = 400;
 let canvasHeight = 400;
 
-let gridLines;
+let gridLinesX;
+let gridLinesY;
 let gridLinesRange;
 
 function setup() {
@@ -11,7 +12,8 @@ function setup() {
 	pixelDensity(1);
 
 	//init NoiseObjects
-	gridLines = new NoiseObject(Math.random() * 100, .01);
+	gridLinesX = new NoiseObject(Math.random() * 100, .01);
+	gridLinesY = new NoiseObject(Math.random() * 100, .01);
 	gridLinesRange = new NoiseObject(Math.random() * 100, .01);
 
 	//get pixel array for manipulation
@@ -25,12 +27,10 @@ function draw() {
 
 	//get gridLines
 	let gridLines = computeGridLines();
-	// let gridLines = 4;
-	console.log(gridLines);
 
 	//manipulate pixel array
-	for (let x = 0; x < canvasWidth; x += gridLines) {
-		for (let y = 0; y < canvasHeight; y += gridLines) {
+	for (let x = 0; x < canvasWidth; x += gridLines.x) {
+		for (let y = 0; y < canvasHeight; y += gridLines.y) {
 			//get index in array from coordinates
 			let index = (x + y * canvasWidth) * 4;
 			pixels[index + 0] = Math.random() * 255;		//red
@@ -53,10 +53,15 @@ function refreshPixelArray() {
 
 //compute grid lines to apply to pixel array manipulation, weighted
 function computeGridLines() {
-	let x = floor(gridLines.getMappedNoise(
+	let x = floor(gridLinesX.getMappedNoise(
 		gridLinesRange.getMappedNoise(-10, -20), 
 		gridLinesRange.getMappedNoise(1, 40)
 	));
 	if (x < 1) x = 1;	//cap over 0
-	return x;
+	let y = floor(gridLinesY.getMappedNoise(
+		gridLinesRange.getMappedNoise(-10, -20), 
+		gridLinesRange.getMappedNoise(1, 40)
+	));
+	if (y < 1) y = 1;	//cap over 0
+	return {x, y};
 }

@@ -23,7 +23,7 @@ function setup() {
 function draw() {
 	//background(0);	//not needed because the pixel array itself gets refreshed
 
-	refreshPixelArray();
+	refreshPixelArray();	//TODO: don't always do this
 
 	//get gridLines
 	let gridLines = computeGridLines();

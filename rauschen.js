@@ -10,12 +10,13 @@ let newHeight;
 
 //rauschen
 let resolution;
-let rauschenSpeed;
+let drawSpeed;
 let xGridStep;
 let yGridStep;
 let rangeGridStep;
 let toggleGridStep;
 let toggleNoiseColor;
+let noiseColorSpeed;
 
 //noiseObject for pixels' colors
 let colors = [];
@@ -37,12 +38,13 @@ function reset() {
 
 	//init NoiseObjects with starting value and increment
 	resolution = new NoiseObject(Math.random() * 100, .001);
-	rauschenSpeed = new NoiseObject(Math.random() * 100, .001);
+	drawSpeed = new NoiseObject(Math.random() * 100, .001);
 	xGridStep = new NoiseObject(Math.random() * 100, .002);
 	yGridStep = new NoiseObject(Math.random() * 100, .002);
 	rangeGridStep = new NoiseObject(Math.random() * 100, .001);
 	toggleGridStep = new NoiseObject(Math.random() * 100, .001);
 	toggleNoiseColor = new NoiseObject(Math.random() * 100, .0001);
+	noiseColorSpeed = new NoiseObject(Math.random() * 100, .001);
 
 	//get pixel array for manipulation
 	loadPixels();
@@ -55,7 +57,7 @@ function reset() {
 
 function draw() {
 	//draw every x frames
-	let x = cutoff(floor(rauschenSpeed.noiseRange(-6, 4)), 1);
+	let x = cutoff(floor(drawSpeed.noiseRange(-6, 4)), 1);
 	if ((frameCount % x) == 0) {
 
 		//change noise for resolution in the background, but only fire event occasionally
@@ -85,7 +87,9 @@ function draw() {
 						pixels[index + i] = Math.random() * 255;
 					//set values according to noise
 					} else {
-						pixels[index + i] = colors[index + i].noiseRange(0, 255);
+						//change noise color speed independently
+						let x = cutoff(floor(noiseColorSpeed.noiseRange(-6, 4)), 1);
+						if (frameCount % x == 0) pixels[index + i] = colors[index + i].noiseRange(0, 255);
 					}
 				}
 			}

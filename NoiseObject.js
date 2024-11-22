@@ -19,9 +19,17 @@ class NoiseObject {
 		return this.value;
 	}
 
-	//compute, map and return noise
-	getMappedNoise(low, high) {
+	//compute and return ranged noise
+	getRangedNoise(low, high) {
 		this.compute();
 		return map(this.value, 0, 1, low, high);
+	}
+
+	//return boolean according to noise range, cutoff at 0
+	getBoolNoise(low, high) {
+		this.compute();
+		let range = map(this.value, 0, 1, low, high);
+		if (range > 0) return true;
+		else return false;
 	}
 }

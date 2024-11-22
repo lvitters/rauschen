@@ -29,9 +29,7 @@ function draw() {
 	//background(0);	//not needed because the pixel array itself gets refreshed
 
 	//don't always refresh the background
-	if (toggleGridStep.getBoolNoise(-10, 10)) {
-		refreshPixelArray();
-	}
+	if (toggleGridStep.noiseBool(-10, 10))	refreshPixelArray();
 
 	//get gridLines
 	let gridLines = computeGridLines();
@@ -61,9 +59,9 @@ function refreshPixelArray() {
 
 //compute grid lines to apply to pixel array manipulation, weighted
 function computeGridLines() {
-	let x = floor(xGridStep.getRangedNoise(-10, -20, 1, 40));
+	let x = floor(xGridStep.noiseVariableRange(-10, -20, 1, 40));
 	if (x < 1) x = 1;	//cap over 0
-	let y = floor(yGridStep.getRangedNoise(-10, -20, 1, 40));
+	let y = floor(yGridStep.noiseVariableRange(-10, -20, 1, 40));
 	if (y < 1) y = 1;	//cap over 0
 	return {x, y};
 }

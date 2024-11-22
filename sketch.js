@@ -16,8 +16,8 @@ function setup() {
 	pixelDensity(1);
 
 	//init NoiseObjects with starting value and increment
-	xGridStep = new NoiseObject(Math.random() * 100, .01);
-	yGridStep = new NoiseObject(Math.random() * 100, .01);
+	xGridStep = new NoiseObject(Math.random() * 100, .002);
+	yGridStep = new NoiseObject(Math.random() * 100, .002);
 	rangeGridStep = new NoiseObject(Math.random() * 100, .001);
 	toggleGridStep = new NoiseObject(Math.random() * 100, .001);
 
@@ -56,11 +56,15 @@ function refreshPixelArray() {
 	}
 }
 
-//compute grid lines to apply to pixel array manipulation, weighted
+//compute grid lines to apply to pixel array manipulation
 function computeGridLines() {
-	let x = floor(xGridStep.noiseVariableRange(-10, -20, 1, 40));
-	if (x < 1) x = 1;	//cap over 0 because gridlines < 0 won't work
-	let y = floor(yGridStep.noiseVariableRange(-10, -20, 1, 40));
-	if (y < 1) y = 1;	//cap over 0 because gridlines < 0 won't work
-	return {x, y};		//return tuple
+	let x = floor(stickTo(xGridStep.noiseVariableRange(-10, -20, 1, 40), 1));
+	let y = floor(stickTo(yGridStep.noiseVariableRange(-10, -20, 1, 40), 1));
+	return {x, y};		//return as tuple
+}
+
+//take range and cut at cutoff; useful when a value needs to stick at the cutoff, but should still change sometimes
+function stickTo(range, cutoff) {
+	if (range > cutoff) return range;
+	else return cutoff;
 }

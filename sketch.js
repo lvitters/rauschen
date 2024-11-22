@@ -1,6 +1,11 @@
 //res of canvas, change size in index.html
-let canvasWidth = 100;
-let canvasHeight = 100;
+let minWidth = 2;
+let minHeight = 2;
+let maxWidth = 100;
+let maxHeight = 100;
+let canvasWidth;
+let canvasHeight;
+let resMultiplier;
 
 //only show every x column and y row
 let xGridStep;
@@ -15,11 +20,12 @@ let toggleGridStep;
 let toggleNoiseColor;
 
 function setup() {
-	createCanvas(canvasWidth, canvasHeight);
+	createCanvas(maxWidth, maxHeight);
 	frameRate(30);
 	pixelDensity(1);
 
 	//init NoiseObjects with starting value and increment
+	resMultiplier = new NoiseObject(Math.random() * 100, .01);
 	xGridStep = new NoiseObject(Math.random() * 100, .002);
 	yGridStep = new NoiseObject(Math.random() * 100, .002);
 	rangeGridStep = new NoiseObject(Math.random() * 100, .001);
@@ -36,9 +42,17 @@ function setup() {
 }
 
 function draw() {
+	translate(width/2, height/2);
+
+	let noiseWidth = floor(resMultiplier.noiseRange(minWidth, maxWidth));
+	canvasWidth = noiseWidth;
+	canvasHeight = noiseWidth;
+	resizeCanvas(noiseWidth, noiseWidth);
+
+	translate(width/2, height/2);
 
 	//don't always refresh the background
-	if (toggleGridStep.noiseBool(-10, 10))	refreshPixelArray();
+	if (toggleGridStep.noiseBool(-5, 10))	refreshPixelArray();
 
 	//get gridLines
 	let gridLines = computeGridLines();
@@ -48,14 +62,12 @@ function draw() {
 		for (let y = 0; y < canvasHeight; y += gridLines.y) {
 			//get index in array from coordinates
 			let index = (x + y * canvasWidth) * 4;
-			//for every color value: r, g, b, a
+			//one pixel has 4 spots in the array: r, g, b, a
 			for (let i = 0; i < 4; i++) {
-				// pixels[index + i] = Math.random() * 255;
-				// pixels[index + i] = colors[index + i].noiseRange(0, 255);
-				//or at random
+				//set values at random
 				if (toggleNoiseColor.noiseBool(-4, 5)) {
 					pixels[index + i] = Math.random() * 255;
-				// set color according to noise
+				//set values according to noise
 				} else {
 					pixels[index + i] = colors[index + i].noiseRange(0, 255);
 				}

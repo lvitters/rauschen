@@ -1,14 +1,18 @@
 //res of canvas, change size in index.html
-let canvasWidth = 400;
-let canvasHeight = 400;
+let canvasWidth = 100;
+let canvasHeight = 100;
 
 //only show every x column and y row
 let xGridStep;
 let yGridStep;
 let rangeGridStep;
 
+//noiseObject for pixels' colors
+let colors = [];
+
 //effect toggles
 let toggleGridStep;
+let toggleNoiseColor;
 
 function setup() {
 	createCanvas(canvasWidth, canvasHeight);
@@ -20,9 +24,15 @@ function setup() {
 	yGridStep = new NoiseObject(Math.random() * 100, .002);
 	rangeGridStep = new NoiseObject(Math.random() * 100, .001);
 	toggleGridStep = new NoiseObject(Math.random() * 100, .001);
+	toggleNoiseColor = new NoiseObject(Math.random() * 100, .001);
 
 	//get pixel array for manipulation
 	loadPixels();
+
+	//create NoiseObject for every pixels color value
+	for(let c = 0; c < pixels.length; c++) {
+		colors[c] = new NoiseObject(Math.random() * 100, .1);
+	}
 }
 
 function draw() {
@@ -38,10 +48,18 @@ function draw() {
 		for (let y = 0; y < canvasHeight; y += gridLines.y) {
 			//get index in array from coordinates
 			let index = (x + y * canvasWidth) * 4;
-			pixels[index + 0] = Math.random() * 255;		//red
-			pixels[index + 1] = Math.random() * 255;		//green
-			pixels[index + 2] = Math.random() * 255;		//blue
-			pixels[index + 3] = Math.random() * 255;		//alpha
+			//for every color value: r, g, b, a
+			for (let i = 0; i < 4; i++) {
+				// pixels[index + i] = Math.random() * 255;
+				// pixels[index + i] = colors[index + i].noiseRange(0, 255);
+				//or at random
+				if (toggleNoiseColor.noiseBool(-4, 5)) {
+					pixels[index + i] = Math.random() * 255;
+				// set color according to noise
+				} else {
+					pixels[index + i] = colors[index + i].noiseRange(0, 255);
+				}
+			}
 		}
 	}
 
@@ -63,7 +81,7 @@ function computeGridLines() {
 	return {x, y};		//return as tuple
 }
 
-//take range and cut at cutoff; useful when a value needs to stick at the cutoff, but should still change sometimes
+//take range and cut at cutoff; useful when a value needs to stick towards the cutoff, but should still change sometimes
 function stickTo(range, cutoff) {
 	if (range > cutoff) return range;
 	else return cutoff;

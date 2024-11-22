@@ -19,17 +19,17 @@ class NoiseObject {
 		return this.value;
 	}
 
-	//compute and return ranged noise
-	noiseMap(low, high) {
+	//compute and return noise range
+	noiseRange(low, high) {
 		this.compute();
 		return map(this.value, 0, 1, low, high);
 	}
 
-	//compute and return mapped noise where low and high are changing themselves
+	//compute and return noise range where low and high bounds are a range as well
 	noiseVariableRange(low, lo, hi, high) {
-		return this.noiseMap(
-			this.noiseMap(low, lo), 
-			this.noiseMap(hi, high)
+		return this.noiseRange(
+			this.noiseRange(low, lo), 
+			this.noiseRange(hi, high)
 		);
 	}
 

@@ -1,11 +1,9 @@
 //res of canvas, change size in index.html
-let minWidth = 2;
-let minHeight = 2;
+let minWidth = 4;
 let maxWidth = 100;
-let maxHeight = 100;
-let canvasWidth;
-let canvasHeight;
-let resMultiplier;
+let canvasWidth = 100;
+let canvasHeight = 100;
+let resNoise;
 
 //only show every x column and y row
 let xGridStep;
@@ -19,13 +17,23 @@ let colors = [];
 let toggleGridStep;
 let toggleNoiseColor;
 
+//timedEvents
+const maxSwitchTime = 10;
+let nextResEvent = 5; 		//init in x seconds
+let resEventCounter = 0;
+
 function setup() {
-	createCanvas(maxWidth, maxHeight);
-	frameRate(30);
+	reset();
+}
+
+//setup everything in here so that it can be called again at will
+function reset() {
+	createCanvas(canvasWidth, canvasHeight);
+	frameRate(60);
 	pixelDensity(1);
 
 	//init NoiseObjects with starting value and increment
-	resMultiplier = new NoiseObject(Math.random() * 100, .01);
+	resNoise = new NoiseObject(Math.random() * 100, .001);
 	xGridStep = new NoiseObject(Math.random() * 100, .002);
 	yGridStep = new NoiseObject(Math.random() * 100, .002);
 	rangeGridStep = new NoiseObject(Math.random() * 100, .001);
@@ -42,14 +50,8 @@ function setup() {
 }
 
 function draw() {
-	translate(width/2, height/2);
-
-	let noiseWidth = floor(resMultiplier.noiseRange(minWidth, maxWidth));
-	canvasWidth = noiseWidth;
-	canvasHeight = noiseWidth;
-	resizeCanvas(noiseWidth, noiseWidth);
-
-	translate(width/2, height/2);
+	//do that here because it might change the resolution
+	timedEvents();
 
 	//don't always refresh the background
 	if (toggleGridStep.noiseBool(-5, 10))	refreshPixelArray();
@@ -97,4 +99,23 @@ function computeGridLines() {
 function stickTo(range, cutoff) {
 	if (range > cutoff) return range;
 	else return cutoff;
+}
+
+//sometimes things should happen at random intervals instead
+function timedEvents() {
+	//sometimes switch to a new random resolution
+	resEventCounter++;
+	if (resEventCounter > (nextResEvent * 60)) {
+		setRandomResolution();
+		nextResEvent = floor(random(5, maxSwitchTime));
+	}
+}
+
+//set canvas and sketch to a new resolution
+function setRandomResolution() {
+	let newWidth = floor(resNoise.noiseRange(minWidth, maxWidth));
+	canvasWidth = newWidth;
+	canvasHeight = newWidth;
+	//resizeCanvas(canvasWidth, canvasHeight);
+	reset();
 }

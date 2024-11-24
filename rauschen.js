@@ -10,7 +10,6 @@ let newHeight;
 
 //rauschen
 let resolution;
-let drawSpeed;
 let xGridStep;
 let yGridStep;
 let rangeGridStep;
@@ -38,13 +37,12 @@ function reset() {
 
 	//init NoiseObjects with starting value and increment
 	resolution = new NoiseObject(Math.random() * 100, .001);
-	drawSpeed = new NoiseObject(Math.random() * 100, .001);
 	xGridStep = new NoiseObject(Math.random() * 100, .002);
 	yGridStep = new NoiseObject(Math.random() * 100, .002);
 	rangeGridStep = new NoiseObject(Math.random() * 100, .001);
 	toggleGridStep = new NoiseObject(Math.random() * 100, .001);
 	toggleNoiseColor = new NoiseObject(Math.random() * 100, .0001);
-	noiseColorSpeed = new NoiseObject(Math.random() * 100, .001);
+	noiseColorSpeed = new NoiseObject(Math.random() * 100, 1);
 
 	//get pixel array for manipulation
 	loadPixels();
@@ -56,48 +54,39 @@ function reset() {
 }
 
 function draw() {
-	//draw every x frames
-	let x = cutoff(floor(drawSpeed.noiseRange(-6, 4)), 1);
-	if ((frameCount % x) == 0) {
+	//do that here because it might change the resolution
+	timedEvents();
 
-		//change noise for resolution in the background, but only fire event occasionally
-		newWidth = resolution.noiseRange(-50, maxWidth);
-		newHeight = resolution.noiseRange(-50, maxHeight);
+	//don't always refresh the background
+	if (toggleGridStep.noiseBool(-5, 10)) {
+		refreshPixelArray();
+	}
 
-		//do that here because it might change the resolution
-		timedEvents();
+	//get gridLines
+	let gridLines = computeGridLines();
 
-		//don't always refresh the background
-		if (toggleGridStep.noiseBool(-5, 10)) {
-			refreshPixelArray();
-		}
-
-		//get gridLines
-		let gridLines = computeGridLines();
-
-		//manipulate pixel array
-		for (let x = 0; x < canvasWidth; x += gridLines.x) {
-			for (let y = 0; y < canvasHeight; y += gridLines.y) {
-				//get index in array from coordinates
-				let index = (x + y * canvasWidth) * 4;
-				//one pixel has 4 spots in the array: r, g, b, a
-				for (let i = 0; i < 4; i++) {
-					//set values at random
-					if (toggleNoiseColor.noiseBool(-10, 5)) {
-						pixels[index + i] = Math.random() * 255;
-					//set values according to noise
-					} else {
-						//change noise color speed independently
-						let x = cutoff(floor(noiseColorSpeed.noiseRange(-6, 4)), 1);
-						if (frameCount % x == 0) pixels[index + i] = colors[index + i].noiseRange(0, 255);
-					}
+	//manipulate pixel array
+	for (let x = 0; x < canvasWidth; x += gridLines.x) {
+		for (let y = 0; y < canvasHeight; y += gridLines.y) {
+			//get index in array from coordinates
+			let index = (x + y * canvasWidth) * 4;
+			//one pixel has 4 spots in the array: r, g, b, a
+			for (let i = 0; i < 4; i++) {
+				//set values at random
+				if (toggleNoiseColor.noiseBool(-10, 5) || canvasWidth > maxWidth/2) {
+					pixels[index + i] = Math.random() * 255;
+				//set values according to noise
+				} else {
+					//change noise color speed independently
+					let x = cutoff(floor(noiseColorSpeed.noiseRange(-6, 4)), 1);
+					if (frameCount % x == 0) pixels[index + i] = colors[index + i].noiseRange(0, 255);
 				}
 			}
 		}
-
-		//write to pixels array
-		updatePixels();
 	}
+
+	//write to pixels array
+	updatePixels();
 }
 
 //refresh the pixel array with all black pixels, because background() doesn't do that
@@ -133,6 +122,11 @@ function timedEvents() {
 
 //set canvas and sketch to a new resolution
 function setRandomResolution() {
+	//get new res close to old res with noise
+	newWidth = resolution.noiseRange(-50, maxWidth);
+	newHeight = resolution.noiseRange(-50, maxHeight);
+
+	//apply to canvas dimensions
 	canvasWidth = floor(cutoff(newWidth, minWidth));
 	canvasHeight = floor(cutoff(newHeight, minHeight));
 	//console.log("width: " + canvasWidth + "\n" + "height: " + canvasHeight);

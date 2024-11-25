@@ -13,6 +13,11 @@ class NoiseObject {
 		this.value = noise(this.time);
 	}
 
+	//change the increment with which to move through the noise field
+	changeInc(i) {
+		this.inc;
+	}
+
 	//compute and return noise
 	getNoise() {
 		this.compute();

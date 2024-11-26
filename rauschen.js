@@ -37,14 +37,14 @@ function reset() {
 	pixelDensity(1);
 
 	//init NoiseObjects with starting value and increment
-	resolution = new NoiseObject(Math.random() * 100, .001);
-	xGridStep = new NoiseObject(Math.random() * 100, .002);
-	yGridStep = new NoiseObject(Math.random() * 100, .002);
-	rangeGridStep = new NoiseObject(Math.random() * 100, .001);
-	toggleGridStep = new NoiseObject(Math.random() * 100, .001);
-	toggleNoiseColor = new NoiseObject(Math.random() * 100, .0001);
-	noiseColorSpeed = new NoiseObject(Math.random() * 100, 1);
-	noiseColorSpeedInc = new NoiseObject(Math.random() * 100, .01);
+	resolution = new NoiseObject(Math.random() * 1000, .001);
+	xGridStep = new NoiseObject(Math.random() * 1000, .002);
+	yGridStep = new NoiseObject(Math.random() * 1000, .002);
+	rangeGridStep = new NoiseObject(Math.random() * 1000, .001);
+	toggleGridStep = new NoiseObject(Math.random() * 1000, .001);
+	toggleNoiseColor = new NoiseObject(Math.random() * 1000, .0001);
+	noiseColorSpeed = new NoiseObject(Math.random() * 1000, 1);
+	noiseColorSpeedInc = new NoiseObject(Math.random() * 1000, .01);
 
 	//get pixel array for manipulation
 	loadPixels();
@@ -134,4 +134,40 @@ function setRandomResolution() {
 	canvasHeight = floor(cutoff(newHeight, minHeight));
 	//console.log("width: " + canvasWidth + "\n" + "height: " + canvasHeight);
 	reset();
+}
+
+
+// -------------------- https://github.com/genekogan/p5js-osc -------------------- //
+// ----------------- run 'node lib/bridge.js' to start connection ---------------- //
+
+function receiveOsc(address, value) {
+	console.log("received OSC: " + address + ", " + value);
+
+	if (address == '/test') {
+		x = value[0];
+		y = value[1];
+	}
+}
+
+function sendOsc(address, value) {
+	socket.emit('message', [address].concat(value));
+}
+
+function setupOsc(oscPortIn, oscPortOut) {
+	var socket = io.connect('http://127.0.0.1:8081', { port: 8081, rememberTransport: false });
+	socket.on('connect', function() {
+		socket.emit('config', {
+			server: { port: oscPortIn,  host: '127.0.0.1'},
+			client: { port: oscPortOut, host: '127.0.0.1'}
+		});
+	});
+	socket.on('message', function(msg) {
+		if (msg[0] == '#bundle') {
+			for (var i=2; i<msg.length; i++) {
+				receiveOsc(msg[i][0], msg[i].splice(1));
+			}
+		} else {
+			receiveOsc(msg[0], msg.splice(1));
+		}
+	});
 }

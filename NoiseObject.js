@@ -15,7 +15,7 @@ class NoiseObject {
 
 	//change the increment with which to move through the noise field
 	changeInc(i) {
-		this.inc;
+		this.inc = i;
 	}
 
 	//compute and return noise

@@ -26,7 +26,14 @@ const maxSwitchTime = 10;
 let nextResEvent = 5; 		//init in x seconds
 let resEventCounter = 0;
 
+//osc stuff
+let sendingNoises = true;
+let socket;
+
 function setup() {
+	//setup osc connection (in port, out port)
+	if (sendingNoises) setupOsc(12000, 3334);
+	
 	reset();
 }
 
@@ -90,6 +97,9 @@ function draw() {
 
 	//write to pixels array
 	updatePixels();
+
+	//send array of noises over OSC
+	if (sendingNoises) sendNoises();
 }
 
 //refresh the pixel array with all black pixels, because background() doesn't do that
@@ -136,16 +146,32 @@ function setRandomResolution() {
 	reset();
 }
 
+//send all the current noise values over OSC
+function sendNoises() {
+	let noises = [
+		resolution.value,
+		xGridStep.value,
+		yGridStep.value,
+		rangeGridStep.value,
+		toggleGridStep.value,
+		toggleNoiseColor.value,
+		noiseColorSpeed.value,
+		noiseColorSpeedInc.value
+	];
+
+	sendOsc('/noises', noises);
+}
+
 
 // -------------------- https://github.com/genekogan/p5js-osc -------------------- //
 // ----------------- run 'node lib/bridge.js' to start connection ---------------- //
 
 function receiveOsc(address, value) {
 	console.log("received OSC: " + address + ", " + value);
-
+	
+	//assign values from noises to graphs
 	if (address == '/test') {
-		x = value[0];
-		y = value[1];
+		console.log("/test received");
 	}
 }
 
@@ -154,7 +180,7 @@ function sendOsc(address, value) {
 }
 
 function setupOsc(oscPortIn, oscPortOut) {
-	var socket = io.connect('http://127.0.0.1:8081', { port: 8081, rememberTransport: false });
+	socket = io.connect('http://127.0.0.1:8081', { port: 8081, rememberTransport: false });
 	socket.on('connect', function() {
 		socket.emit('config', {
 			server: { port: oscPortIn,  host: '127.0.0.1'},

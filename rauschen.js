@@ -159,8 +159,18 @@ function sendNoises() {
 		noiseColorSpeedInc.value
 	];
 
+	console.log(		
+		"resolution: " + resolution.value + "\n" + 
+		"xGridStep: " + xGridStep.value + "\n" + 
+		"yGridStep: " + yGridStep.value + "\n" + 
+		"rangeGridStep: " + rangeGridStep.value + "\n" + 
+		"toggleGridStep: " + toggleGridStep.value +  "\n" + 
+		"toggleNoiseColor: " + toggleNoiseColor.value +  "\n" + 
+		"noiseColorSpeed: " + noiseColorSpeed.value + "\n" + 
+		"noiseColorSpeedInc: " + noiseColorSpeedInc.value
+	);
+
 	sendOsc('/noises', noises);
-	console.log("sent OSC");
 }
 
 
@@ -178,6 +188,7 @@ function receiveOsc(address, value) {
 
 function sendOsc(address, value) {
 	socket.emit('message', [address].concat(value));
+	//console.log("sent OSC");
 }
 
 function setupOsc(oscPortIn, oscPortOut) {

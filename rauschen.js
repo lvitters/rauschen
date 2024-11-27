@@ -160,6 +160,7 @@ function sendNoises() {
 	];
 
 	sendOsc('/noises', noises);
+	console.log("sent OSC");
 }
 
 

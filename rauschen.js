@@ -28,6 +28,7 @@ let resEventCounter = 0;
 
 //osc stuff
 let sendingNoises = true;
+let sendFreq = 10; //in frames
 let socket;
 
 function setup() {
@@ -99,7 +100,7 @@ function draw() {
 	updatePixels();
 
 	//send array of noises over OSC
-	if (sendingNoises) sendNoises();
+	if (sendingNoises && (frameCount % sendFreq == 0)) sendNoises();
 }
 
 //refresh the pixel array with all black pixels, because background() doesn't do that

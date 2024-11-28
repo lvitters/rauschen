@@ -12,7 +12,6 @@ let newHeight;
 let resolution;
 let xGridStep;
 let yGridStep;
-let rangeGridStep;
 let toggleGridStep;
 let toggleNoiseColor;
 let noiseColorSpeed;
@@ -31,11 +30,16 @@ let sendingNoises = true;
 let sendFreq = 10; //in frames
 let socket;
 
+//record for graphs that get reset
+let resRecord;
+
 function setup() {
 	//setup osc connection (in port, out port)
 	if (sendingNoises) setupOsc(12000, 3334);
 	
 	reset();
+
+	setRandomResolution();
 }
 
 //setup everything in here so that it can be called again at will
@@ -48,7 +52,6 @@ function reset() {
 	resolution = new NoiseObject(Math.random() * 1000, .001);
 	xGridStep = new NoiseObject(Math.random() * 1000, .002);
 	yGridStep = new NoiseObject(Math.random() * 1000, .002);
-	rangeGridStep = new NoiseObject(Math.random() * 1000, .001);
 	toggleGridStep = new NoiseObject(Math.random() * 1000, .001);
 	toggleNoiseColor = new NoiseObject(Math.random() * 1000, .0001);
 	noiseColorSpeed = new NoiseObject(Math.random() * 1000, 1);
@@ -140,36 +143,37 @@ function setRandomResolution() {
 	newWidth = resolution.noiseRange(-50, maxWidth);
 	newHeight = resolution.noiseRange(-50, maxHeight);
 
+	resRecord = resolution.value;
+
 	//apply to canvas dimensions
 	canvasWidth = floor(cutoff(newWidth, minWidth));
 	canvasHeight = floor(cutoff(newHeight, minHeight));
 	//console.log("width: " + canvasWidth + "\n" + "height: " + canvasHeight);
+
 	reset();
 }
 
 //send all the current noise values over OSC
 function sendNoises() {
 	let noises = [
-		resolution.value,
+		resRecord,
 		xGridStep.value,
 		yGridStep.value,
-		rangeGridStep.value,
 		toggleGridStep.value,
 		toggleNoiseColor.value,
 		noiseColorSpeed.value,
 		noiseColorSpeedInc.value
 	];
 
-	console.log(		
-		"resolution: " + resolution.value + "\n" + 
-		"xGridStep: " + xGridStep.value + "\n" + 
-		"yGridStep: " + yGridStep.value + "\n" + 
-		"rangeGridStep: " + rangeGridStep.value + "\n" + 
-		"toggleGridStep: " + toggleGridStep.value +  "\n" + 
-		"toggleNoiseColor: " + toggleNoiseColor.value +  "\n" + 
-		"noiseColorSpeed: " + noiseColorSpeed.value + "\n" + 
-		"noiseColorSpeedInc: " + noiseColorSpeedInc.value
-	);
+	// console.log(		
+	// 	"resolution: " + resRecord + "\n" + 
+	// 	"xGridStep: " + xGridStep.value + "\n" + 
+	// 	"yGridStep: " + yGridStep.value + "\n" +
+	// 	"toggleGridStep: " + toggleGridStep.value +  "\n" + 
+	// 	"toggleNoiseColor: " + toggleNoiseColor.value +  "\n" + 
+	// 	"noiseColorSpeed: " + noiseColorSpeed.value + "\n" + 
+	// 	"noiseColorSpeedInc: " + noiseColorSpeedInc.value
+	// );
 
 	sendOsc('/noises', noises);
 }

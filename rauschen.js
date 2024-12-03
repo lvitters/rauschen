@@ -27,7 +27,7 @@ let resEventCounter = 0;
 
 //osc stuff
 let sendingNoises = true;
-let sendFreq = 10; //in frames
+let sendFreq = 1; //in frames
 let socket;
 
 //record for graphs that get reset
@@ -55,7 +55,6 @@ function reset() {
 	toggleGridStep = new NoiseObject(Math.random() * 1000, .001);
 	toggleNoiseColor = new NoiseObject(Math.random() * 1000, .0001);
 	noiseColorSpeed = new NoiseObject(Math.random() * 1000, 1);
-	noiseColorSpeedInc = new NoiseObject(Math.random() * 1000, .01);
 
 	//get pixel array for manipulation
 	loadPixels();
@@ -91,9 +90,8 @@ function draw() {
 				//set values according to noise
 				} else {
 					//change noise color speed independently
-					noiseColorSpeed.changeInc(noiseColorSpeedInc.noiseRange(.01, .5));
-					let x = cutoff(floor(noiseColorSpeed.noiseRange(-6, 4)), 1);
-					if (frameCount % x == 0) pixels[index + i] = colors[index + i].noiseRange(0, 255);
+					colors[index + i].changeInc(noiseColorSpeed.noiseVariableRange(.00001, .01, .01, .1));
+					pixels[index + i] = colors[index + i].noiseRange(0, 255);
 				}
 			}
 		}
@@ -161,8 +159,7 @@ function sendNoises() {
 		yGridStep.value,
 		toggleGridStep.value,
 		toggleNoiseColor.value,
-		noiseColorSpeed.value,
-		noiseColorSpeedInc.value
+		noiseColorSpeed.value
 	];
 
 	// console.log(		
@@ -171,8 +168,7 @@ function sendNoises() {
 	// 	"yGridStep: " + yGridStep.value + "\n" +
 	// 	"toggleGridStep: " + toggleGridStep.value +  "\n" + 
 	// 	"toggleNoiseColor: " + toggleNoiseColor.value +  "\n" + 
-	// 	"noiseColorSpeed: " + noiseColorSpeed.value + "\n" + 
-	// 	"noiseColorSpeedInc: " + noiseColorSpeedInc.value
+	// 	"noiseColorSpeed: " + noiseColorSpeed.value + "\n"
 	// );
 
 	sendOsc('/noises', noises);

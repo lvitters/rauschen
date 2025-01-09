@@ -1,6 +1,6 @@
-int width = 500;
-int height = 500;
-int maxStepMultiplier = 10;
+int width = 1000;
+int height = 1000;
+int maxStepMultiplier = 20;
 int resStep = 1;
 
 color c, nc;
@@ -8,10 +8,6 @@ int r, g, b;
 
 //noises
 NoiseObject resolution;
-NoiseObject toggleNoiseColor;
-
-// NoiseObject for pixels' colors
-ArrayList<NoiseObject[]> colors = new ArrayList<NoiseObject[]>();
 
 // Timed events
 int maxSwitchTime = 5;
@@ -31,19 +27,10 @@ public void setup() {
 	frameRate(60);
 
 	// init NoiseObjects with starting value and increment
-	resolution = new NoiseObject(random(1000), 1);
-	toggleNoiseColor = new NoiseObject(random(1000), 1);
-
+	resolution = new NoiseObject(random(100), 1);
+	
 	// get pixel array for manipulation
 	loadPixels();
-
-	// create NoiseObject for every pixel's color value and store in colors ArrayList
-	for (int c = 0; c < pixels.length; c++) {
-		NoiseObject r = new NoiseObject(random(100), 0.1);
-		NoiseObject g = new NoiseObject(random(100), 0.1);
-		NoiseObject b = new NoiseObject(random(100), 0.1);
-		colors.add(new NoiseObject[]{r, g, b});
-	}
 }
 
 public void draw() {
@@ -52,9 +39,6 @@ public void draw() {
 
 	// do this first because it affects the pixels array manipulation
 	timedEvents();
-
-	// determine how color is calculated
-	Boolean noiseColor = toggleNoiseColor.noiseBool(-5, 5); 
 
 	// manipulate pixel array
 	for (int x = 0; x < width; x += resStep) {
@@ -72,13 +56,7 @@ public void draw() {
 						// get index
 						int index = py * width + px;
 						// apply respective color to pixels array
-						if (!noiseColor) {
-							pixels[index] = c;
-						} else {
-							// get color values according to noise
-							nc = color((int)colors.get(index)[0].noiseRange(-1, 256), (int)colors.get(index)[1].noiseRange(-1, 256), (int)colors.get(index)[2].noiseRange(-1, 256));
-							pixels[index] = nc;
-						}
+						pixels[index] = c;
 					}
 				}
 			}

@@ -1,7 +1,7 @@
 int width = 800;
 int height = 800;
-int maxStepMultiplier = 4;
-int resStep = 8;
+int maxStepMultiplier = 8;
+int resStep = 1;
 
 //noises
 NoiseObject resolution;
@@ -52,6 +52,9 @@ public void setup() {
 }
 
 public void draw() {
+	// refresh background
+	background(0);
+
 	// do this first because it affects the pixels array manipulation
 	timedEvents();
 
@@ -125,12 +128,15 @@ void timedEvents() {
 
 // set canvas and sketch to a new resolution
 void setRandomResolutionStep() {
-	// get new res close to old res with noise
-	int stepMultiplier = (int)resolution.noiseRange(-2, maxStepMultiplier);
+	// reset
+	resStep = 1;
+
+	// get new step close to old step with noise
+	int stepMultiplier = (int)resolution.noiseRange(0, maxStepMultiplier);
 
 	println(stepMultiplier);
 
-	// apply to canvas dimensions
+	// apply
 	if (stepMultiplier < 1) stepMultiplier = 1;
 	resStep *= stepMultiplier;
 

@@ -1,7 +1,7 @@
 int width = 800;
 int height = 800;
-int maxStep = 10;
-int resStep;
+int maxStepMultiplier = 2;
+int resStep = 2;
 
 //noises
 NoiseObject resolution;
@@ -12,10 +12,10 @@ NoiseObject toggleNoiseColor;
 NoiseObject noiseColorSpeed;
 
 // NoiseObject for pixels' colors
-ArrayList<NoiseObject> colors = new ArrayList<NoiseObject>();
+ArrayList<NoiseObject[]> colors = new ArrayList<NoiseObject[]>();
 
 // Timed events
-int maxSwitchTime = 10;
+int maxSwitchTime = 5;
 int nextResEvent = 5;       // init in x seconds
 int resEventCounter = 0;
 
@@ -32,7 +32,7 @@ public void setup() {
 	frameRate(60);
 
 	// init NoiseObjects with starting value and increment
-	resolution = new NoiseObject(random(1000), 0.001);
+	resolution = new NoiseObject(random(1000), 1);
 	xGridStep = new NoiseObject(random(1000), 0.002);
 	yGridStep = new NoiseObject(random(1000), 0.002);
 	toggleGridStep = new NoiseObject(random(1000), 0.001);
@@ -42,9 +42,12 @@ public void setup() {
 	// get pixel array for manipulation
 	loadPixels();
 
-	// create NoiseObject for every pixel's color value
+	// create NoiseObject for every pixel's color value and store in colors ArrayList
 	for (int c = 0; c < pixels.length; c++) {
-		colors.add(new NoiseObject(random(100), 0.1));
+		NoiseObject r = new NoiseObject(random(100), 0.1);
+		NoiseObject g = new NoiseObject(random(100), 0.1);
+		NoiseObject b = new NoiseObject(random(100), 0.1);
+		colors.add(new NoiseObject[]{r, g, b});
 	}
 }
 
@@ -61,23 +64,37 @@ public void draw() {
 	PVector gridLines = computeGridLines();
 
 	// manipulate pixel array
-	for (int x = 0; x < width; x += (int)gridLines.x) {
-		for (int y = 0; y < height; y += (int)gridLines.y) {
-			// get index in array from coordinates, get for more pixels if step is over one
-			int index = (y * width + x);
-			int index2 = (y * width + (x + 1));
-			int index3 = ((y + 1) * width + x);
-			int index4 = ((y + 1) * width + (x + 1));
-			// each pixel is of the color datatype
-			// set values at random
-			if (toggleNoiseColor.noiseBool(-5, 10)) {
+	for (int x = 0; x < width - resStep; x += (int)gridLines.x) {
+		for (int y = 0; y < height - resStep; y += (int)gridLines.y) {
+			// get index in array from coordinates
+			int index = y * width + x;
+			if (resStep > 1) {
+				int index2 = y * width + (x + 1);
+				int index3 = (y + 1) * width + x;
+				int index4 = (y + 1) * width + (x + 1);
+
+				// set values at random
 				color c = color((int)random(255), (int)random(255), (int)random(255));
+				color c2 = color((int)random(255), (int)random(255), (int)random(255));
+				color c3 = color((int)random(255), (int)random(255), (int)random(255));
+				color c4 = color((int)random(255), (int)random(255), (int)random(255));
 				pixels[index] = c;
-			// set values according to noise
+				pixels[index2] = c2;
+				pixels[index3] = c3;
+				pixels[index4] = c4;
 			} else {
-				// change noise color speed independently
-				colors.get(index).changeInc(noiseColorSpeed.noiseVariableRange(0.00001f, 0.01f, 0.01f, 0.1f));
-				pixels[index] = (int)colors.get(index).noiseRange(0, 255);
+				// set values at random
+				if (toggleNoiseColor.noiseBool(-5, 10)) {
+					color c = color((int)random(255), (int)random(255), (int)random(255));
+					pixels[index] = c;
+				// set values according to noise
+				} else {
+					// change noise color speed independently for r, g, b
+					for (int a = 0; a < 3; a++) {
+						colors.get(index)[a].changeInc(noiseColorSpeed.noiseVariableRange(0.00001f, 0.01f, 0.01f, 0.1f));
+						pixels[index] = (int)colors.get(index)[a].noiseRange(0, 255);
+					}
+				}
 			}
 		}
 	}
@@ -102,7 +119,8 @@ PVector computeGridLines() {
 
 // take range and cut at cutoff; useful when a value needs to stick towards the cutoff but should still change sometimes
 float cutoff(float range, float cutoff) {
-	return range > cutoff ? range : cutoff;
+	if (range > cutoff) return range;
+	else return cutoff;
 }
 
 // sometimes things should happen at random intervals instead
@@ -119,12 +137,13 @@ void timedEvents() {
 // set canvas and sketch to a new resolution
 void setRandomResolutionStep() {
 	// get new res close to old res with noise
-	int newStep = (int)resolution.noiseRange(-10, maxStep);
+	int stepMultiplier = (int)resolution.noiseRange(-2, maxStepMultiplier);
 
-	resRecord = resolution.value;
+	println(stepMultiplier);
 
 	// apply to canvas dimensions
-	resStep = floor(cutoff(newStep, 1));
+	if (stepMultiplier < 1) stepMultiplier = 1;
+	resStep *= stepMultiplier;
 
-	//println(resStep);
+	println(resStep);
 }

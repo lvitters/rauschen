@@ -1,13 +1,14 @@
-int width = 1000;
-int height = 1000;
+int width = 500;
+int height = 500;
 int maxStepMultiplier = 10;
 int resStep = 1;
 
-color c;
+color c, nc;
 int r, g, b;
 
 //noises
 NoiseObject resolution;
+NoiseObject toggleNoiseColor;
 
 // NoiseObject for pixels' colors
 ArrayList<NoiseObject[]> colors = new ArrayList<NoiseObject[]>();
@@ -29,10 +30,9 @@ public void setup() {
 	// can't go in settings for some reason
 	frameRate(60);
 
-	c = color((int)random(255), (int)random(255), (int)random(255));
-
 	// init NoiseObjects with starting value and increment
 	resolution = new NoiseObject(random(1000), 1);
+	toggleNoiseColor = new NoiseObject(random(1000), 1);
 
 	// get pixel array for manipulation
 	loadPixels();
@@ -53,20 +53,32 @@ public void draw() {
 	// do this first because it affects the pixels array manipulation
 	timedEvents();
 
+	// determine how color is calculated
+	Boolean noiseColor = toggleNoiseColor.noiseBool(-5, 5); 
+
 	// manipulate pixel array
 	for (int x = 0; x < width; x += resStep) {
 		for (int y = 0; y < height; y += resStep) {
 			// get color values at random
 			c = color((int)random(255), (int)random(255), (int)random(255));
-			// get index in array from coordinates and step and apply determined color to pixels array
+			// determine indices for pixels array from coordinates and step
 			for (int dx = 0; dx < resStep; dx++) {
 				for (int dy = 0; dy < resStep; dy++) {
+					// get offset
 					int px = x + dx;
 					int py = y + dy;
+					//check boundaries (edges won't have neighboring pixels)
 					if (px < width && py < height) {
+						// get index
 						int index = py * width + px;
-						//println(index);
-						pixels[index] = c;
+						// apply respective color to pixels array
+						if (!noiseColor) {
+							pixels[index] = c;
+						} else {
+							// get color values according to noise
+							nc = color((int)colors.get(index)[0].noiseRange(-1, 256), (int)colors.get(index)[1].noiseRange(-1, 256), (int)colors.get(index)[2].noiseRange(-1, 256));
+							pixels[index] = nc;
+						}
 					}
 				}
 			}
@@ -109,11 +121,7 @@ void setRandomResolutionStep() {
 	// get new step close to old step with noise
 	int stepMultiplier = (int)resolution.noiseRange(0, maxStepMultiplier);
 
-	println(stepMultiplier);
-
-	// apply
+	// cutoff over one and apply
 	if (stepMultiplier < 1) stepMultiplier = 1;
 	resStep *= stepMultiplier;
-
-	println(resStep);
 }

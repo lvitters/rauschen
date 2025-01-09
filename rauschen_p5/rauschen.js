@@ -26,7 +26,7 @@ let nextResEvent = 5; 		//init in x seconds
 let resEventCounter = 0;
 
 //osc stuff
-let sendingNoises = false;
+let sendingNoises = true;
 let sendFreq = 1; //in frames
 let socket;
 

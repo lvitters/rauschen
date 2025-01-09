@@ -1,7 +1,7 @@
 int width = 800;
 int height = 800;
-int maxStepMultiplier = 2;
-int resStep = 2;
+int maxStepMultiplier = 4;
+int resStep = 8;
 
 //noises
 NoiseObject resolution;
@@ -66,35 +66,24 @@ public void draw() {
 	// manipulate pixel array
 	for (int x = 0; x < width - resStep; x += (int)gridLines.x) {
 		for (int y = 0; y < height - resStep; y += (int)gridLines.y) {
-			// get index in array from coordinates
-			int index = y * width + x;
-			if (resStep > 1) {
-				int index2 = y * width + (x + 1);
-				int index3 = (y + 1) * width + x;
-				int index4 = (y + 1) * width + (x + 1);
-
-				// set values at random
-				color c = color((int)random(255), (int)random(255), (int)random(255));
-				color c2 = color((int)random(255), (int)random(255), (int)random(255));
-				color c3 = color((int)random(255), (int)random(255), (int)random(255));
-				color c4 = color((int)random(255), (int)random(255), (int)random(255));
-				pixels[index] = c;
-				pixels[index2] = c2;
-				pixels[index3] = c3;
-				pixels[index4] = c4;
-			} else {
-				// set values at random
-				if (toggleNoiseColor.noiseBool(-5, 10)) {
-					color c = color((int)random(255), (int)random(255), (int)random(255));
-					pixels[index] = c;
-				// set values according to noise
-				} else {
+			// get color values at random
+			color c = color((int)random(255), (int)random(255), (int)random(255));
+			// override color values according to noise (same for each pixel in step)
+			if ((!toggleNoiseColor.noiseBool(-5, 10))) {
+				// get index in array from coordinates and step and apply determined color to pixels array
+				for (int s = 0; s < resStep; s++) {
+					int index = (y + resStep) * width + (x + resStep);
 					// change noise color speed independently for r, g, b
 					for (int a = 0; a < 3; a++) {
 						colors.get(index)[a].changeInc(noiseColorSpeed.noiseVariableRange(0.00001f, 0.01f, 0.01f, 0.1f));
-						pixels[index] = (int)colors.get(index)[a].noiseRange(0, 255);
+						c = (int)colors.get(index)[a].noiseRange(0, 255);
 					}
 				}
+			}
+			// get index in array from coordinates and step and apply determined color to pixels array
+			for (int s = 0; s < resStep; s++) {
+				int index = (y + resStep) * width + (x + resStep);
+				pixels[index] = c;
 			}
 		}
 	}

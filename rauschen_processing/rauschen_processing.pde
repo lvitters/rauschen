@@ -1,15 +1,13 @@
-int width = 800;
-int height = 800;
-int maxStepMultiplier = 8;
+int width = 1000;
+int height = 1000;
+int maxStepMultiplier = 10;
 int resStep = 1;
+
+color c;
+int r, g, b;
 
 //noises
 NoiseObject resolution;
-NoiseObject xGridStep;
-NoiseObject yGridStep;
-NoiseObject toggleGridStep;
-NoiseObject toggleNoiseColor;
-NoiseObject noiseColorSpeed;
 
 // NoiseObject for pixels' colors
 ArrayList<NoiseObject[]> colors = new ArrayList<NoiseObject[]>();
@@ -31,13 +29,10 @@ public void setup() {
 	// can't go in settings for some reason
 	frameRate(60);
 
+	c = color((int)random(255), (int)random(255), (int)random(255));
+
 	// init NoiseObjects with starting value and increment
 	resolution = new NoiseObject(random(1000), 1);
-	xGridStep = new NoiseObject(random(1000), 0.002);
-	yGridStep = new NoiseObject(random(1000), 0.002);
-	toggleGridStep = new NoiseObject(random(1000), 0.001);
-	toggleNoiseColor = new NoiseObject(random(1000), 0.0001);
-	noiseColorSpeed = new NoiseObject(random(1000), 1);
 
 	// get pixel array for manipulation
 	loadPixels();
@@ -58,35 +53,22 @@ public void draw() {
 	// do this first because it affects the pixels array manipulation
 	timedEvents();
 
-	// don't always refresh the background
-	if (toggleGridStep.noiseBool(-5, 10)) {
-		refreshPixelArray();
-	}
-
-	// get grid lines
-	PVector gridLines = computeGridLines();
-
 	// manipulate pixel array
-	for (int x = 0; x < width - resStep; x += (int)gridLines.x) {
-		for (int y = 0; y < height - resStep; y += (int)gridLines.y) {
+	for (int x = 0; x < width; x += resStep) {
+		for (int y = 0; y < height; y += resStep) {
 			// get color values at random
-			color c = color((int)random(255), (int)random(255), (int)random(255));
-			// override color values according to noise (same for each pixel in step)
-			if ((!toggleNoiseColor.noiseBool(-5, 10))) {
-				// get index in array from coordinates and step and apply determined color to pixels array
-				for (int s = 0; s < resStep; s++) {
-					int index = (y + resStep) * width + (x + resStep);
-					// change noise color speed independently for r, g, b
-					for (int a = 0; a < 3; a++) {
-						colors.get(index)[a].changeInc(noiseColorSpeed.noiseVariableRange(0.00001f, 0.01f, 0.01f, 0.1f));
-						c = (int)colors.get(index)[a].noiseRange(0, 255);
+			c = color((int)random(255), (int)random(255), (int)random(255));
+			// get index in array from coordinates and step and apply determined color to pixels array
+			for (int dx = 0; dx < resStep; dx++) {
+				for (int dy = 0; dy < resStep; dy++) {
+					int px = x + dx;
+					int py = y + dy;
+					if (px < width && py < height) {
+						int index = py * width + px;
+						//println(index);
+						pixels[index] = c;
 					}
 				}
-			}
-			// get index in array from coordinates and step and apply determined color to pixels array
-			for (int s = 0; s < resStep; s++) {
-				int index = (y + resStep) * width + (x + resStep);
-				pixels[index] = c;
 			}
 		}
 	}
@@ -100,13 +82,6 @@ void refreshPixelArray() {
 	for (int p = 0; p < pixels.length; p++) {
 		pixels[p] = 0;
 	}
-}
-
-// Compute grid lines to apply to pixel array manipulation
-PVector computeGridLines() {
-	float x = floor(cutoff(xGridStep.noiseVariableRange(-10, -20, 1, 20), 1));
-	float y = floor(cutoff(yGridStep.noiseVariableRange(-10, -20, 1, 20), 1));
-	return new PVector(x, y);      // Return as tuple
 }
 
 // take range and cut at cutoff; useful when a value needs to stick towards the cutoff but should still change sometimes

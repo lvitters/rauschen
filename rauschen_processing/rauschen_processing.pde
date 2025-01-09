@@ -1,14 +1,9 @@
-// Res of canvas, change size in index.html
-int minWidth = 2;
-int maxWidth = 800;
-int minHeight = 2;
-int maxHeight = 800;
-int canvasWidth = maxWidth;
-int canvasHeight = maxHeight;
-float newWidth;
-float newHeight;
+int width = 800;
+int height = 800;
+int maxStep = 10;
+int resStep;
 
-// Rauschen
+//noises
 NoiseObject resolution;
 NoiseObject xGridStep;
 NoiseObject yGridStep;
@@ -28,7 +23,7 @@ int resEventCounter = 0;
 float resRecord;
 
 public void settings() {
-	size(canvasWidth, canvasHeight);
+	size(width, height);
 	pixelDensity(1);
 }
 
@@ -54,8 +49,8 @@ public void setup() {
 }
 
 public void draw() {
-	// do that here because it might change the resolution
-	//timedEvents();
+	// do this first because it affects the pixels array manipulation
+	timedEvents();
 
 	// don't always refresh the background
 	if (toggleGridStep.noiseBool(-5, 10)) {
@@ -66,13 +61,16 @@ public void draw() {
 	PVector gridLines = computeGridLines();
 
 	// manipulate pixel array
-	for (int x = 0; x < canvasWidth; x += (int)gridLines.x) {
-		for (int y = 0; y < canvasHeight; y += (int)gridLines.y) {
-			// get index in array from coordinates
-			int index = (x + y * canvasWidth);
+	for (int x = 0; x < width; x += (int)gridLines.x) {
+		for (int y = 0; y < height; y += (int)gridLines.y) {
+			// get index in array from coordinates, get for more pixels if step is over one
+			int index = (y * width + x);
+			int index2 = (y * width + (x + 1));
+			int index3 = ((y + 1) * width + x);
+			int index4 = ((y + 1) * width + (x + 1));
 			// each pixel is of the color datatype
 			// set values at random
-			if (toggleNoiseColor.noiseBool(-10, 5) || canvasWidth > maxWidth / 2) {
+			if (toggleNoiseColor.noiseBool(-5, 10)) {
 				color c = color((int)random(255), (int)random(255), (int)random(255));
 				pixels[index] = c;
 			// set values according to noise
@@ -107,28 +105,26 @@ float cutoff(float range, float cutoff) {
 	return range > cutoff ? range : cutoff;
 }
 
-// // sometimes things should happen at random intervals instead
-// void timedEvents() {
-// 	// sometimes switch to a new random resolution
-// 	resEventCounter++;
-// 	if (resEventCounter > (nextResEvent * 60)) {
-// 		setRandomResolution();
-// 		nextResEvent = (int)random(5, maxSwitchTime);
-// 		resEventCounter = 0;
-// 	}
-// }
+// sometimes things should happen at random intervals instead
+void timedEvents() {
+	// sometimes switch to a new resolution step
+	resEventCounter++;
+	if (resEventCounter > (nextResEvent * 60)) {
+		setRandomResolutionStep();
+		nextResEvent = (int)random(5, maxSwitchTime);
+		resEventCounter = 0;
+	}
+}
 
-// // set canvas and sketch to a new resolution
-// void setRandomResolution() {
-// 	// get new res close to old res with noise
-// 	newWidth = resolution.noiseRange(-50, maxWidth);
-// 	newHeight = resolution.noiseRange(-50, maxHeight);
+// set canvas and sketch to a new resolution
+void setRandomResolutionStep() {
+	// get new res close to old res with noise
+	int newStep = (int)resolution.noiseRange(-10, maxStep);
 
-// 	resRecord = resolution.value;
+	resRecord = resolution.value;
 
-// 	// apply to canvas dimensions
-// 	canvasWidth = floor(cutoff(newWidth, minWidth));
-// 	canvasHeight = floor(cutoff(newHeight, minHeight));
+	// apply to canvas dimensions
+	resStep = floor(cutoff(newStep, 1));
 
-// 	//reset();
-// }
+	//println(resStep);
+}

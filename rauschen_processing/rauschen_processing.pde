@@ -1,17 +1,20 @@
 int width = 1000;
 int height = 1000;
-int maxStepMultiplier = 20;
-int resStep = 1;
+int maxStepMultiplier = width/4;
+int xStep = 1;
+int yStep = 1;
 
 color c, nc;
 int r, g, b;
 
 //noises
-NoiseObject resolution;
+NoiseObject xStepNoise;
+NoiseObject yStepNoise;
+NoiseObject toggleColorNoise;
 
 // Timed events
-int maxSwitchTime = 5;
-int nextResEvent = 5;       // init in x seconds
+int maxSwitchTime = 1;
+int nextResEvent = 1;       // init in x seconds
 int resEventCounter = 0;
 
 // Record for graphs that get reset
@@ -27,7 +30,8 @@ public void setup() {
 	frameRate(60);
 
 	// init NoiseObjects with starting value and increment
-	resolution = new NoiseObject(random(100), 1);
+	xStepNoise = new NoiseObject(random(100), 10);
+	yStepNoise = new NoiseObject(random(100), 10);
 	
 	// get pixel array for manipulation
 	loadPixels();
@@ -41,17 +45,17 @@ public void draw() {
 	timedEvents();
 
 	// manipulate pixel array
-	for (int x = 0; x < width; x += resStep) {
-		for (int y = 0; y < height; y += resStep) {
+	for (int x = 0; x < width; x += xStep) {
+		for (int y = 0; y < height; y += yStep) {
 			// get color values at random
 			c = color((int)random(255), (int)random(255), (int)random(255));
 			// determine indices for pixels array from coordinates and step
-			for (int dx = 0; dx < resStep; dx++) {
-				for (int dy = 0; dy < resStep; dy++) {
+			for (int dx = 0; dx < xStep; dx++) {
+				for (int dy = 0; dy < yStep; dy++) {
 					// get offset
 					int px = x + dx;
 					int py = y + dy;
-					//check boundaries (edges won't have neighboring pixels)
+					// check boundaries (edges won't have neighboring pixels)
 					if (px < width && py < height) {
 						// get index
 						int index = py * width + px;
@@ -85,21 +89,27 @@ void timedEvents() {
 	// sometimes switch to a new resolution step
 	resEventCounter++;
 	if (resEventCounter > (nextResEvent * 60)) {
-		setRandomResolutionStep();
-		nextResEvent = (int)random(5, maxSwitchTime);
+		setStep();
+		nextResEvent = (int)random(1, maxSwitchTime);
 		resEventCounter = 0;
 	}
 }
 
 // set canvas and sketch to a new resolution
-void setRandomResolutionStep() {
+void setStep() {
 	// reset
-	resStep = 1;
+	xStep = 1;
+	yStep = 1;
 
 	// get new step close to old step with noise
-	int stepMultiplier = (int)resolution.noiseRange(0, maxStepMultiplier);
+	int xStepMultiplier = (int)xStepNoise.noiseVariableRange(- maxStepMultiplier * (4/8), 0, maxStepMultiplier * (6/8), maxStepMultiplier);
+	int yStepMultiplier = (int)yStepNoise.noiseVariableRange(- maxStepMultiplier * (4/8), 0, maxStepMultiplier * (6/8), maxStepMultiplier);
 
 	// cutoff over one and apply
-	if (stepMultiplier < 1) stepMultiplier = 1;
-	resStep *= stepMultiplier;
+	if (xStepMultiplier < 1) xStepMultiplier = 1;
+	xStep *= xStepMultiplier;
+
+	// cutoff over one and apply
+	if (yStepMultiplier < 1) yStepMultiplier = 1;
+	yStep *= yStepMultiplier;
 }

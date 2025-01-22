@@ -1,7 +1,7 @@
 //create a class of graphs for displaying the number buffers
 class Graph {
 	//initialise
-	constructor(col, n) {
+	constructor(col) {
 		this.points = [];
 		this.color = col;
 	}

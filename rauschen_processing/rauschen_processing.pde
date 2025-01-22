@@ -1,6 +1,6 @@
 int width = 1000;
 int height = 1000;
-int maxStepMultiplier = width/4;
+int maxStepMultiplier = width;
 int xStep = 1;
 int yStep = 1;
 
@@ -17,7 +17,8 @@ int maxSwitchTime = 1;
 int nextResEvent = 1;       // init in x seconds
 int resEventCounter = 0;
 
-// Record for graphs that get reset
+// ChildApplet for displaying graphs
+Graphen graphen;
 float resRecord;
 
 public void settings() {
@@ -26,6 +27,12 @@ public void settings() {
 }
 
 public void setup() {
+	windowTitle("Rauschen");
+	graphen = new Graphen();
+
+	// determine window location on screen
+	surface.setLocation(5, 50);
+
 	// can't go in settings for some reason
 	frameRate(60);
 

@@ -19,7 +19,6 @@ int resEventCounter = 0;
 
 // ChildApplet for displaying graphs
 Graphen graphen;
-float resRecord;
 
 public void settings() {
 	size(width, height);
@@ -109,8 +108,8 @@ void setStep() {
 	yStep = 1;
 
 	// get new step close to old step with noise
-	int xStepMultiplier = (int)xStepNoise.noiseVariableRange(- maxStepMultiplier * (4/8), 0, maxStepMultiplier * (6/8), maxStepMultiplier);
-	int yStepMultiplier = (int)yStepNoise.noiseVariableRange(- maxStepMultiplier * (4/8), 0, maxStepMultiplier * (6/8), maxStepMultiplier);
+	int xStepMultiplier = (int)xStepNoise.noiseVariableRange(- maxStepMultiplier, 0, maxStepMultiplier * (6/8), maxStepMultiplier);
+	int yStepMultiplier = (int)yStepNoise.noiseVariableRange(- maxStepMultiplier, 0, maxStepMultiplier * (6/8), maxStepMultiplier);
 
 	// cutoff over one and apply
 	if (xStepMultiplier < 1) xStepMultiplier = 1;

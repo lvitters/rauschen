@@ -1,3 +1,9 @@
+// child window for displaying graphs
+int gWidth = 775;
+int gHeight = 200;
+Graphen graphen;
+
+// main window
 int width = 1000;
 int height = 1000;
 int maxStepMultiplier = width;
@@ -16,9 +22,6 @@ NoiseObject toggleColorNoise;
 int maxSwitchTime = 1;
 int nextResEvent = 1;       // init in x seconds
 int resEventCounter = 0;
-
-// ChildApplet for displaying graphs
-Graphen graphen;
 
 public void settings() {
 	size(width, height);

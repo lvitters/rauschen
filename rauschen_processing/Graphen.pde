@@ -9,7 +9,7 @@ class Graphen extends PApplet {
 	}
 
 	public void settings() {
-		size(775, 200);
+		size(gWidth, gHeight);
 	}
 
 	public void setup() {
@@ -26,6 +26,7 @@ class Graphen extends PApplet {
 
 	public void draw() {
 		background(0);
+		stroke(255);
 
 		// add NoiseObject values to graphs 
 		graphs.get(0).addPoint(xStepNoise.value);
@@ -37,13 +38,12 @@ class Graphen extends PApplet {
 			Graph g = graphs.get(i);
 			
 			// display points from graph
-			beginShape();
+			beginShape(LINES);
 				for (int x = 0; x < g.points.size(); x++) {
 					// draw the points
-					stroke(255);
 					Float y = g.points.get(x);
 					if (y != null) {
-						point(x, map(y, 0, 1, height - 20, 20));
+						vertex(x, map(y, 0, 1, height - 20, 20));
 					}
 				}
 			endShape();

@@ -35,9 +35,6 @@ public void setup() {
 	// set this window title
 	windowTitle("Rauschen");
 
-	// create a new window for child applet
-	graphs = new Graphs();
-
 	// determine this window location on screen
 	surface.setLocation(5, 50);
 
@@ -52,6 +49,9 @@ public void setup() {
 	noises.add(xStepNoise);
 	yStepNoise = new Noise(random(100), 10);
 	noises.add(yStepNoise);
+
+	// create a new window for child applet
+	graphs = new Graphs();
 	
 	// get pixel array for manipulation
 	loadPixels();

@@ -1,11 +1,12 @@
-// a Graph is a series of values on the Y axis
-
+// a Graph is a series of values on the Y axis that is displayed in a certain color
 class Graph {
 	ArrayList<Float> points;
+	color col;
 
 	// constructor
-	public Graph() {
+	public Graph(color c) {
 		points = new ArrayList<Float>();
+		col = c;
 		init();
 	}
 
@@ -25,4 +26,18 @@ class Graph {
 			points.add(0.0);
 		}
 	}
+
+	// display points from graph // CURRENTLY UNUSED BECAUSE VERTICES ONLY DISPLAY WHEN DONE IN GRAPHS DIRECTLY
+	// public void display() {
+	// 	stroke(col);
+	// 	beginShape(LINES);
+	// 		for (int x = 0; x < points.size(); x++) {
+	// 			// draw the points
+	// 			Float y = points.get(x);
+	// 			if (y != null) {
+	// 				vertex(x, map(y, 0, 1, height - 20, 20));
+	// 			}
+	// 		}
+	// 	endShape();
+	// }
 }

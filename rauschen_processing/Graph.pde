@@ -1,3 +1,5 @@
+// a Graph is a series of values on the Y axis
+
 class Graph {
 	ArrayList<Float> points;
 

@@ -1,10 +1,15 @@
-class Graphen extends PApplet {
+// Graphs displays all NoiseObjects' values in graphs
+
+class Graphs extends PApplet {
 	ArrayList<Graph> graphs;
-	
-	public Graphen() {
+
+	// contructor
+	public Graphs() {
+		// some stuff for making the child applet work
 		super();
 		PApplet.runSketch(new String[]{this.getClass().getName()}, this);
 
+		// init ArrayList of graphs
 		graphs = new ArrayList<Graph>();
 	}
 
@@ -13,13 +18,13 @@ class Graphen extends PApplet {
 	}
 
 	public void setup() {
-		windowTitle("Graphen");
+		windowTitle("Graphs");
 
 		// determine window location on screen
 		surface.setLocation(1020, 50);
 		
 		// how many graphs will there be
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < noises.size(); i++) {
 			graphs.add(new Graph());
 		}
 	}
@@ -28,14 +33,13 @@ class Graphen extends PApplet {
 		background(0);
 		stroke(255);
 
-		// add NoiseObject values to graphs 
-		graphs.get(0).addPoint(xStepNoise.value);
-		graphs.get(1).addPoint(yStepNoise.value);
-
-		// display graphs
+		// add new point and display graphs
 		for (int i = 0; i < graphs.size(); i++) {
 			// get graph
 			Graph g = graphs.get(i);
+
+			// add new point
+			g.addPoint(noises.get(i).value);
 			
 			// display points from graph
 			beginShape(LINES);

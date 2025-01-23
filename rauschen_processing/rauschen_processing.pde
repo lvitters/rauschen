@@ -1,7 +1,7 @@
 // child window for displaying graphs
 int gWidth = 775;
 int gHeight = 200;
-Graphen graphen;
+Graphs graphs;
 
 // main window
 int width = 1000;
@@ -10,17 +10,20 @@ int maxStepMultiplier = width;
 int xStep = 1;
 int yStep = 1;
 
+// pixel colors
 color c, nc;
 int r, g, b;
 
 //noises
-NoiseObject xStepNoise;
-NoiseObject yStepNoise;
-NoiseObject toggleColorNoise;
+ArrayList<Noise> noises;
+Noise xStepNoise;
+Noise yStepNoise;
+Noise toggleColorNoise;
 
-// Timed events
-int maxSwitchTime = 1;
-int nextResEvent = 1;       // init in x seconds
+// timed events
+int minSwitchTime = 1;
+int maxSwitchTime = 2;
+int nextResEvent = 1;		// init in X seconds
 int resEventCounter = 0;
 
 public void settings() {
@@ -29,18 +32,26 @@ public void settings() {
 }
 
 public void setup() {
+	// set this window title
 	windowTitle("Rauschen");
-	graphen = new Graphen();
 
-	// determine window location on screen
+	// create a new window for child applet
+	graphs = new Graphs();
+
+	// determine this window location on screen
 	surface.setLocation(5, 50);
 
 	// can't go in settings for some reason
 	frameRate(60);
 
-	// init NoiseObjects with starting value and increment
-	xStepNoise = new NoiseObject(random(100), 10);
-	yStepNoise = new NoiseObject(random(100), 10);
+	// init ArrayList of noises
+	noises = new ArrayList<Noise>();
+
+	// init NoiseInstances with starting value and increment, add to list of noises
+	xStepNoise = new Noise(random(100), 10);
+	noises.add(xStepNoise);
+	yStepNoise = new Noise(random(100), 10);
+	noises.add(yStepNoise);
 	
 	// get pixel array for manipulation
 	loadPixels();
@@ -50,7 +61,7 @@ public void draw() {
 	// refresh background
 	background(0);
 
-	// do this first because it affects the pixels array manipulation
+	// do this first because it may affect the pixels array manipulation
 	timedEvents();
 
 	// manipulate pixel array
@@ -99,7 +110,7 @@ void timedEvents() {
 	resEventCounter++;
 	if (resEventCounter > (nextResEvent * 60)) {
 		setStep();
-		nextResEvent = (int)random(1, maxSwitchTime);
+		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
 		resEventCounter = 0;
 	}
 }

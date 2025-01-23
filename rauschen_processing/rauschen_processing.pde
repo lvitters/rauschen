@@ -6,6 +6,8 @@ Graphs graphs;
 // main window
 int width = 1000;
 int height = 1000;
+
+// resolution steps
 int maxStepMultiplier = width;
 int xStep = 1;
 int yStep = 1;
@@ -18,11 +20,11 @@ int r, g, b;
 ArrayList<Noise> noises;
 Noise xStepNoise;
 Noise yStepNoise;
-Noise toggleColorNoise;
+Noise toggleSameStepDims;
 
 // timed events
 int minSwitchTime = 1;
-int maxSwitchTime = 2;
+int maxSwitchTime = 5;
 int nextResEvent = 1;		// init in X seconds
 int resEventCounter = 0;
 
@@ -49,6 +51,8 @@ public void setup() {
 	noises.add(xStepNoise);
 	yStepNoise = new Noise(random(100), 10);
 	noises.add(yStepNoise);
+	toggleSameStepDims = new Noise(random(100), 1);
+	noises.add(toggleSameStepDims);		// TODO: do I want Booleans to show their actual number on the graph or do I want it as 1 and 0?
 
 	// create a new window for child applet
 	graphs = new Graphs();
@@ -109,14 +113,14 @@ void timedEvents() {
 	// sometimes switch to a new resolution step
 	resEventCounter++;
 	if (resEventCounter > (nextResEvent * 60)) {
-		setStep();
+		setNewStep();
 		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
 		resEventCounter = 0;
 	}
 }
 
 // set canvas and sketch to a new resolution
-void setStep() {
+void setNewStep() {
 	// reset
 	xStep = 1;
 	yStep = 1;
@@ -132,4 +136,14 @@ void setStep() {
 	// cutoff over one and apply
 	if (yStepMultiplier < 1) yStepMultiplier = 1;
 	yStep *= yStepMultiplier;
+
+	// determine if step should be the same in both dimensions
+	Boolean sameStepDims = toggleSameStepDims.noiseBool(-2, 5);
+	if (sameStepDims) {
+		// apply same step to both dimensions
+		//println("same");
+		yStep = xStep;
+	} else {
+		//println("not same");
+	}
 }

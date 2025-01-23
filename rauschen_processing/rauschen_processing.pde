@@ -11,6 +11,10 @@ int height = 1000;
 int maxStepMultiplier = width;
 int xStep = 1;
 int yStep = 1;
+int xOffset = 0;
+int xOffsetRecord = 0;
+int yOffset = 0;
+int yOffsetRecord = 0;
 
 // pixel colors
 color c, nc;
@@ -24,7 +28,7 @@ Noise toggleSameStepDims;
 
 // timed events
 int minSwitchTime = 1;
-int maxSwitchTime = 5;
+int maxSwitchTime = 1;
 int nextResEvent = 1;		// init in X seconds
 int resEventCounter = 0;
 
@@ -47,9 +51,9 @@ public void setup() {
 	noises = new ArrayList<Noise>();
 
 	// init NoiseInstances with starting value and increment, add to list of noises
-	xStepNoise = new Noise(random(100), 10);
+	xStepNoise = new Noise(random(100), .1);
 	noises.add(xStepNoise);
-	yStepNoise = new Noise(random(100), 10);
+	yStepNoise = new Noise(random(100), .1);
 	noises.add(yStepNoise);
 	toggleSameStepDims = new Noise(random(100), 1);
 	noises.add(toggleSameStepDims);		// TODO: do I want Booleans to show their actual number on the graph or do I want it as 1 and 0?
@@ -65,12 +69,27 @@ public void draw() {
 	// refresh background
 	background(0);
 
-	// do this first because it may affect the pixels array manipulation
+	// handle any timed events here because it may affect the pixel array manipulation
 	timedEvents();
 
 	// manipulate pixel array
-	for (int x = 0; x < width; x += xStep) {
-		for (int y = 0; y < height; y += yStep) {
+	manipulatePixelArray();
+
+	// write to pixels array
+	updatePixels();
+}
+
+// apply from setNewGrid() to the pixel array 
+void manipulatePixelArray() {
+	// iterate through pixel array with step and apply offset
+	for (int x = 0; x < width; x += xStep - xOffset) {
+		// offset only applies to first iteration
+		if (x > 0) xOffset = 0;
+		else xOffset = xOffsetRecord;
+		for (int y = 0; y < height; y += yStep - yOffset) {
+			// offset only applies to first iteration
+			if (y > 0) yOffset = 0;
+			else yOffset = yOffsetRecord;
 			// get color values at random
 			c = color((int)random(255), (int)random(255), (int)random(255));
 			// determine indices for pixels array from coordinates and step
@@ -90,22 +109,42 @@ public void draw() {
 			}
 		}
 	}
-
-	// write to pixels array
-	updatePixels();
 }
 
-// refresh the pixel array with all black pixels, because background() doesn't do that
+// set canvas and sketch to a new resolution
+void setNewGrid() {
+	// reset
+	xStep = 1;
+	yStep = 1;
+
+	// get new step close to old step with noise
+	int xStepMultiplier = (int)xStepNoise.noiseVariableRange(- maxStepMultiplier * (6/8), - maxStepMultiplier * (2/8), maxStepMultiplier * (4/8), maxStepMultiplier);
+	int yStepMultiplier = (int)yStepNoise.noiseVariableRange(- maxStepMultiplier * (6/8), - maxStepMultiplier * (2/8), maxStepMultiplier * (4/8), maxStepMultiplier);
+
+	// cutoff over one and apply
+	if (xStepMultiplier < 1) xStepMultiplier = 1;
+	xStep *= xStepMultiplier;
+	if (yStepMultiplier < 1) yStepMultiplier = 1;
+	yStep *= yStepMultiplier;
+
+	// determine if step should be the same in both dimensions
+	if (toggleSameStepDims.noiseBool(-2, 5)) {
+		// apply same step to both dimensions
+		yStep = xStep;
+	}
+
+	// determine offset for first iteration so that the "cells" are cutoff not only on the right and bottom edge, that is of random size of the cuttoff cell
+	xOffset = (int)random(xStep % width);
+	xOffsetRecord = xOffset;
+	yOffset = (int)random(yStep % height);
+	yOffsetRecord = yOffset;
+}
+
+// UNUSED: refresh the pixel array with all black pixels, because background() doesn't do that
 void refreshPixelArray() {
 	for (int p = 0; p < pixels.length; p++) {
 		pixels[p] = 0;
 	}
-}
-
-// take range and cut at cutoff; useful when a value needs to stick towards the cutoff but should still change sometimes
-float cutoff(float range, float cutoff) {
-	if (range > cutoff) return range;
-	else return cutoff;
 }
 
 // sometimes things should happen at random intervals instead
@@ -113,37 +152,14 @@ void timedEvents() {
 	// sometimes switch to a new resolution step
 	resEventCounter++;
 	if (resEventCounter > (nextResEvent * 60)) {
-		setNewStep();
+		setNewGrid();
 		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
 		resEventCounter = 0;
 	}
 }
 
-// set canvas and sketch to a new resolution
-void setNewStep() {
-	// reset
-	xStep = 1;
-	yStep = 1;
-
-	// get new step close to old step with noise
-	int xStepMultiplier = (int)xStepNoise.noiseVariableRange(- maxStepMultiplier, 0, maxStepMultiplier * (6/8), maxStepMultiplier);
-	int yStepMultiplier = (int)yStepNoise.noiseVariableRange(- maxStepMultiplier, 0, maxStepMultiplier * (6/8), maxStepMultiplier);
-
-	// cutoff over one and apply
-	if (xStepMultiplier < 1) xStepMultiplier = 1;
-	xStep *= xStepMultiplier;
-
-	// cutoff over one and apply
-	if (yStepMultiplier < 1) yStepMultiplier = 1;
-	yStep *= yStepMultiplier;
-
-	// determine if step should be the same in both dimensions
-	Boolean sameStepDims = toggleSameStepDims.noiseBool(-2, 5);
-	if (sameStepDims) {
-		// apply same step to both dimensions
-		//println("same");
-		yStep = xStep;
-	} else {
-		//println("not same");
-	}
+// take range and cut at cutoff; useful when a value needs to stick towards the cutoff but should still change sometimes
+float cutoff(float range, float cutoff) {
+	if (range > cutoff) return range;
+	else return cutoff;
 }

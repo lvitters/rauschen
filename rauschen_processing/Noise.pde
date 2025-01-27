@@ -13,14 +13,12 @@ class Noise {
 
 	// compute noise
 	void compute(float bias) {
+		// increment time
 		time += inc;
+		// get noise value
 		value = noise(time);
-		println("pre: " + value);
-		println("bias: " + bias);
-		//apply reciprocal of bias because the base to be raised (value) is between 0 and 1
+		// apply reciprocal of bias because the base to be raised (value) is between 0 and 1, so that <1 biases towards 0, 1 is no bias, >1 biases towards 1
 		value = pow(value, 1.0 / bias);
-		println("post: " + value);
-		println(" ");
 	}
 
 	// change the increment with which to move through the noise field
@@ -34,13 +32,13 @@ class Noise {
 		return value;
 	}
 
-	// compute and return noise range, <1 biases towards 0, 1 is no bias, >1 biases towards 1
+	// compute and return noise range
 	float getNoiseRange(float low, float high, float bias) {
 		compute(bias);
 		return map(value, 0, 1, low, high);
 	}
 
-	// compute and return noise range where low and high bounds are a range as well, <1 biases towards 0, 1 is no bias, >1 biases towards 1
+	// compute and return noise range where low and high bounds are a range as well
 	float getVariableNoiseRange(float low, float lo, float hi, float high, float bias) {
 		return getNoiseRange(
 			getNoiseRange(low, lo, 1),
@@ -49,7 +47,7 @@ class Noise {
 		);
 	}
 
-	// return boolean according to noise range, cutoff at 0
+	// return boolean according to noise range, >0 is true
 	boolean noiseBool(float low, float high) {
 		compute(1);
 		float range = map(value, 0, 1, low, high);

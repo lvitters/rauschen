@@ -8,7 +8,7 @@ int width = 1000;
 int height = 1000;
 
 // resolution steps
-int maxStepMultiplier = width;
+int maxStep = width;
 int xStep = 1;
 int yStep = 1;
 int xOffset = 0;
@@ -113,19 +113,15 @@ void manipulatePixelArray() {
 
 // set canvas and sketch to a new resolution
 void setNewGrid() {
-	// reset
-	xStep = 1;
-	yStep = 1;
 
 	// get new step close to old step with noise
-	int xStepMultiplier = (int)xStepNoise.noiseVariableRange(- maxStepMultiplier * (6/8), - maxStepMultiplier * (2/8), maxStepMultiplier * (4/8), maxStepMultiplier);
-	int yStepMultiplier = (int)yStepNoise.noiseVariableRange(- maxStepMultiplier * (6/8), - maxStepMultiplier * (2/8), maxStepMultiplier * (4/8), maxStepMultiplier);
+	xStep = (int)xStepNoise.noiseVariableRange(- maxStep, - maxStep/2, maxStep/4, maxStep);
+	yStep = (int)yStepNoise.noiseVariableRange(- maxStep, - maxStep/2, maxStep/4, maxStep);
 
 	// cutoff over one and apply
-	if (xStepMultiplier < 1) xStepMultiplier = 1;
-	xStep *= xStepMultiplier;
-	if (yStepMultiplier < 1) yStepMultiplier = 1;
-	yStep *= yStepMultiplier;
+	if (xStep < 1) xStep = 1;
+	println(xStep);
+	if (yStep < 1) yStep = 1;
 
 	// determine if step should be the same in both dimensions
 	if (toggleSameStepDims.noiseBool(-2, 5)) {

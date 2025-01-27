@@ -114,9 +114,9 @@ void manipulatePixelArray() {
 // set canvas and sketch to a new resolution
 void setNewGrid() {
 
-	// get new step close to old step with noise
-	xStep = (int)xStepNoise.noiseVariableRange(- maxStep, - maxStep/2, maxStep/4, maxStep);
-	yStep = (int)yStepNoise.noiseVariableRange(- maxStep, - maxStep/2, maxStep/4, maxStep);
+	// get new step close to old step with noise, bias towards lower numbers
+	xStep = (int)xStepNoise.getBiasedVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep, .5);
+	yStep = (int)yStepNoise.getBiasedVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep, .5);
 
 	// cutoff over one and apply
 	if (xStep < 1) xStep = 1;

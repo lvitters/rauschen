@@ -29,17 +29,31 @@ class Noise {
 	}
 
 	// compute and return noise range
-	float noiseRange(float low, float high) {
+	float getNoiseRange(float low, float high) {
 		compute();
 		return map(value, 0, 1, low, high);
 	}
 
 	// compute and return noise range where low and high bounds are a range as well
-	float noiseVariableRange(float low, float lo, float hi, float high) {
-		return noiseRange(
-			noiseRange(low, lo),
-			noiseRange(hi, high)
+	float getVariableNoiseRange(float low, float lo, float hi, float high) {
+		return getNoiseRange(
+			getNoiseRange(low, lo),
+			getNoiseRange(hi, high)
 		);
+	}
+
+	// compute and return noise range that is biased towards one end (greater than 1 biases towards 1, less than 1 biases towards 0)
+	float getBiasedNoiseRange(float low, float high, float bias) {
+		float value = getNoiseRange(low, high);
+		value = pow(value, bias);
+		return value;
+	}
+
+	// compute and return variable noise range that is biased towards one end (greater than 1 biases towards 1, less than 1 biases towards 0)
+	float getBiasedVariableNoiseRange(float low, float lo, float hi, float high, float bias) {
+		float value = getVariableNoiseRange(low, lo, hi, high);
+		value = pow(value, bias);
+		return value;
 	}
 
 	// return boolean according to noise range, cutoff at 0

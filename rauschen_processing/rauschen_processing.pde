@@ -115,13 +115,14 @@ void manipulatePixelArray() {
 void setNewGrid() {
 
 	// get new step close to old step with noise, bias towards lower numbers
-	xStep = (int)xStepNoise.getBiasedVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep, .5);
-	yStep = (int)yStepNoise.getBiasedVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep, .5);
+	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep/2, 0, maxStep/2, maxStep, .3);
+	yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep/2, 0, maxStep/2, maxStep, .3);
 
 	// cutoff over one and apply
 	if (xStep < 1) xStep = 1;
-	println(xStep);
 	if (yStep < 1) yStep = 1;
+
+	println(xStep + " " + yStep);
 
 	// determine if step should be the same in both dimensions
 	if (toggleSameStepDims.noiseBool(-2, 5)) {

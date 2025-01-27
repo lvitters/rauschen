@@ -12,9 +12,15 @@ class Noise {
 	}
 
 	// compute noise
-	void compute() {
+	void compute(float bias) {
 		time += inc;
 		value = noise(time);
+		println("pre: " + value);
+		println("bias: " + bias);
+		//apply reciprocal of bias because the base to be raised (value) is between 0 and 1
+		value = pow(value, 1.0 / bias);
+		println("post: " + value);
+		println(" ");
 	}
 
 	// change the increment with which to move through the noise field
@@ -23,42 +29,29 @@ class Noise {
 	}
 
 	// compute and return noise
-	float getNoise() {
-		compute();
+	float getNoise(float bias) {
+		compute(bias);
 		return value;
 	}
 
-	// compute and return noise range
-	float getNoiseRange(float low, float high) {
-		compute();
+	// compute and return noise range, <1 biases towards 0, 1 is no bias, >1 biases towards 1
+	float getNoiseRange(float low, float high, float bias) {
+		compute(bias);
 		return map(value, 0, 1, low, high);
 	}
 
-	// compute and return noise range where low and high bounds are a range as well
-	float getVariableNoiseRange(float low, float lo, float hi, float high) {
+	// compute and return noise range where low and high bounds are a range as well, <1 biases towards 0, 1 is no bias, >1 biases towards 1
+	float getVariableNoiseRange(float low, float lo, float hi, float high, float bias) {
 		return getNoiseRange(
-			getNoiseRange(low, lo),
-			getNoiseRange(hi, high)
+			getNoiseRange(low, lo, 1),
+			getNoiseRange(hi, high, 1),
+			bias
 		);
-	}
-
-	// compute and return noise range that is biased towards one end (greater than 1 biases towards 1, less than 1 biases towards 0)
-	float getBiasedNoiseRange(float low, float high, float bias) {
-		float value = getNoiseRange(low, high);
-		value = pow(value, bias);
-		return value;
-	}
-
-	// compute and return variable noise range that is biased towards one end (greater than 1 biases towards 1, less than 1 biases towards 0)
-	float getBiasedVariableNoiseRange(float low, float lo, float hi, float high, float bias) {
-		float value = getVariableNoiseRange(low, lo, hi, high);
-		value = pow(value, bias);
-		return value;
 	}
 
 	// return boolean according to noise range, cutoff at 0
 	boolean noiseBool(float low, float high) {
-		compute();
+		compute(1);
 		float range = map(value, 0, 1, low, high);
 		return range > 0;
 	}

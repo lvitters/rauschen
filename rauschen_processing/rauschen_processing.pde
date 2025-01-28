@@ -24,6 +24,7 @@ int r, g, b;
 ArrayList<Noise> noises;
 Noise xStepNoise;
 Noise yStepNoise;
+Noise stepBiasNoise;
 Noise toggleSameStepDims;
 
 // timed events
@@ -55,6 +56,8 @@ public void setup() {
 	noises.add(xStepNoise);
 	yStepNoise = new Noise(random(100), .1);
 	noises.add(yStepNoise);
+	stepBiasNoise = new Noise(random(100), .1);
+	noises.add(stepBiasNoise);
 	toggleSameStepDims = new Noise(random(100), 1);
 	noises.add(toggleSameStepDims);		// TODO: do I want Booleans to show their actual number on the graph or do I want it as 1 and 0?
 
@@ -114,9 +117,14 @@ void manipulatePixelArray() {
 // set canvas and sketch to a new resolution
 void setNewGrid() {
 
+	// change stepBias with Noise so that it won't always skew and without bias itself here the full range is possible; otherwise bias would limit that;
+	float stepBias = stepBiasNoise.getNoiseRange(.01, 1.6, 1);
+	
+	println(stepBias);
+
 	// get new step close to old step with noise, bias towards lower numbers
-	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep, .3);
-	yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep, .3);
+	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep, stepBias);
+	yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep, stepBias);
 
 	// cutoff over one and apply
 	if (xStep < 1) xStep = 1;
@@ -128,6 +136,7 @@ void setNewGrid() {
 	if (toggleSameStepDims.noiseBool(-2, 3)) {
 		// apply same step to both dimensions
 		yStep = xStep;
+		println("same");
 	}
 
 	// determine offset for first iteration so that the "cells" are cutoff not only on the right and bottom edge, that is of random size of the cuttoff cell

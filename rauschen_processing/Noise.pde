@@ -1,8 +1,8 @@
 // create a class of noise instances because we will need so many
 class Noise {
-	float time;   // keep track of how far we move through the noise field
-	float inc;    // how much are we moving through the noise field per frame
-	float value;  // what is the current value in the noise field
+	float time;   			// keep track of how far we move through the noise field
+	float inc;    			// how much are we moving through the noise field per frame
+	float value;  			// what is the current value in the noise field
 
 	// constructor
 	Noise(float t, float i) {

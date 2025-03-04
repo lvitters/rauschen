@@ -6,8 +6,8 @@ int gHeight = 200;
 Graphs graphs;
 
 // main window
-int width = 500;
-int height = 500;
+int width = 400;
+int height = 400;
 
 // resolution steps
 int maxStep = width;
@@ -31,6 +31,7 @@ Noise toggleColorNoise;
 Noise rNoise;
 Noise gNoise;
 Noise bNoise;
+Noise oscNoise;
 
 // toggles
 Boolean isNoiseColor = true;
@@ -43,8 +44,12 @@ int resEventCounter = 0;
 int nextColorEvent = 1;		// init in X seconds
 int colorEventCounter = 0;
 
-// audio???
-SinOsc osc;
+// audio
+Pulse pulse;
+SawOsc saw;
+SinOsc sine;
+SqrOsc square;
+TriOsc triangle;
 
 public void settings() {
 	size(width, height);
@@ -60,6 +65,18 @@ public void setup() {
 
 	// can't go in settings for some reason
 	frameRate(24);
+
+	// audio setup
+	pulse = new Pulse(this);
+	pulse.amp(.1);
+	saw = new SawOsc(this);
+	saw.amp(.1);
+	sine = new SinOsc(this);
+	sine.amp(.1);
+	square = new SqrOsc(this);
+	square.amp(.1);
+	triangle = new TriOsc(this);
+	triangle.amp(.1);
 
 	// init ArrayList of noises
 	noises = new ArrayList<Noise>();
@@ -81,6 +98,8 @@ public void setup() {
 	noises.add(gNoise);
 	bNoise = new Noise(random(100), .01);
 	noises.add(bNoise);
+	oscNoise = new Noise(random(100), .001);
+	noises.add(oscNoise);
 
 	// create a new window for child applet
 	graphs = new Graphs();
@@ -92,6 +111,13 @@ public void setup() {
 public void draw() {
 	// refresh background
 	//refreshPixelArray();
+
+	// reset oscillators
+	pulse.stop();
+	saw.stop();
+	sine.stop();
+	square.stop();
+	triangle.stop();
 
 	// handle any timed events here because it may affect the pixel array manipulation
 	timedEvents();
@@ -169,25 +195,44 @@ void setNewGrid() {
 
 // determine a color for a pixel or a step in the pixel array
 color getColor() {
+	float r, g, b;
 	if (isNoiseColor) {
 		// get random noise inc so not all pixels have the same color
 		rNoise.changeInc(random(.01, .1));
 		gNoise.changeInc(random(.01, .1));
 		bNoise.changeInc(random(.01, .1));
 		// get color values from noise
-		c = color(
-			rNoise.getNoiseRange(0, 255, 1),
-			gNoise.getNoiseRange(0, 255, 1),
-			bNoise.getNoiseRange(0, 255, 1)
-		);
+		r = rNoise.getNoiseRange(0, 255, 1);
+		g = gNoise.getNoiseRange(0, 255, 1);
+		b = bNoise.getNoiseRange(0, 255, 1);
 	} else {
 		// get color values at random
-		c = color(
-			(int)random(255), 
-			(int)random(255), 
-			(int)random(255)
-		);
+		r = (int)random(255);
+		g = (int)random(255);
+		b = (int)random(255);
 	}
+	c = color(r, g, b);
+
+	// audio tests
+	float oscChoice = oscNoise.getNoiseRange(0, 5, 1);
+
+	if (oscChoice < 1) {
+		pulse.freq(r + g + b);
+		pulse.play();
+	} else if (oscChoice < 2) {
+		saw.freq(r + g + b);
+		saw.play();
+	} else if (oscChoice < 3) {
+		sine.freq(r + g + b);
+		sine.play();
+	} else if (oscChoice < 4) {
+		square.freq(r + g + b);
+		square.play();
+	} else {
+		triangle.freq(r + g + b);
+		triangle.play();
+	}
+	
 	return c;
 }
 

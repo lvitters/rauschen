@@ -48,7 +48,7 @@ class Noise {
 	}
 
 	// return boolean according to noise range, >0 is true
-	boolean noiseBool(float low, float high) {
+	boolean getNoiseBool(float low, float high) {
 		compute(1);
 		float range = map(value, 0, 1, low, high);
 		return range > 0;

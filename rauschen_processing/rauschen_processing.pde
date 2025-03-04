@@ -1,11 +1,13 @@
+import processing.sound.*;
+
 // child window for displaying graphs
 int gWidth = 775;
 int gHeight = 200;
 Graphs graphs;
 
 // main window
-int width = 1000;
-int height = 1000;
+int width = 500;
+int height = 500;
 
 // resolution steps
 int maxStep = width;
@@ -16,22 +18,33 @@ int xOffsetRecord = 0;
 int yOffset = 0;
 int yOffsetRecord = 0;
 
-// pixel colors
+// color
 color c, nc;
-int r, g, b;
 
-//noises
+// noises
 ArrayList<Noise> noises;
 Noise xStepNoise;
 Noise yStepNoise;
 Noise stepBiasNoise;
 Noise toggleSameStepDims;
+Noise toggleColorNoise;
+Noise rNoise;
+Noise gNoise;
+Noise bNoise;
+
+// toggles
+Boolean isNoiseColor = true;
 
 // timed events
 int minSwitchTime = 1;
 int maxSwitchTime = 1;
 int nextResEvent = 1;		// init in X seconds
 int resEventCounter = 0;
+int nextColorEvent = 1;		// init in X seconds
+int colorEventCounter = 0;
+
+// audio???
+SinOsc osc;
 
 public void settings() {
 	size(width, height);
@@ -46,7 +59,7 @@ public void setup() {
 	surface.setLocation(5, 50);
 
 	// can't go in settings for some reason
-	frameRate(60);
+	frameRate(24);
 
 	// init ArrayList of noises
 	noises = new ArrayList<Noise>();
@@ -60,6 +73,14 @@ public void setup() {
 	noises.add(stepBiasNoise);
 	toggleSameStepDims = new Noise(random(100), 1);
 	noises.add(toggleSameStepDims);		// TODO: do I want Booleans to show their actual number on the graph or do I want it as 1 and 0?
+	toggleColorNoise = new Noise(random(100), 1);
+	noises.add(toggleColorNoise);
+	rNoise = new Noise(random(100), .01);
+	noises.add(rNoise);
+	gNoise = new Noise(random(100), .01);
+	noises.add(gNoise);
+	bNoise = new Noise(random(100), .01);
+	noises.add(bNoise);
 
 	// create a new window for child applet
 	graphs = new Graphs();
@@ -70,7 +91,7 @@ public void setup() {
 
 public void draw() {
 	// refresh background
-	background(0);
+	//refreshPixelArray();
 
 	// handle any timed events here because it may affect the pixel array manipulation
 	timedEvents();
@@ -93,8 +114,8 @@ void manipulatePixelArray() {
 			// offset only applies to first iteration
 			if (y > 0) yOffset = 0;
 			else yOffset = yOffsetRecord;
-			// get color values at random
-			c = color((int)random(255), (int)random(255), (int)random(255));
+			// get color for pixels or steps
+			color c = getColor();
 			// determine indices for pixels array from coordinates and step
 			for (int dx = 0; dx < xStep; dx++) {
 				for (int dy = 0; dy < yStep; dy++) {
@@ -133,7 +154,7 @@ void setNewGrid() {
 	println(xStep + " " + yStep);
 
 	// determine if step should be the same in both dimensions
-	if (toggleSameStepDims.noiseBool(-2, 3)) {
+	if (toggleSameStepDims.getNoiseBool(-2, 3)) {
 		// apply same step to both dimensions
 		yStep = xStep;
 		println("same");
@@ -146,7 +167,31 @@ void setNewGrid() {
 	yOffsetRecord = yOffset;
 }
 
-// UNUSED: refresh the pixel array with all black pixels, because background() doesn't do that
+// determine a color for a pixel or a step in the pixel array
+color getColor() {
+	if (isNoiseColor) {
+		// get random noise inc so not all pixels have the same color
+		rNoise.changeInc(random(.01, .1));
+		gNoise.changeInc(random(.01, .1));
+		bNoise.changeInc(random(.01, .1));
+		// get color values from noise
+		c = color(
+			rNoise.getNoiseRange(0, 255, 1),
+			gNoise.getNoiseRange(0, 255, 1),
+			bNoise.getNoiseRange(0, 255, 1)
+		);
+	} else {
+		// get color values at random
+		c = color(
+			(int)random(255), 
+			(int)random(255), 
+			(int)random(255)
+		);
+	}
+	return c;
+}
+
+// refresh the pixel array with all black pixels, because background() doesn't do that
 void refreshPixelArray() {
 	for (int p = 0; p < pixels.length; p++) {
 		pixels[p] = 0;
@@ -161,6 +206,14 @@ void timedEvents() {
 		setNewGrid();
 		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
 		resEventCounter = 0;
+	}
+	// sometimes switch to a new color mode
+	colorEventCounter++;
+	if (colorEventCounter > (nextColorEvent * 60)) {
+		isNoiseColor = toggleColorNoise.getNoiseBool(-1, 1);
+		println("isNoiseColor: " + isNoiseColor);
+		nextColorEvent = (int)random(minSwitchTime, maxSwitchTime);
+		colorEventCounter = 0;
 	}
 }
 

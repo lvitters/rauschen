@@ -114,13 +114,9 @@ public void setup() {
 public void draw() {
 	// refresh background
 	//refreshPixelArray();
-
-	// reset oscillators
-	pulse.stop();
-	saw.stop();
-	sine.stop();
-	square.stop();
-	triangle.stop();
+	
+	// play some sounds
+	oscillate();
 
 	// handle any timed events here because it may affect the pixel array manipulation
 	timedEvents();
@@ -200,7 +196,7 @@ void setNewGrid() {
 color getColor() {
 	float r, g, b;
 	if (isNoiseColor) {
-		// get random noise inc so not all pixels have the same color
+		// inc noises randomly so not all pixels have the same color
 		rNoise.changeInc(random(.01, .1));
 		gNoise.changeInc(random(.01, .1));
 		bNoise.changeInc(random(.01, .1));
@@ -215,32 +211,45 @@ color getColor() {
 		b = (int)random(255);
 	}
 	c = color(r, g, b);
-
-	// some audio tests
-	float oscChoice = oscNoise.getNoiseRange(0, 5, 1);
-	if (oscChoice < 1) {
-		float freq = r + g + b;
-		pulse.freq(map(freq, 0, 255*3, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
-		pulse.play();
-	} else if (oscChoice < 2) {
-		float freq = r + g + b;
-		saw.freq(map(freq, 0, 255*3, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
-		saw.play();
-	} else if (oscChoice < 3) {
-		float freq = r + g + b;
-		sine.freq(map(freq, 0, 255*3, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
-		sine.play();
-	} else if (oscChoice < 4) {
-		float freq = r + g + b;
-		square.freq(map(freq, 0, 255*3, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
-		square.play();
-	} else {
-		float freq = r + g + b;
-		triangle.freq(map(freq, 0, 255*3, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
-		triangle.play();
-	}
-	
 	return c;
+}
+
+// play some sounds with oscillators depending on some numbers
+void oscillate() {	
+	// reset oscillators
+	pulse.stop();
+	saw.stop();
+	sine.stop();
+	square.stop();
+	triangle.stop();
+
+	// determine which oscillator will play
+	float oscChoice = oscNoise.getNoiseRange(0, 5, 1);
+
+	// determine at which frequency
+	for (int i = 0; i < noises.size(); i++) {
+		float freq = noises.get(i).value;
+		
+		// play corresponding oscillator
+		if (oscChoice < 1) {
+			pulse.freq(map(freq, 0, 1, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
+			pulse.play();
+		} else if (oscChoice < 2) {
+			saw.freq(map(freq, 0, 1, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
+			saw.play();
+		} else if (oscChoice < 3) {
+			sine.freq(map(freq, 0, 1, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
+			sine.play();
+		} else if (oscChoice < 4) {
+			square.freq(map(freq, 0, 1, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
+			square.play();
+		} else {
+			triangle.freq(map(freq, 0, 1, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
+			triangle.play();
+		}
+	}
+
+
 }
 
 // refresh the pixel array with all black pixels, because background() doesn't do that

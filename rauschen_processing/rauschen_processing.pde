@@ -6,8 +6,8 @@ int gHeight = 200;
 Graphs graphs;
 
 // main window
-int width = 400;
-int height = 400;
+int width = 500;
+int height = 500;
 
 // resolution steps
 int maxStep = width;
@@ -32,6 +32,7 @@ Noise rNoise;
 Noise gNoise;
 Noise bNoise;
 Noise oscNoise;
+Noise freqNoise;
 
 // toggles
 Boolean isNoiseColor = true;
@@ -64,7 +65,7 @@ public void setup() {
 	surface.setLocation(5, 50);
 
 	// can't go in settings for some reason
-	frameRate(24);
+	frameRate(12);
 
 	// audio setup
 	pulse = new Pulse(this);
@@ -100,6 +101,8 @@ public void setup() {
 	noises.add(bNoise);
 	oscNoise = new Noise(random(100), .001);
 	noises.add(oscNoise);
+	freqNoise = new Noise(random(100), .001);
+	noises.add(freqNoise);
 
 	// create a new window for child applet
 	graphs = new Graphs();
@@ -213,23 +216,27 @@ color getColor() {
 	}
 	c = color(r, g, b);
 
-	// audio tests
+	// some audio tests
 	float oscChoice = oscNoise.getNoiseRange(0, 5, 1);
-
 	if (oscChoice < 1) {
-		pulse.freq(r + g + b);
+		float freq = r + g + b;
+		pulse.freq(map(freq, 0, 255*3, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
 		pulse.play();
 	} else if (oscChoice < 2) {
-		saw.freq(r + g + b);
+		float freq = r + g + b;
+		saw.freq(map(freq, 0, 255*3, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
 		saw.play();
 	} else if (oscChoice < 3) {
-		sine.freq(r + g + b);
+		float freq = r + g + b;
+		sine.freq(map(freq, 0, 255*3, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
 		sine.play();
 	} else if (oscChoice < 4) {
-		square.freq(r + g + b);
+		float freq = r + g + b;
+		square.freq(map(freq, 0, 255*3, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
 		square.play();
 	} else {
-		triangle.freq(r + g + b);
+		float freq = r + g + b;
+		triangle.freq(map(freq, 0, 255*3, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
 		triangle.play();
 	}
 	

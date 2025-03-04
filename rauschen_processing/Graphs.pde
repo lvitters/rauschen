@@ -47,7 +47,7 @@ class Graphs extends PApplet {
 
 	public void draw() {
 		background(0);
-		strokeWeight(3);
+		strokeWeight(2);
 
 		// add new point and display graphs
 		for (int i = 0; i < graphs.size(); i++) {

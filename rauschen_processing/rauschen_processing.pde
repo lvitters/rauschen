@@ -1,8 +1,8 @@
 import processing.sound.*;
 
 // child window for displaying graphs
-int gWidth = 775;
-int gHeight = 200;
+int gWidth = 1700;
+int gHeight = 300;
 Graphs graphs;
 
 // main window
@@ -17,9 +17,10 @@ int xOffset = 0;
 int xOffsetRecord = 0;
 int yOffset = 0;
 int yOffsetRecord = 0;
+int maxIndex = width * height * 4;
 
 // color
-color c, nc;
+color c;
 
 // noises
 ArrayList<Noise> noises;
@@ -28,10 +29,9 @@ Noise yStepNoise;
 Noise stepBiasNoise;
 Noise toggleSameStepDims;
 Noise toggleColorNoise;
-Noise rNoise;
-Noise gNoise;
-Noise bNoise;
-Noise oscNoise;
+Noise hueNoise;
+Noise saturationNoise;
+Noise brightnessNoise;
 Noise freqNoise;
 
 // toggles
@@ -46,11 +46,8 @@ int nextColorEvent = 1;		// init in X seconds
 int colorEventCounter = 0;
 
 // audio
-Pulse pulse;
-SawOsc saw;
 SinOsc sine;
-SqrOsc square;
-TriOsc triangle;
+float lastFreq;
 
 public void settings() {
 	size(width, height);
@@ -62,22 +59,15 @@ public void setup() {
 	windowTitle("Rauschen");
 
 	// determine this window location on screen
-	surface.setLocation(5, 50);
+	surface.setLocation(10, 60);
 
 	// can't go in settings for some reason
 	frameRate(12);
+	colorMode(HSB, 360, 100, 100);
 
 	// audio setup
-	pulse = new Pulse(this);
-	pulse.amp(.1);
-	saw = new SawOsc(this);
-	saw.amp(.1);
 	sine = new SinOsc(this);
 	sine.amp(.1);
-	square = new SqrOsc(this);
-	square.amp(.1);
-	triangle = new TriOsc(this);
-	triangle.amp(.1);
 
 	// init ArrayList of noises
 	noises = new ArrayList<Noise>();
@@ -93,14 +83,12 @@ public void setup() {
 	noises.add(toggleSameStepDims);		// TODO: do I want Booleans to show their actual number on the graph or do I want it as 1 and 0?
 	toggleColorNoise = new Noise(random(100), 1);
 	noises.add(toggleColorNoise);
-	rNoise = new Noise(random(100), .01);
-	noises.add(rNoise);
-	gNoise = new Noise(random(100), .01);
-	noises.add(gNoise);
-	bNoise = new Noise(random(100), .01);
-	noises.add(bNoise);
-	oscNoise = new Noise(random(100), .001);
-	noises.add(oscNoise);
+	hueNoise = new Noise(random(100), .01);
+	noises.add(hueNoise);
+	saturationNoise = new Noise(random(100), .01);
+	noises.add(saturationNoise);
+	brightnessNoise = new Noise(random(100), .01);
+	noises.add(brightnessNoise);
 	freqNoise = new Noise(random(100), .001);
 	noises.add(freqNoise);
 
@@ -113,10 +101,7 @@ public void setup() {
 
 public void draw() {
 	// refresh background
-	//refreshPixelArray();
-	
-	// play some sounds
-	oscillate();
+	refreshPixelArray();
 
 	// handle any timed events here because it may affect the pixel array manipulation
 	timedEvents();
@@ -139,8 +124,8 @@ void manipulatePixelArray() {
 			// offset only applies to first iteration
 			if (y > 0) yOffset = 0;
 			else yOffset = yOffsetRecord;
-			// get color for pixels or steps
-			color c = getColor();
+			// get color in PVector (it stores three floats) for pixels or steps
+			PVector col = getColor();
 			// determine indices for pixels array from coordinates and step
 			for (int dx = 0; dx < xStep; dx++) {
 				for (int dy = 0; dy < yStep; dy++) {
@@ -152,7 +137,7 @@ void manipulatePixelArray() {
 						// get index
 						int index = py * width + px;
 						// apply respective color to pixels array
-						pixels[index] = c;
+						pixels[index] = color(col.x, col.y, col.z);
 					}
 				}
 			}
@@ -166,7 +151,7 @@ void setNewGrid() {
 	// change stepBias with Noise so that it won't always skew and without bias itself here the full range is possible; otherwise bias would limit that;
 	float stepBias = stepBiasNoise.getNoiseRange(.01, 1.6, 1);
 	
-	println(stepBias);
+	println("stepBias: " + stepBias);
 
 	// get new step close to old step with noise, bias towards lower numbers
 	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep, stepBias);
@@ -176,13 +161,13 @@ void setNewGrid() {
 	if (xStep < 1) xStep = 1;
 	if (yStep < 1) yStep = 1;
 
-	println(xStep + " " + yStep);
+	println("xStep: " + xStep + " yStep: " + yStep);
 
 	// determine if step should be the same in both dimensions
 	if (toggleSameStepDims.getNoiseBool(-2, 3)) {
 		// apply same step to both dimensions
 		yStep = xStep;
-		println("same");
+		println("same step");
 	}
 
 	// determine offset for first iteration so that the "cells" are cutoff not only on the right and bottom edge, that is of random size of the cuttoff cell
@@ -193,63 +178,24 @@ void setNewGrid() {
 }
 
 // determine a color for a pixel or a step in the pixel array
-color getColor() {
-	float r, g, b;
+PVector getColor() {
+	float h, s, b;
 	if (isNoiseColor) {
 		// inc noises randomly so not all pixels have the same color
-		rNoise.changeInc(random(.01, .1));
-		gNoise.changeInc(random(.01, .1));
-		bNoise.changeInc(random(.01, .1));
+		hueNoise.changeInc(random(.01, .1));
+		saturationNoise.changeInc(random(.01, .1));
+		brightnessNoise.changeInc(random(.01, .1));
 		// get color values from noise
-		r = rNoise.getNoiseRange(0, 255, 1);
-		g = gNoise.getNoiseRange(0, 255, 1);
-		b = bNoise.getNoiseRange(0, 255, 1);
+		h = hueNoise.getNoiseRange(-30, 390, 1);
+		s = saturationNoise.getNoiseRange(0, 110, 1);
+		b = brightnessNoise.getNoiseRange(0, 110, 1);
 	} else {
 		// get color values at random
-		r = (int)random(255);
-		g = (int)random(255);
-		b = (int)random(255);
+		h = (int)random(360);
+		s = (int)random(100);
+		b = (int)random(100);
 	}
-	c = color(r, g, b);
-	return c;
-}
-
-// play some sounds with oscillators depending on some numbers
-void oscillate() {	
-	// reset oscillators
-	pulse.stop();
-	saw.stop();
-	sine.stop();
-	square.stop();
-	triangle.stop();
-
-	// determine which oscillator will play
-	float oscChoice = oscNoise.getNoiseRange(0, 5, 1);
-
-	// determine at which frequency
-	for (int i = 0; i < noises.size(); i++) {
-		float freq = noises.get(i).value;
-		
-		// play corresponding oscillator
-		if (oscChoice < 1) {
-			pulse.freq(map(freq, 0, 1, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
-			pulse.play();
-		} else if (oscChoice < 2) {
-			saw.freq(map(freq, 0, 1, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
-			saw.play();
-		} else if (oscChoice < 3) {
-			sine.freq(map(freq, 0, 1, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
-			sine.play();
-		} else if (oscChoice < 4) {
-			square.freq(map(freq, 0, 1, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
-			square.play();
-		} else {
-			triangle.freq(map(freq, 0, 1, 50, freqNoise.getNoiseRange(-500, 5000, 1)));
-			triangle.play();
-		}
-	}
-
-
+	return new PVector(h, s, b);
 }
 
 // refresh the pixel array with all black pixels, because background() doesn't do that

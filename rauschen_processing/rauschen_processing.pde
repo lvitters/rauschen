@@ -1,13 +1,11 @@
-import processing.sound.*;
-
 // child window for displaying graphs
 int gWidth = 1700;
 int gHeight = 300;
 Graphs graphs;
 
 // main window
-int width = 500;
-int height = 500;
+int width = 400;
+int height = 400;
 
 // resolution steps
 int maxStep = width;
@@ -30,9 +28,11 @@ Noise stepBiasNoise;
 Noise toggleSameStepDims;
 Noise toggleColorNoise;
 Noise hueNoise;
+Noise hueNoiseInc;
 Noise saturationNoise;
+Noise satNoiseInc;
 Noise brightnessNoise;
-Noise freqNoise;
+Noise briNoiseInc;
 
 // toggles
 Boolean isNoiseColor = true;
@@ -50,7 +50,7 @@ SinOsc sine;
 float lastFreq;
 
 public void settings() {
-	size(width, height);
+	size(width, height, OPENGL);
 	pixelDensity(1);
 }
 
@@ -85,12 +85,16 @@ public void setup() {
 	noises.add(toggleColorNoise);
 	hueNoise = new Noise(random(100), .01);
 	noises.add(hueNoise);
+	hueNoiseInc = new Noise(random(100), .01);
+	noises.add(hueNoiseInc);
 	saturationNoise = new Noise(random(100), .01);
 	noises.add(saturationNoise);
+	satNoiseInc = new Noise(random(100), .01);
+	noises.add(satNoiseInc);
 	brightnessNoise = new Noise(random(100), .01);
 	noises.add(brightnessNoise);
-	freqNoise = new Noise(random(100), .001);
-	noises.add(freqNoise);
+	briNoiseInc = new Noise(random(100), .01);
+	noises.add(briNoiseInc);
 
 	// create a new window for child applet
 	graphs = new Graphs();
@@ -111,6 +115,8 @@ public void draw() {
 
 	// write to pixels array
 	updatePixels();
+
+	//println(hueNoise.value);
 }
 
 // apply from setNewGrid() to the pixel array 
@@ -182,9 +188,9 @@ PVector getColor() {
 	float h, s, b;
 	if (isNoiseColor) {
 		// inc noises randomly so not all pixels have the same color
-		hueNoise.changeInc(random(.01, .1));
-		saturationNoise.changeInc(random(.01, .1));
-		brightnessNoise.changeInc(random(.01, .1));
+		hueNoise.changeInc(hueNoiseInc.getVariableNoiseRange(0.001, 0.01, 0.01, 0.1, 1));
+		saturationNoise.changeInc(satNoiseInc.getVariableNoiseRange(0.001, 0.01, 0.01, 0.1, 1));
+		brightnessNoise.changeInc(briNoiseInc.getVariableNoiseRange(0.001, 0.01, 0.01, 0.1, 1));
 		// get color values from noise
 		h = hueNoise.getNoiseRange(-30, 390, 1);
 		s = saturationNoise.getNoiseRange(0, 110, 1);

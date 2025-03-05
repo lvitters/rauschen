@@ -25,7 +25,27 @@ class Graphs extends PApplet {
 			#7B68EE, 
 			#C71585, 
 			#00FA9A, 
-			#0000CD
+			#0000CD,
+			#FF4500,  // OrangeRed
+			#32CD32,  // LimeGreen
+			#4169E1,  // RoyalBlue
+			#FFD700,  // Gold
+			#8A2BE2,  // BlueViolet
+			#20B2AA,  // LightSeaGreen
+			#FF69B4,  // HotPink
+			#8B0000,  // DarkRed
+			#556B2F,  // DarkOliveGreen
+			#00CED1,  // DarkTurquoise
+			#DAA520,  // GoldenRod
+			#9400D3,  // DarkViolet
+			#4682B4,  // SteelBlue
+			#D2691E,  // Chocolate
+			#B22222,  // FireBrick
+			#708090,  // SlateGray
+			#9932CC,  // DarkOrchid
+			#FF6347,  // Tomato
+			#48D1CC,  // MediumTurquoise
+			#7FFF00   // Chartreuse
 		};
 	}
 

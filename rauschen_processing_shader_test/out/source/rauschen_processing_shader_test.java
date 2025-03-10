@@ -19,53 +19,52 @@ public class rauschen_processing_shader_test extends PApplet {
 
 
 
-// main window
+// Window size
 int width = 1000;
 int height = 1000;
 
-// volatile PImage buffer;
+float tR = 0; // Time variable for animation
+float tG = 0; // Time variable for animation
+float tB = 0; // Time variable for animation
 
 public void settings() {
-	size(width, height, OPENGL);
-	pixelDensity(1);
+    size(width, height, OPENGL);
+    pixelDensity(1);
 }
 
 public void setup() {
-	size(width, height, OPENGL);
-	frameRate(120);
-
-	loadPixels();
-	
-	// buffer = createImage(int(width), int(height), RGB);
-	// buffer.loadPixels();
+    frameRate(120);
+    loadPixels();
 }
 
 public void draw() { 
-	pushMatrix();
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
 
-				float r = intRandom(50, 255);
-				float g = intRandom(50, 255);
-				float b = intRandom(50, 255);
+            // Generate a scattered seed (avoids diagonal/horizontal banding)
+            float seed = sin(x * 0.1f) * cos(y * 0.1f) * 1000; 
 
-				// buffer.pixels[xy2i(x, y)] = color(r, g, b);
+            // Generate smooth colors using evolving 1D noise
+            float r = noise(tR + seed) * 255;
+            float g = noise(tG + seed) * 255;
+            float b = noise(tB + seed) * 255;
 
-				// buffer.pixels[xy2i(x, y)] = 0xff000000 | ((int) (r) << 16 | (int) (g) << 8 | (int) (b));
+            pixels[y * width + x] = color(r, g, b);
+        }
+    }
+    updatePixels();
 
-				pixels[y * width + x] = color(r, g, b);
-			}
-		}
-		updatePixels();
-		//buffer.updatePixels();
-		//image(buffer, 0, 0, width, height);
-	popMatrix();
+    tR += random(.01f, 1); // Controls animation speed
+	tG += random(.01f, 1); // Controls animation speed
+	tB += random(.01f, 1); // Controls animation speed
 
-	// fps 
-	fill(255, 0, 0);
-	textSize(25);
-	text("fps: "+(int) frameRate, 50, 50);
+    // Display FPS
+    fill(255, 0, 0);
+    textSize(25);
+    text("fps: " + (int) frameRate, 50, 50);
 }
+
+
 // Fast integer randon function
 public static int intRandom(int min, int max) {
    return ThreadLocalRandom.current().nextInt(min, max + 1);

@@ -1,38 +1,48 @@
 import java.util.concurrent.ThreadLocalRandom;
 
-// main window
+// Window size
 int width = 1000;
 int height = 1000;
 
-public void settings() {
-	size(width, height, OPENGL);
-	pixelDensity(1);
+float tR = 0; // Time variable for animation
+float tG = 0; // Time variable for animation
+float tB = 0; // Time variable for animation
+
+void settings() {
+    size(width, height, OPENGL);
+    pixelDensity(1);
 }
 
-public void setup() {
-	size(width, height, OPENGL);
-	frameRate(120);
-
-	loadPixels();
+void setup() {
+    frameRate(120);
+    loadPixels();
 }
 
-public void draw() { 
-	pushMatrix();
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
+void draw() { 
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
 
-				float r = intRandom(50, 255);
-				float g = intRandom(50, 255);
-				float b = intRandom(50, 255);
+            // Generate a scattered seed (avoids diagonal/horizontal banding)
+            float seed = sin(x * 0.1) * cos(y * 0.1) * 1000; 
 
-				pixels[y * width + x] = color(r, g, b);
-			}
-		}
-		updatePixels();
-	popMatrix();
+            // Generate smooth colors using evolving 1D noise
+            float r = noise(tR + seed) * 255;
+            float g = noise(tG + seed) * 255;
+            float b = noise(tB + seed) * 255;
 
-	// fps 
-	fill(255, 0, 0);
-	textSize(25);
-	text("fps: "+(int) frameRate, 50, 50);
+            pixels[y * width + x] = color(r, g, b);
+        }
+    }
+    updatePixels();
+
+    tR += random(.01, 1); // Controls animation speed
+	tG += random(.01, 1); // Controls animation speed
+	tB += random(.01, 1); // Controls animation speed
+
+    // Display FPS
+    fill(255, 0, 0);
+    textSize(25);
+    text("fps: " + (int) frameRate, 50, 50);
 }
+
+

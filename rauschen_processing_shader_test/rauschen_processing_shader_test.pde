@@ -4,42 +4,27 @@ import java.util.concurrent.ThreadLocalRandom;
 int width = 1000;
 int height = 1000;
 
-float tR = 0; // Time variable for animation
-float tG = 0; // Time variable for animation
-float tB = 0; // Time variable for animation
+PShader noiseShader;
 
-void settings() {
-    size(width, height, OPENGL);
-    pixelDensity(1);
-}
+float t = 0;
 
 void setup() {
-    frameRate(120);
-    loadPixels();
+    size(1000, 1000, P2D);
+    pixelDensity(1);
+	noiseShader = loadShader("noiseFrag.glsl");
+	noiseShader.set("resolution", float(width), float(height));
 }
 
 void draw() { 
-    for (int x = 0; x < width; x++) {
-        for (int y = 0; y < height; y++) {
+    t += 0.01;
+    noiseShader.set("time", t); // pass time to shader
+    shader(noiseShader); // apply shader
+    rect(0, 0, width, height); // render a full-screen rectangle
 
-            // Generate a scattered seed (avoids diagonal/horizontal banding)
-            float seed = sin(x * 0.1) * cos(y * 0.1) * 1000; 
+	// Disable shader before drawing text
+    resetShader();
 
-            // Generate smooth colors using evolving 1D noise
-            float r = noise(tR + seed) * 255;
-            float g = noise(tG + seed) * 255;
-            float b = noise(tB + seed) * 255;
-
-            pixels[y * width + x] = color(r, g, b);
-        }
-    }
-    updatePixels();
-
-    tR += random(.01, 1); // Controls animation speed
-	tG += random(.01, 1); // Controls animation speed
-	tB += random(.01, 1); // Controls animation speed
-
-    // Display FPS
+    // display FPS
     fill(255, 0, 0);
     textSize(25);
     text("fps: " + (int) frameRate, 50, 50);

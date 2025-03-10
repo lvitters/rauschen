@@ -12,12 +12,12 @@ void setup() {
     size(1000, 1000, P2D);
     pixelDensity(1);
 	noiseShader = loadShader("noiseFrag.glsl");
-	noiseShader.set("resolution", float(width), float(height));
+	noiseShader.set("u_resolution", float(width), float(height));
 }
 
 void draw() { 
-    t += 0.01;
-    noiseShader.set("time", t); // pass time to shader
+    t += 1000;
+    noiseShader.set("u_time", t); // pass time to shader
     shader(noiseShader); // apply shader
     rect(0, 0, width, height); // render a full-screen rectangle
 

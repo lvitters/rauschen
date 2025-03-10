@@ -31,12 +31,12 @@ public void setup() {
     /* size commented out by preprocessor */;
     /* pixelDensity commented out by preprocessor */;
 	noiseShader = loadShader("noiseFrag.glsl");
-	noiseShader.set("resolution", PApplet.parseFloat(width), PApplet.parseFloat(height));
+	noiseShader.set("u_resolution", PApplet.parseFloat(width), PApplet.parseFloat(height));
 }
 
 public void draw() { 
-    t += 0.01f;
-    noiseShader.set("time", t); // pass time to shader
+    t += 1000;
+    noiseShader.set("u_time", t); // pass time to shader
     shader(noiseShader); // apply shader
     rect(0, 0, width, height); // render a full-screen rectangle
 

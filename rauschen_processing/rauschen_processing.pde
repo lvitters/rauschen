@@ -4,8 +4,8 @@ int gHeight = 300;
 Graphs graphs;
 
 // main window
-int width = 800;
-int height = 800;
+int width = 500;
+int height = 500;
 
 // resolution steps
 int maxStep = width;
@@ -46,7 +46,7 @@ int nextColorEvent = 1;		// init in X seconds
 int colorEventCounter = 0;
 
 public void settings() {
-	size(width, height, OPENGL);
+	size(width, height);
 	pixelDensity(1);
 }
 
@@ -58,7 +58,7 @@ public void setup() {
 	surface.setLocation(10, 60);
 
 	// can't go in settings for some reason
-	frameRate(12);
+	frameRate(30);
 	colorMode(HSB, 360, 100, 100);
 
 	// init ArrayList of noises
@@ -108,7 +108,10 @@ public void draw() {
 	// write to pixels array
 	updatePixels();
 
-	//println(hueNoise.value);
+	// display FPS
+    fill(360, 100, 100);
+    textSize(25);
+    text("fps: " + (int) frameRate, 50, 50);
 }
 
 // apply from setNewGrid() to the pixel array 
@@ -181,8 +184,8 @@ PVector getColor() {
 	if (isNoiseColor) {
 		// inc noises randomly so not all pixels have the same color
 		hueNoise.changeInc(hueNoiseInc.getVariableNoiseRange(0.001, 0.01, 0.01, 0.1, 1));
-		saturationNoise.changeInc(satNoiseInc.getVariableNoiseRange(0.001, 0.01, 0.01, 0.1, 1));
-		brightnessNoise.changeInc(briNoiseInc.getVariableNoiseRange(0.001, 0.01, 0.01, 0.1, 1));
+		saturationNoise.changeInc(random(.005, .01));
+		brightnessNoise.changeInc(random(.005, .01));
 		// get color values from noise
 		h = hueNoise.getNoiseRange(-30, 390, 1);
 		s = saturationNoise.getNoiseRange(0, 110, 1);

@@ -20,9 +20,16 @@ public class rauschen_processing_shader_test extends PApplet {
 
 
 // Window size
-int width = 1000;
-int height = 1000;
+float width = 1000;
+float height = 1000;
 
+// timed events
+int minSwitchTime = 1;
+int maxSwitchTime = 2;
+int nextResEvent = 1;		// init in X seconds
+int resEventCounter = 0;
+
+PGraphics resBuffer;
 PShader noiseShader;
 
 float t = 0;
@@ -30,18 +37,27 @@ float t = 0;
 public void setup() {
     /* size commented out by preprocessor */;
     /* pixelDensity commented out by preprocessor */;
+
+	resBuffer = createGraphics((int)width/4, (int)height/4, P2D);
+
 	noiseShader = loadShader("noiseFrag.glsl");
-	noiseShader.set("u_resolution", PApplet.parseFloat(width), PApplet.parseFloat(height));
+	noiseShader.set("u_resolution", width, height);
 }
 
 public void draw() { 
-    t += .001f;
+    t += .01f;
     noiseShader.set("u_time", t); // pass time to shader
-    shader(noiseShader); // apply shader
-    rect(0, 0, width, height); // render a full-screen rectangle
+
+	resBuffer.beginDraw();
+		resBuffer.shader(noiseShader); // apply shader
+		resBuffer.rect(0, 0, width, height); // render a full-screen rectangle
+	resBuffer.endDraw();
+	image(resBuffer, 0, 0, width, height);
 
 	// Disable shader before drawing text
     resetShader();
+
+	timedEvents();
 
     // display FPS
     fill(255, 0, 0);
@@ -49,7 +65,21 @@ public void draw() {
     text("fps: " + (int) frameRate, 50, 50);
 }
 
+public void resizeBuffer(float w, float h) {
+	resBuffer.dispose();
+	resBuffer = createGraphics((int)w, (int)h, P2D);
+}
 
+// sometimes things should happen at random intervals instead
+public void timedEvents() {
+	// sometimes switch to a new resolution step
+	resEventCounter++;
+	if (resEventCounter > (nextResEvent * 60)) {
+		resizeBuffer(random(width), random(height));
+		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
+		resEventCounter = 0;
+	}
+}
 // Fast integer randon function
 public static int intRandom(int min, int max) {
    return ThreadLocalRandom.current().nextInt(min, max + 1);

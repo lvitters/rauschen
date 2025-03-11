@@ -5,31 +5,33 @@ precision mediump float;
 uniform vec2 u_resolution;
 uniform float u_time;
 
-vec2 random(vec2 uv){
-    uv = vec2( dot(uv, vec2(127.1,311.7) ),
-               dot(uv, vec2(269.5,183.3) ) );
-    return -1.0 + 2.0 * fract(sin(uv) * 43758.5453123);
+float map(float value, float min1, float max1, float min2, float max2) {
+  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
 
-float noise(vec2 uv) {
-    vec2 uv_index = floor(uv);
-    vec2 uv_fract = fract(uv);
+// Random function based on pixel position
+float rand(vec2 co) {
+    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+}
 
-    vec2 blur = smoothstep(0.0, 1.0, uv_fract);
-
-    return mix( mix( dot( random(uv_index + vec2(0.0,0.0) ), uv_fract - vec2(0.0,0.0) ),
-                     dot( random(uv_index + vec2(1.0,0.0) ), uv_fract - vec2(1.0,0.0) ), blur.x),
-                mix( dot( random(uv_index + vec2(0.0,1.0) ), uv_fract - vec2(0.0,1.0) ),
-                     dot( random(uv_index + vec2(1.0,1.0) ), uv_fract - vec2(1.0,1.0) ), blur.x), blur.y) + 0.5;
+// Basic 1D noise function
+float noise(float p){
+    float fl = floor(p);
+    float fc = fract(p);
+    return mix(rand(vec2(fl, fl)), rand(vec2(fl + 1.0, fl + 1.0)), fc);
 }
 
 void main() {
-    vec2 uv = gl_FragCoord.xy / u_resolution.xy; // Normalize pixel coords
+    vec2 uv = gl_FragCoord.xy / u_resolution.xy; // normalize pixel coords
 
-    // Apply Perlin noise to colors
-    float r = noise(uv + u_time);
-    float g = noise(uv);
-    float b = noise(uv);
+    // Use pixel position to get different randomness per pixel
+    float r = noise(u_time + rand(uv));
+    float g = noise(u_time + rand(uv) + rand(uv));
+    float b = noise(u_time + rand(uv) + rand(uv) + rand(uv));
+
+    r = map(r, 0.0, 1.0, 0.2, 0.8);
+    g = map(g, 0.0, 1.0, 0.2, 0.8);
+    b = map(b, 0.0, 1.0, 0.2, 0.8);
 
     gl_FragColor = vec4(r, g, b, 1.0);
 }

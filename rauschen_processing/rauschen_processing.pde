@@ -1,11 +1,13 @@
+import java.util.concurrent.ThreadLocalRandom;
+
 // child window for displaying graphs
-int gWidth = 1700;
-int gHeight = 300;
+int gWidth = 700;
+int gHeight = 200;
 Graphs graphs;
 
 // main window
-int width = 500;
-int height = 500;
+int width = 1000;
+int height = 1000;
 
 // resolution steps
 int maxStep = width;
@@ -35,7 +37,7 @@ Noise brightnessNoise;
 Noise briNoiseInc;
 
 // toggles
-Boolean isNoiseColor = true;
+Boolean isNoiseColor = false;
 
 // timed events
 int minSwitchTime = 1;
@@ -58,7 +60,7 @@ public void setup() {
 	surface.setLocation(10, 60);
 
 	// can't go in settings for some reason
-	frameRate(30);
+	frameRate(120);
 	colorMode(HSB, 360, 100, 100);
 
 	// init ArrayList of noises
@@ -192,9 +194,9 @@ PVector getColor() {
 		b = brightnessNoise.getNoiseRange(0, 110, 1);
 	} else {
 		// get color values at random
-		h = (int)random(360);
-		s = (int)random(100);
-		b = (int)random(100);
+		h = intRandom(0, 360);
+		s = intRandom(20, 100);
+		b = intRandom(20, 100);
 	}
 	return new PVector(h, s, b);
 }

@@ -57,7 +57,7 @@ class Graphs extends PApplet {
 		windowTitle("Graphs");
 
 		// determine window location on screen
-		surface.setLocation(10, 750);
+		surface.setLocation(1050, 60);
 		
 		// add graph for each noise with color from predetermined colors
 		for (int i = 0; i < noises.size(); i++) {

@@ -25,14 +25,16 @@ float height = 1000;
 
 // timed events
 int minSwitchTime = 1;
-int maxSwitchTime = 2;
+int maxSwitchTime = 10;
 int nextResEvent = 1;		// init in X seconds
 int resEventCounter = 0;
 
 PGraphics resBuffer;
 PShader noiseShader;
 
-float t = 0;
+float t = random(100);
+float tt = random(100);
+float ttt = random(100);
 
 public void setup() {
     /* size commented out by preprocessor */;
@@ -45,13 +47,16 @@ public void setup() {
 }
 
 public void draw() { 
-    t += .01f;
+	ttt += random(.001f, .01f);
+	tt += random(.001f, .01f);
+    t += noise(tt) * .1f;
     noiseShader.set("u_time", t); // pass time to shader
 
 	resBuffer.beginDraw();
 		resBuffer.shader(noiseShader); // apply shader
 		resBuffer.rect(0, 0, width, height); // render a full-screen rectangle
 	resBuffer.endDraw();
+	// image(resBuffer, noise(tt) * -width, noise(ttt) * -height, width + (noise(tt) * width), height + (noise(ttt) * height));
 	image(resBuffer, 0, 0, width, height);
 
 	// Disable shader before drawing text
@@ -75,7 +80,7 @@ public void timedEvents() {
 	// sometimes switch to a new resolution step
 	resEventCounter++;
 	if (resEventCounter > (nextResEvent * 60)) {
-		resizeBuffer(random(width), random(height));
+		resizeBuffer(random(width/2), random(height/2));
 		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
 		resEventCounter = 0;
 	}

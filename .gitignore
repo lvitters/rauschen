@@ -1,3 +1,5 @@
 rauschen.code-workspace
 /rauschen_processing/out
 /rauschen_processing/.vscode
+/rauschen_processing_shader_test/out
+/rauschen_processing_shader_test/.vscode

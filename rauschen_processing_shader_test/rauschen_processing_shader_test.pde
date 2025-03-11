@@ -16,7 +16,7 @@ void setup() {
 }
 
 void draw() { 
-    t += 1000;
+    t += .001;
     noiseShader.set("u_time", t); // pass time to shader
     shader(noiseShader); // apply shader
     rect(0, 0, width, height); // render a full-screen rectangle

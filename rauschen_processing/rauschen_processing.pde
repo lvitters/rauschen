@@ -4,8 +4,8 @@ int gHeight = 300;
 Graphs graphs;
 
 // main window
-int width = 400;
-int height = 400;
+int width = 800;
+int height = 800;
 
 // resolution steps
 int maxStep = width;
@@ -45,10 +45,6 @@ int resEventCounter = 0;
 int nextColorEvent = 1;		// init in X seconds
 int colorEventCounter = 0;
 
-// audio
-SinOsc sine;
-float lastFreq;
-
 public void settings() {
 	size(width, height, OPENGL);
 	pixelDensity(1);
@@ -64,10 +60,6 @@ public void setup() {
 	// can't go in settings for some reason
 	frameRate(12);
 	colorMode(HSB, 360, 100, 100);
-
-	// audio setup
-	sine = new SinOsc(this);
-	sine.amp(.1);
 
 	// init ArrayList of noises
 	noises = new ArrayList<Noise>();

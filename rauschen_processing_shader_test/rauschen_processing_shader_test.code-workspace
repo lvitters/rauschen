@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../ThreadedPixelBufferUpdate"
+		},
+		{
+			"path": "../rauschen_processing"
+		}
+	],
+	"settings": {}
+}

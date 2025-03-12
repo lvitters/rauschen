@@ -7,7 +7,7 @@ class Graphs extends PApplet {
 	public Graphs() {
 		// some stuff for making the child applet work
 		super();
-		PApplet.runSketch(new String[]{this.getClass().getName()}, this);
+		PApplet.runSketch(new String[]{"Graphs"}, this);
 
 		// init ArrayList of graphs
 		graphs = new ArrayList<Graph>();
@@ -50,12 +50,10 @@ class Graphs extends PApplet {
 	}
 
 	public void settings() {
-		size(gWidth, gHeight);
+		size(1000, 1000);
 	}
 
 	public void setup() {
-		windowTitle("Graphs");
-
 		// determine window location on screen
 		surface.setLocation(1050, 60);
 		

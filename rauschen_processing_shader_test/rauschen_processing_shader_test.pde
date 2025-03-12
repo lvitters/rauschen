@@ -5,10 +5,10 @@ float width = 1000;
 float height = 1000;
 
 // timed events
-int minSwitchTime = 1;
-int maxSwitchTime = 10;
-int nextResEvent = 1;		// init in X seconds
-int resEventCounter = 0;
+// int minSwitchTime = 1;
+// int maxSwitchTime = 10;
+// int nextResEvent = 1;		// init in X seconds
+// int resEventCounter = 0;
 
 PGraphics resBuffer;
 PShader noiseShader;
@@ -43,7 +43,7 @@ void draw() {
 	// Disable shader before drawing text
     resetShader();
 
-	timedEvents();
+	//timedEvents();
 
     // display FPS
     fill(255, 0, 0);
@@ -51,18 +51,18 @@ void draw() {
     text("fps: " + (int) frameRate, 50, 50);
 }
 
-void resizeBuffer(float w, float h) {
-	resBuffer.dispose();
-	resBuffer = createGraphics((int)w, (int)h, P2D);
-}
+// void resizeBuffer(float w, float h) {
+// 	resBuffer.dispose();
+// 	resBuffer = createGraphics((int)w, (int)h, P2D);
+// }
 
-// sometimes things should happen at random intervals instead
-void timedEvents() {
-	// sometimes switch to a new resolution step
-	resEventCounter++;
-	if (resEventCounter > (nextResEvent * 60)) {
-		resizeBuffer(random(width/2), random(height/2));
-		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
-		resEventCounter = 0;
-	}
-}
+// // sometimes things should happen at random intervals instead
+// void timedEvents() {
+// 	// sometimes switch to a new resolution step
+// 	resEventCounter++;
+// 	if (resEventCounter > (nextResEvent * 60)) {
+// 		resizeBuffer(random(width/2), random(height/2));
+// 		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
+// 		resEventCounter = 0;
+// 	}
+// }

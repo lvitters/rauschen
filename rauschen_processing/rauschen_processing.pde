@@ -33,11 +33,11 @@ Noise bNoiseInc;
 Noise shaderTimeNoise;
 
 // toggles
-Boolean isNoiseColor = false;
+Boolean isApplyingShader = false;
 
 // timed events
 int minSwitchTime = 1;
-int maxSwitchTime = 1;
+int maxSwitchTime = 10;
 int nextResEvent = 1;		// init in X seconds
 int resEventCounter = 0;
 int nextColorEvent = 1;		// init in X seconds
@@ -107,10 +107,10 @@ public void draw() {
 	timedEvents();
 
 	// manipulate pixel array
-	if (!isNoiseColor) {
+	if (!isApplyingShader) {
 		manipulatePixelArray();
 	} else {
-		useShader();
+		applyShader();
 	}
 
 	// display resBuffer
@@ -160,7 +160,7 @@ void manipulatePixelArray() {
 }
 
 // for noise stuff on individual pixels, use a shader
-void useShader() {
+void applyShader() {
 	shaderTime += shaderTimeNoise.getNoiseRange(.01, .1, 1);
 	noiseShader.set("u_time", shaderTime);
 	resBuffer.beginDraw();
@@ -210,10 +210,51 @@ void setNewGrid() {
 	yOffsetRecord = yOffset;
 }
 
+// like "setNewGrid()", but just resize for shader use
+void resizeBuffer(float w, float h) {
+	resBuffer.dispose();
+	resBuffer = createGraphics((int)w, (int)h, P2D);
+	println("buffer resized to: x:" + w + " y: " + h);
+}
+
+// sometimes things should happen at random intervals instead
+void timedEvents() {
+
+	// sometimes switch to a new resolution step
+	resEventCounter++;
+	if (resEventCounter > (nextResEvent * 60)) {
+		if (!isApplyingShader) {
+			setNewGrid();
+		} else {
+			resizeBuffer(intRandom(0, width), intRandom(0, height));
+		} 
+		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
+		resEventCounter = 0;
+	}
+
+	// sometimes switch to a new color mode
+	colorEventCounter++;
+	if (colorEventCounter > (nextColorEvent * 60)) {
+		isApplyingShader = toggleColorNoise.getNoiseBool(-1, 1);
+		println("isApplyingShader: " + isApplyingShader);
+		nextColorEvent = (int)random(minSwitchTime, maxSwitchTime);
+		colorEventCounter = 0;
+		resizeBuffer(width, height);
+	}
+}
+
+// ------------------------------------------------ DEPRECATED ------------------------------------------------ //
+
+// take range and cut at cutoff; useful when a value needs to stick towards the cutoff but should still change sometimes
+float cutoff(float range, float cutoff) {
+	if (range > cutoff) return range;
+	else return cutoff;
+}
+
 // determine a color for a pixel or a step in the pixel array
 PVector getColor() {
 	float h, s, b;
-	if (isNoiseColor) {
+	if (isApplyingShader) {
 		// inc noises randomly so not all pixels have the same color
 		rNoise.changeInc(rNoiseInc.getVariableNoiseRange(0.001, 0.01, 0.01, 0.1, 1));
 		gNoise.changeInc(random(.005, .01));
@@ -229,29 +270,4 @@ PVector getColor() {
 		b = intRandom(20, 100);
 	}
 	return new PVector(h, s, b);
-}
-
-// sometimes things should happen at random intervals instead
-void timedEvents() {
-	// sometimes switch to a new resolution step
-	resEventCounter++;
-	if (resEventCounter > (nextResEvent * 60)) {
-		setNewGrid();
-		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
-		resEventCounter = 0;
-	}
-	// sometimes switch to a new color mode
-	colorEventCounter++;
-	if (colorEventCounter > (nextColorEvent * 60)) {
-		isNoiseColor = toggleColorNoise.getNoiseBool(-1, 1);
-		println("isNoiseColor: " + isNoiseColor);
-		nextColorEvent = (int)random(minSwitchTime, maxSwitchTime);
-		colorEventCounter = 0;
-	}
-}
-
-// take range and cut at cutoff; useful when a value needs to stick towards the cutoff but should still change sometimes
-float cutoff(float range, float cutoff) {
-	if (range > cutoff) return range;
-	else return cutoff;
 }

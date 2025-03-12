@@ -65,7 +65,7 @@ public void setup() {
 	surface.setLocation(10, 60);
 
 	// can't go in settings for some reason
-	frameRate(120);
+	frameRate(30);
 	colorMode(RGB, 100, 100, 100);
 
 	// shader stuff
@@ -161,21 +161,12 @@ void manipulatePixelArray() {
 
 // for noise stuff on individual pixels, use a shader
 void applyShader() {
-	shaderTime += shaderTimeNoise.getNoiseRange(.01, .1, 1);
+	shaderTime += shaderTimeNoise.getNoiseRange(.05, .3, 1);
 	noiseShader.set("u_time", shaderTime);
 	resBuffer.beginDraw();
 		resBuffer.shader(noiseShader);
 		resBuffer.rect(0, 0, width, height);
 	resBuffer.endDraw();
-}
-
-// empty the display buffer 
-void clearBuffer(PGraphics buffer) {
-	buffer.loadPixels();
-	for (int i = 0; i < buffer.pixels.length; i++) {
-		buffer.pixels[i] = 0;
-	}
-	buffer.updatePixels();
 }
 
 // set canvas and sketch to a new resolution
@@ -226,7 +217,7 @@ void timedEvents() {
 		if (!isApplyingShader) {
 			setNewGrid();
 		} else {
-			resizeBuffer(intRandom(0, width), intRandom(0, height));
+			resizeBuffer(intRandom(0, width/2), intRandom(0, height/2));
 		} 
 		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
 		resEventCounter = 0;
@@ -236,14 +227,23 @@ void timedEvents() {
 	colorEventCounter++;
 	if (colorEventCounter > (nextColorEvent * 60)) {
 		isApplyingShader = toggleColorNoise.getNoiseBool(-1, 1);
-		println("isApplyingShader: " + isApplyingShader);
+		println("applying shader: " + isApplyingShader);
 		nextColorEvent = (int)random(minSwitchTime, maxSwitchTime);
 		colorEventCounter = 0;
 		resizeBuffer(width, height);
 	}
 }
 
-// ------------------------------------------------ DEPRECATED ------------------------------------------------ //
+// ------------------------------------------------ UNUSED ------------------------------------------------ //
+
+// empty the display buffer 
+void clearBuffer(PGraphics buffer) {
+	buffer.loadPixels();
+	for (int i = 0; i < buffer.pixels.length; i++) {
+		buffer.pixels[i] = 0;
+	}
+	buffer.updatePixels();
+}
 
 // take range and cut at cutoff; useful when a value needs to stick towards the cutoff but should still change sometimes
 float cutoff(float range, float cutoff) {

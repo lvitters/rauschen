@@ -36,15 +36,16 @@ Noise shaderTimeNoise;
 Boolean isApplyingShader = false;
 
 // timed events
-int minSwitchTime = 1;
-int maxSwitchTime = 10;
+int minSwitchTime = 3;
+int maxSwitchTime = 6;
 int nextResEvent = 1;		// init in X seconds
 int resEventCounter = 0;
 int nextColorEvent = 1;		// init in X seconds
 int colorEventCounter = 0;
 
 // buffer for display
-PGraphics resBuffer;
+PGraphics buffer;
+PGraphics tempBuffer;
 
 // shader stuff
 PShader noiseShader;
@@ -56,7 +57,8 @@ public void settings() {
 
 public void setup() {
 	// create buffer
-	resBuffer = createGraphics((int)width, (int)height, P2D);
+	buffer = createGraphics((int)width, (int)height, P2D);
+	tempBuffer = createGraphics((int)width, (int)height, P2D);
 
 	// set this window title
 	windowTitle("Rauschen");
@@ -113,8 +115,8 @@ public void draw() {
 		applyShader();
 	}
 
-	// display resBuffer
-	image(resBuffer, 0, 0, width, height);
+	// display buffer
+	image(buffer, 0, 0, width, height);
 
 	// Disable shader before drawing text
     resetShader();
@@ -127,13 +129,13 @@ public void draw() {
 
 // apply from setNewGrid() to the pixel array 
 void manipulatePixelArray() {
-	resBuffer.loadPixels();
+	buffer.loadPixels();
 		// iterate through pixel array with step and apply offset
-		for (int x = 0; x < resBuffer.width; x += xStep - xOffset) {
+		for (int x = 0; x < buffer.width; x += xStep - xOffset) {
 			// offset only applies to first iteration
 			if (x > 0) xOffset = 0;
 			else xOffset = xOffsetRecord;
-			for (int y = 0; y < resBuffer.height; y += yStep - yOffset) {
+			for (int y = 0; y < buffer.height; y += yStep - yOffset) {
 				// offset only applies to first iteration
 				if (y > 0) yOffset = 0;
 				else yOffset = yOffsetRecord;
@@ -146,27 +148,28 @@ void manipulatePixelArray() {
 						int px = x + dx;
 						int py = y + dy;
 						// check boundaries (edges won't have neighboring pixels)
-						if (px < resBuffer.width && py < resBuffer.height) {
+						if (px < buffer.width && py < buffer.height) {
 							// get index
 							int index = py * width + px;
 							// apply respective color to pixels array
-							resBuffer.pixels[index] = color(col.x, col.y, col.z);
+							buffer.pixels[index] = color(col.x, col.y, col.z);
 						}
 					}
 				}
 			}
 		}
-	resBuffer.updatePixels();
+	buffer.updatePixels();
 }
 
 // for noise stuff on individual pixels, use a shader
 void applyShader() {
 	shaderTime += shaderTimeNoise.getNoiseRange(.05, .3, 1);
 	noiseShader.set("u_time", shaderTime);
-	resBuffer.beginDraw();
-		resBuffer.shader(noiseShader);
-		resBuffer.rect(0, 0, width, height);
-	resBuffer.endDraw();
+	noiseShader.set("u_texture", tempBuffer);
+	buffer.beginDraw();
+		buffer.shader(noiseShader);
+		buffer.rect(0, 0, width, height);
+	buffer.endDraw();
 }
 
 // set canvas and sketch to a new resolution
@@ -203,8 +206,8 @@ void setNewGrid() {
 
 // like "setNewGrid()", but just resize for shader use
 void resizeBuffer(float w, float h) {
-	resBuffer.dispose();
-	resBuffer = createGraphics((int)w, (int)h, P2D);
+	buffer.dispose();
+	buffer = createGraphics((int)w, (int)h, P2D);
 	println("buffer resized to: x:" + w + " y: " + h);
 }
 
@@ -223,11 +226,12 @@ void timedEvents() {
 		resEventCounter = 0;
 	}
 
-	// sometimes switch to a new color mode
+	// sometimes switch between using a shader or not
 	colorEventCounter++;
 	if (colorEventCounter > (nextColorEvent * 60)) {
 		isApplyingShader = toggleColorNoise.getNoiseBool(-1, 1);
 		println("applying shader: " + isApplyingShader);
+		if (isApplyingShader) tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
 		nextColorEvent = (int)random(minSwitchTime, maxSwitchTime);
 		colorEventCounter = 0;
 		resizeBuffer(width, height);

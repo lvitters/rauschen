@@ -3,6 +3,7 @@ precision mediump float;
 #endif
 
 uniform vec2 u_resolution;
+uniform sampler2D u_texture;
 uniform float u_time;
 
 float map(float value, float min1, float max1, float min2, float max2) {
@@ -22,7 +23,8 @@ float noise(float p){
 }
 
 void main() {
-    vec2 uv = gl_FragCoord.xy / u_resolution.xy; // normalize pixel coords
+    vec2 uv = gl_FragCoord.xy / u_resolution.xy; 	// normalize pixel coords
+	vec4 texColor = texture2D(u_texture, uv); 		// get original buffer color
 
     // Use pixel position to get different randomness per pixel
     float r = noise(u_time + rand(uv));
@@ -33,5 +35,5 @@ void main() {
     g = map(g, 0.0, 1.0, 0.2, 0.8);
     b = map(b, 0.0, 1.0, 0.2, 0.8);
 
-    gl_FragColor = vec4(r, g, b, 1.0);
+    gl_FragColor = mix(texColor, vec4(r, g, b, 1.0), 0.01);
 }

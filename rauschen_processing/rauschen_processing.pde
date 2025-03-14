@@ -35,6 +35,7 @@ Noise shaderTimeNoise;
 
 // toggles
 Boolean isApplyingShader = false;
+Boolean showFPS = false;
 
 // timed events
 float minSwitchTime = .01;
@@ -122,10 +123,12 @@ public void draw() {
 	// Disable shader before drawing text
     resetShader();
 
-	// display FPS
-    fill(100, 0, 0);
-    textSize(25);
-    text("fps: " + (int) frameRate, 50, 50);
+	if (showFPS) {
+		// display FPS
+		fill(100, 0, 0);
+		textSize(25);
+		text("fps: " + (int) frameRate, 50, 50);
+	}
 }
 
 // apply from setNewGrid() to the pixel array 
@@ -239,6 +242,13 @@ void chooseRandomEvent(int event) {
 			if (isApplyingShader) tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
 			resizeBuffer(width, height);
 		break;
+	}
+}
+
+// listen to key presses
+void keyPressed() {
+	if (keyCode == 70) {
+		showFPS = !showFPS;
 	}
 }
 

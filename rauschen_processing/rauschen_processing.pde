@@ -67,7 +67,7 @@ public void setup() {
 	surface.setLocation(10, 60);
 
 	// can't go in settings for some reason
-	frameRate(30);
+	frameRate(60);
 	colorMode(RGB, 100, 100, 100);
 
 	// shader stuff
@@ -181,16 +181,8 @@ void chooseRandomShader() {
 void setNewGrid() {
 
 	// get new step close to old step with noise, bias towards lower numbers
-	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep);
-	yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep);
-
-	// step should be biased with noise, so that the bias changes over time and won't always bias towards one direction, effectively making it a skew
-	float stepBias = stepBiasNoise.getNoiseRange(.9, 1.1);
-	println("stepBias: " + stepBias);
-
-	// bias steps towards calculated stepBias
-	xStep = (int)bias(xStep, stepBias);
-	yStep = (int)bias(yStep, stepBias);
+	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep/2, 0, maxStep/2, maxStep);
+	yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep/2, 0, maxStep/2, maxStep);
 
 	// cutoff over one and apply
 	if (xStep < 1) xStep = 1;
@@ -206,9 +198,9 @@ void setNewGrid() {
 	}
 
 	// determine offset for first iteration so that the "cells" are cutoff not only on the right and bottom edge, that is of random size of the cuttoff cell
-	xOffset = intRandom(0, xStep % width);
+	xOffset = (int)random(xStep % width);
 	xOffsetRecord = xOffset;
-	yOffset = intRandom(0, yStep % height);
+	yOffset = (int)random(yStep % height);
 	yOffsetRecord = yOffset;
 }
 
@@ -246,12 +238,6 @@ void timedEvents() {
 	}
 }
 
-// bias < 1 pulls values towards 0, bias > 1 pulls values towards 1 (for some reason this is reversed from what I saw online?) 
-float bias(float value, float bias) {
-	if (bias != 0.0) return pow(value, 1.0 / bias);
-	else return value;
-}
-
 // ------------------------------------------------ UNUSED ------------------------------------------------ //
 
 // empty the display buffer 
@@ -264,28 +250,28 @@ void clearBuffer(PGraphics buffer) {
 }
 
 // take range and cut at cutoff; useful when a value needs to stick towards the cutoff but should still change sometimes
-float cutoff(float range, float cutoff) {
-	if (range > cutoff) return range;
+float cutoff(float value, float cutoff) {
+	if (value > cutoff) return value;
 	else return cutoff;
 }
 
 // determine a color for a pixel or a step in the pixel array
 PVector getColor() {
-	float h, s, b;
+	float r, g, b;
 	if (isApplyingShader) {
 		// inc noises randomly so not all pixels have the same color
-		rNoise.changeInc(rNoiseInc.getVariableNoiseRange(0.001, 0.01, 0.01, 0.1));
+		rNoise.changeInc(floatRandom(.005, .01));
 		gNoise.changeInc(floatRandom(.005, .01));
 		bNoise.changeInc(floatRandom(.005, .01));
 		// get color values from noise
-		h = rNoise.getNoiseRange(-30, 390);
-		s = gNoise.getNoiseRange(0, 110);
+		r = rNoise.getNoiseRange(0, 110);
+		g = gNoise.getNoiseRange(0, 110);
 		b = bNoise.getNoiseRange(0, 110);
 	} else {
 		// get color values at random
-		h = intRandom(0, 360);
-		s = intRandom(20, 100);
+		r = intRandom(0, 360);
+		g = intRandom(20, 100);
 		b = intRandom(20, 100);
 	}
-	return new PVector(h, s, b);
+	return new PVector(r, g, b);
 }

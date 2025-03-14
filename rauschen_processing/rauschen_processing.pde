@@ -184,13 +184,13 @@ void setNewGrid() {
 	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep);
 	yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep);
 
-	// change stepBias with Noise so that it won't always skew and without bias itself here the full range is possible; otherwise bias would limit that;
-	float stepBias = stepBiasNoise.getNoiseRange(.01, 1.6);
+	// step should be biased with noise, so that the bias changes over time and won't always bias towards one direction, effectively making it a skew
+	float stepBias = stepBiasNoise.getNoiseRange(.9, 1.1);
 	println("stepBias: " + stepBias);
 
-	// apply reciprocal of bias because the base to be raised (value) is between 0 and 1, so that <1 biases towards 0, 1 is no bias, >1 biases towards 1
-	xStep = (int)pow(xStep, 1.0 / stepBias);
-	yStep = (int)pow(yStep, 1.0 / stepBias);
+	// bias steps towards calculated stepBias
+	xStep = (int)bias(xStep, stepBias);
+	yStep = (int)bias(yStep, stepBias);
 
 	// cutoff over one and apply
 	if (xStep < 1) xStep = 1;
@@ -244,6 +244,12 @@ void timedEvents() {
 		colorEventCounter = 0;
 		resizeBuffer(width, height);
 	}
+}
+
+// bias < 1 pulls values towards 0, bias > 1 pulls values towards 1 (for some reason this is reversed from what I saw online?) 
+float bias(float value, float bias) {
+	if (bias != 0.0) return pow(value, 1.0 / bias);
+	else return value;
 }
 
 // ------------------------------------------------ UNUSED ------------------------------------------------ //

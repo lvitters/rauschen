@@ -23,7 +23,8 @@ Noise xStepNoise;
 Noise yStepNoise;
 Noise stepBiasNoise;
 Noise toggleSameStepDims;
-Noise toggleColorNoise;
+Noise toggleShader;
+Noise toggleNoiseColor;
 Noise rNoise;
 Noise rNoiseInc;
 Noise gNoise;
@@ -36,12 +37,10 @@ Noise shaderTimeNoise;
 Boolean isApplyingShader = false;
 
 // timed events
-int minSwitchTime = 3;
-int maxSwitchTime = 6;
-int nextResEvent = 1;		// init in X seconds
-int resEventCounter = 0;
-int nextColorEvent = 1;		// init in X seconds
-int colorEventCounter = 0;
+float minSwitchTime = .01;
+float maxSwitchTime = .1;
+float nextEvent = 1;		// init with 1 second
+float eventCounter = 0;
 
 // buffer for display
 PGraphics buffer;
@@ -86,8 +85,10 @@ public void setup() {
 	noises.add(stepBiasNoise);
 	toggleSameStepDims = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleSameStepDims);		// TODO: do I want Booleans to show their actual number on the graph or do I want it as 1 and 0?
-	toggleColorNoise = new Noise(intRandom(0, 100), 1);
-	noises.add(toggleColorNoise);
+	toggleShader = new Noise(intRandom(0, 100), 1);
+	noises.add(toggleShader);
+	toggleNoiseColor = new Noise(intRandom(0, 100), 1);
+	noises.add(toggleNoiseColor);
 	rNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(rNoise);
 	rNoiseInc = new Noise(intRandom(0, 100), .01);
@@ -211,30 +212,33 @@ void resizeBuffer(float w, float h) {
 	println("buffer resized to: x:" + w + " y: " + h);
 }
 
-// sometimes things should happen at random intervals instead
+// choose a random event after a random interval
 void timedEvents() {
-
-	// sometimes switch to a new resolution step
-	resEventCounter++;
-	if (resEventCounter > (nextResEvent * 60)) {
-		if (!isApplyingShader) {
-			setNewGrid();
-		} else {
-			resizeBuffer(intRandom(0, width/2), intRandom(0, height/2));
-		} 
-		nextResEvent = intRandom(minSwitchTime, maxSwitchTime);
-		resEventCounter = 0;
+	eventCounter++;
+	if (eventCounter > (nextEvent * 60)) {
+		chooseRandomEvent(intRandom(0, 1));
+		nextEvent = floatRandom(minSwitchTime, maxSwitchTime);
+		eventCounter = 0;
 	}
+}
 
-	// sometimes switch between using a shader or not
-	colorEventCounter++;
-	if (colorEventCounter > (nextColorEvent * 60)) {
-		isApplyingShader = toggleColorNoise.getNoiseBool(-1, 1);
-		println("applying shader: " + isApplyingShader);
-		if (isApplyingShader) tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
-		nextColorEvent = intRandom(minSwitchTime, maxSwitchTime);
-		colorEventCounter = 0;
-		resizeBuffer(width, height);
+// switch between which events to fire
+void chooseRandomEvent(int event) {
+	println("event: " + event);
+	switch (event) {
+		case 0:
+			if (!isApplyingShader) {
+				setNewGrid();
+			} else {
+				resizeBuffer(intRandom(0, width/2), intRandom(0, height/2));
+			}
+		break;
+		case 1:
+			isApplyingShader = toggleShader.getNoiseBool(-1, 1);
+			println("applying shader: " + isApplyingShader);
+			if (isApplyingShader) tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
+			resizeBuffer(width, height);
+		break;
 	}
 }
 

@@ -181,8 +181,8 @@ void chooseRandomShader() {
 void setNewGrid() {
 
 	// get new step close to old step with noise, bias towards lower numbers
-	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep/2, 0, maxStep/2, maxStep, -10);
-	yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep/2, 0, maxStep/2, maxStep, -10);
+	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep, -maxStep/2, maxStep/2, maxStep, -20);
+	yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep, -maxStep/2, maxStep/2, maxStep, -20);
 
 	// cutoff over one and apply
 	if (xStep < 1) xStep = 1;

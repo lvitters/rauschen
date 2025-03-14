@@ -41,7 +41,7 @@ class Noise {
 		compute();
 		// bias parameter controls the steepness of the sigmoid curve
   		float biasedValue = 1.0 / (1.0 + exp(-bias * (value - 0.5)));
-		return map(value, 0, 1, low, high);
+		return map(biasedValue, 0, 1, low, high);
 	}
 
 	// compute and return noise range where low and high bounds are a range as well

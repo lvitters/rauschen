@@ -48,7 +48,7 @@ PGraphics buffer;
 PGraphics tempBuffer;
 
 // shader stuff
-PShader noiseShader;
+PShader shader;
 float shaderTime = 0;
 
 public void settings() {
@@ -71,36 +71,36 @@ public void setup() {
 	colorMode(RGB, 100, 100, 100);
 
 	// shader stuff
-	noiseShader = loadShader("noiseFrag.glsl");
-	noiseShader.set("u_resolution", (float)width, (float)height);
+	shader = loadShader("1DNoise.glsl");
+	shader.set("u_resolution", (float)width, (float)height);
 
 	// init ArrayList of noises
 	noises = new ArrayList<Noise>();
 
 	// init NoiseInstances with starting value and increment, add to list of noises
-	xStepNoise = new Noise(random(100), .1);
+	xStepNoise = new Noise(intRandom(0, 100), .1);
 	noises.add(xStepNoise);
-	yStepNoise = new Noise(random(100), .1);
+	yStepNoise = new Noise(intRandom(0, 100), .1);
 	noises.add(yStepNoise);
-	stepBiasNoise = new Noise(random(100), .1);
+	stepBiasNoise = new Noise(intRandom(0, 100), .1);
 	noises.add(stepBiasNoise);
-	toggleSameStepDims = new Noise(random(100), 1);
+	toggleSameStepDims = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleSameStepDims);		// TODO: do I want Booleans to show their actual number on the graph or do I want it as 1 and 0?
-	toggleColorNoise = new Noise(random(100), 1);
+	toggleColorNoise = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleColorNoise);
-	rNoise = new Noise(random(100), .01);
+	rNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(rNoise);
-	rNoiseInc = new Noise(random(100), .01);
+	rNoiseInc = new Noise(intRandom(0, 100), .01);
 	noises.add(rNoiseInc);
-	gNoise = new Noise(random(100), .01);
+	gNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(gNoise);
-	gNoiseInc = new Noise(random(100), .01);
+	gNoiseInc = new Noise(intRandom(0, 100), .01);
 	noises.add(gNoiseInc);
-	bNoise = new Noise(random(100), .01);
+	bNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(bNoise);
-	bNoiseInc = new Noise(random(100), .01);
+	bNoiseInc = new Noise(intRandom(0, 100), .01);
 	noises.add(bNoiseInc);
-	shaderTimeNoise = new Noise(random(100), .01);
+	shaderTimeNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(shaderTimeNoise);
 }
 
@@ -161,28 +161,36 @@ void manipulatePixelArray() {
 	buffer.updatePixels();
 }
 
-// for noise stuff on individual pixels, use a shader
+// for resource intensive calculations on individual pixels, use a shader
 void applyShader() {
-	shaderTime += shaderTimeNoise.getNoiseRange(.05, .3, 1);
-	noiseShader.set("u_time", shaderTime);
-	noiseShader.set("u_texture", tempBuffer);
+	shaderTime += shaderTimeNoise.getNoiseRange(.05, .3);
+	shader.set("u_time", shaderTime);
+	shader.set("u_texture", tempBuffer);
 	buffer.beginDraw();
-		buffer.shader(noiseShader);
+		buffer.shader(shader);
 		buffer.rect(0, 0, width, height);
 	buffer.endDraw();
+}
+
+// load a random shader
+void chooseRandomShader() {
+	int rand = intRandom(0, 2);
 }
 
 // set canvas and sketch to a new resolution
 void setNewGrid() {
 
+	// get new step close to old step with noise, bias towards lower numbers
+	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep);
+	yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep);
+
 	// change stepBias with Noise so that it won't always skew and without bias itself here the full range is possible; otherwise bias would limit that;
-	float stepBias = stepBiasNoise.getNoiseRange(.01, 1.6, 1);
-	
+	float stepBias = stepBiasNoise.getNoiseRange(.01, 1.6);
 	println("stepBias: " + stepBias);
 
-	// get new step close to old step with noise, bias towards lower numbers
-	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep, stepBias);
-	yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep/4, 0, maxStep/2, maxStep, stepBias);
+	// apply reciprocal of bias because the base to be raised (value) is between 0 and 1, so that <1 biases towards 0, 1 is no bias, >1 biases towards 1
+	xStep = (int)pow(xStep, 1.0 / stepBias);
+	yStep = (int)pow(yStep, 1.0 / stepBias);
 
 	// cutoff over one and apply
 	if (xStep < 1) xStep = 1;
@@ -198,9 +206,9 @@ void setNewGrid() {
 	}
 
 	// determine offset for first iteration so that the "cells" are cutoff not only on the right and bottom edge, that is of random size of the cuttoff cell
-	xOffset = (int)random(xStep % width);
+	xOffset = intRandom(0, xStep % width);
 	xOffsetRecord = xOffset;
-	yOffset = (int)random(yStep % height);
+	yOffset = intRandom(0, yStep % height);
 	yOffsetRecord = yOffset;
 }
 
@@ -222,7 +230,7 @@ void timedEvents() {
 		} else {
 			resizeBuffer(intRandom(0, width/2), intRandom(0, height/2));
 		} 
-		nextResEvent = (int)random(minSwitchTime, maxSwitchTime);
+		nextResEvent = intRandom(minSwitchTime, maxSwitchTime);
 		resEventCounter = 0;
 	}
 
@@ -232,7 +240,7 @@ void timedEvents() {
 		isApplyingShader = toggleColorNoise.getNoiseBool(-1, 1);
 		println("applying shader: " + isApplyingShader);
 		if (isApplyingShader) tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
-		nextColorEvent = (int)random(minSwitchTime, maxSwitchTime);
+		nextColorEvent = intRandom(minSwitchTime, maxSwitchTime);
 		colorEventCounter = 0;
 		resizeBuffer(width, height);
 	}
@@ -260,13 +268,13 @@ PVector getColor() {
 	float h, s, b;
 	if (isApplyingShader) {
 		// inc noises randomly so not all pixels have the same color
-		rNoise.changeInc(rNoiseInc.getVariableNoiseRange(0.001, 0.01, 0.01, 0.1, 1));
-		gNoise.changeInc(random(.005, .01));
-		bNoise.changeInc(random(.005, .01));
+		rNoise.changeInc(rNoiseInc.getVariableNoiseRange(0.001, 0.01, 0.01, 0.1));
+		gNoise.changeInc(floatRandom(.005, .01));
+		bNoise.changeInc(floatRandom(.005, .01));
 		// get color values from noise
-		h = rNoise.getNoiseRange(-30, 390, 1);
-		s = gNoise.getNoiseRange(0, 110, 1);
-		b = bNoise.getNoiseRange(0, 110, 1);
+		h = rNoise.getNoiseRange(-30, 390);
+		s = gNoise.getNoiseRange(0, 110);
+		b = bNoise.getNoiseRange(0, 110);
 	} else {
 		// get color values at random
 		h = intRandom(0, 360);

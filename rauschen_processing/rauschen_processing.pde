@@ -191,7 +191,7 @@ void setNewGrid() {
 	println("xStep: " + xStep + " yStep: " + yStep);
 
 	// determine if step should be the same in both dimensions
-	if (toggleSameStepDims.getNoiseBool(-2, 3)) {
+	if (toggleSameStepDims.getNoiseBool(-4, 3)) {
 		// apply same step to both dimensions
 		yStep = xStep;
 		println("same step");

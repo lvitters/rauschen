@@ -35,5 +35,5 @@ void main() {
     g = map(g, 0.0, 1.0, 0.2, 0.8);
     b = map(b, 0.0, 1.0, 0.2, 0.8);
 
-    gl_FragColor = mix(texColor, vec4(r, g, b, 1.0), 0.01);
+    gl_FragColor = mix(texColor, vec4(r, g, b, 1.0), 0.1 * u_time);
 }

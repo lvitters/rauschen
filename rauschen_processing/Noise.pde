@@ -36,11 +36,28 @@ class Noise {
 		return map(value, 0, 1, low, high);
 	}
 
+	// compute and return noise range - with sigmoid bias
+	float getNoiseRange(float low, float high, float bias) {
+		compute();
+		// bias parameter controls the steepness of the sigmoid curve
+  		float biasedValue = 1.0 / (1.0 + exp(-bias * (value - 0.5)));
+		return map(value, 0, 1, low, high);
+	}
+
 	// compute and return noise range where low and high bounds are a range as well
 	float getVariableNoiseRange(float low, float lo, float hi, float high) {
 		return getNoiseRange(
 			getNoiseRange(low, lo),
 			getNoiseRange(hi, high)
+		);
+	}
+
+	// compute and return noise range where low and high bounds are a range as well - bias overall results
+	float getVariableNoiseRange(float low, float lo, float hi, float high, float bias) {
+		return getNoiseRange(
+			getNoiseRange(low, lo),
+			getNoiseRange(hi, high), 
+			bias
 		);
 	}
 

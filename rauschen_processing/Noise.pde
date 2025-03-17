@@ -44,8 +44,8 @@ class Noise {
 	// compute and return noise range - with sigmoid bias
 	float getNoiseRange(float low, float high, float bias) {
 		compute();
-		// bias parameter controls the steepness of the sigmoid curve
-  		float biasedValue = 1.0 / (1.0 + exp(-bias * (value - 0.5)));
+  		// apply power function bias (power > 1 pushes toward 0)
+  		float biasedValue = pow(value, bias);
 		return map(biasedValue, 0, 1, low, high);
 	}
 

@@ -25,9 +25,9 @@ Noise stepBiasNoise;
 Noise toggleSameStepDims;
 Noise toggleShader;
 Noise toggleNoiseColor;
-Noise rNoise;
-Noise gNoise;
-Noise bNoise;
+Noise redNoise;
+Noise greenNoise;
+Noise blueNoise;
 Noise shaderTimeNoise;
 
 // toggles
@@ -66,7 +66,7 @@ public void setup() {
 
 	// can't go in settings for some reason
 	frameRate(60);
-	colorMode(RGB, 100, 100, 100);
+	colorMode(RGB, 255, 255, 255);
 
 	// shader stuff
 	shader = loadShader("1DNoise.glsl");
@@ -76,24 +76,22 @@ public void setup() {
 	noises = new ArrayList<Noise>();
 
 	// init NoiseInstances with starting value and increment, add to list of noises
-	xStepNoise = new Noise(intRandom(0, 100), .1);
+	xStepNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(xStepNoise);
-	yStepNoise = new Noise(intRandom(0, 100), .1);
+	yStepNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(yStepNoise);
-	stepBiasNoise = new Noise(intRandom(0, 100), .1);
-	noises.add(stepBiasNoise);
 	toggleSameStepDims = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleSameStepDims);		// TODO: do I want Booleans to show their actual number on the graph or do I want it as 1 and 0?
 	toggleShader = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleShader);
 	toggleNoiseColor = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleNoiseColor);
-	rNoise = new Noise(intRandom(0, 100), .001);
-	noises.add(rNoise);
-	gNoise = new Noise(intRandom(0, 100), .001);
-	noises.add(gNoise);
-	bNoise = new Noise(intRandom(0, 100), .001);
-	noises.add(bNoise);
+	redNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(redNoise);
+	greenNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(greenNoise);
+	blueNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(blueNoise);
 	shaderTimeNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(shaderTimeNoise);
 }
@@ -101,6 +99,9 @@ public void setup() {
 public void draw() {
 	// handle any timed events first because it may affect the pixel array manipulation
 	timedEvents();
+
+	// to avoid bad performance
+	if (xStep < 10 || yStep < 10) isNoiseColor = false;
 
 	// manipulate pixel array
 	if (!isApplyingShader) {
@@ -116,7 +117,7 @@ public void draw() {
     resetShader();
 
 	if (showFPS) {
-		fill(100, 0, 0);
+		fill(255, 0, 0);
 		textSize(25);
 		text("fps: " + (int) frameRate, 50, 50);
 	}
@@ -139,13 +140,15 @@ void manipulatePixelArray() {
 				PVector col;
 				if (isNoiseColor) {
 					// with noise
-					rNoise.changeInc(floatRandom(.0005, .005));
-					gNoise.changeInc(floatRandom(.0005, .005));
-					bNoise.changeInc(floatRandom(.0005, .005));
-					col = new PVector(rNoise.getNoiseRange(0, 110), gNoise.getNoiseRange(0, 110), bNoise.getNoiseRange(0, 110));
+					redNoise.changeInc(floatRandom(.001, .01));
+					greenNoise.changeInc(floatRandom(.001, .01));
+					blueNoise.changeInc(floatRandom(.001, .01));
+					col = new PVector(	redNoise.getNoiseRange(0, 260), 
+										greenNoise.getNoiseRange(0, 260), 
+										blueNoise.getNoiseRange(0, 260));
 				} else {
 					// or at random
-					col = new PVector(intRandom(0, 100), intRandom(0, 100), intRandom(0, 100));
+					col = new PVector(intRandom(0, 260), intRandom(0, 260), intRandom(0, 260));
 				}
 				// determine indices for pixels array from coordinates and step
 				for (int dx = 0; dx < xStep; dx++) {
@@ -158,7 +161,7 @@ void manipulatePixelArray() {
 							// get index
 							int index = py * width + px;
 							// apply respective color to pixels array
-							buffer.pixels[index] = color(col.x, col.y, col.z);
+							buffer.pixels[index] = 0xFF000000 | ((int)col.x << 16) | ((int)col.y << 8) | (int)col.z;
 						}
 					}
 				}
@@ -186,17 +189,15 @@ void applyShader() {
 	}
 }
 
-// load a random shader
-void chooseRandomShader() {
-	int rand = intRandom(0, 2);
-}
 
 // set canvas and sketch to a new resolution
 void setNewGrid() {
 
 	// get new step close to old step with noise, bias towards lower numbers
-	xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep, -maxStep/2, maxStep/2, maxStep, -20);
-	yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep, -maxStep/2, maxStep/2, maxStep, -20);
+	// xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep, -maxStep/2, maxStep/2, maxStep, 2);
+	// yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep, -maxStep/2, maxStep/2, maxStep, 2);
+	xStep = (int)xStepNoise.getNoiseRange(-maxStep/2, maxStep, 2);
+	yStep = (int)yStepNoise.getNoiseRange(-maxStep/2, maxStep, 2);
 
 	// cutoff over one and apply
 	if (xStep < 1) xStep = 1;
@@ -232,6 +233,7 @@ void timedEvents() {
 	if (eventCounter > (nextEvent * 60)) {
 		chooseEvent(intRandom(0, 2));
 		nextEvent = floatRandom(minSwitchTime, maxSwitchTime);
+		nextEvent = 0;
 		eventCounter = 0;
 	}
 }
@@ -244,7 +246,13 @@ void chooseEvent(int event) {
 			if (!isApplyingShader) {
 				setNewGrid();
 			} else {
-				resizeBuffer(intRandom(0, width/2), intRandom(0, height/2));
+				float xStepToWidth = xStepNoise.getNoiseRange(-maxStep/2, maxStep, 3);
+				if (xStepToWidth < 1) xStepToWidth = 1;
+				xStepToWidth = width / xStepToWidth;
+				float yStepToWidth = yStepNoise.getNoiseRange(-maxStep/2, maxStep, 3);
+				if (yStepToWidth < 1) yStepToWidth = 1;
+				yStepToWidth = width / yStepToWidth;
+				resizeBuffer( xStepToWidth, yStepToWidth);
 			}
 		break;
 		case 1:
@@ -257,9 +265,6 @@ void chooseEvent(int event) {
 		break;
 		case 2:
 			isNoiseColor = toggleNoiseColor.getNoiseBool(-1, 1);
-			if (xStep < 20 || yStep < 20) {
-				isNoiseColor = false;
-			}
 	}
 }
 

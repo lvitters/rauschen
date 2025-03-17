@@ -24,6 +24,11 @@ class Noise {
 		inc = i;
 	}
 
+	// set time back to 0 to start back at noise fields origin
+	void resetTime() {
+		time = 0;
+	}
+
 	// compute and return noise
 	float getNoise() {
 		compute();

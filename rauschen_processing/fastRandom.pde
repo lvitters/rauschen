@@ -3,7 +3,8 @@ public static int intRandom(int min, int max) {
    return ThreadLocalRandom.current().nextInt(min, max + 1);
 }
 
-// fast float random function 
+// fast float random function (thanks Claude)
 public static float floatRandom(float min, float max) {
-	return ThreadLocalRandom.current().nextFloat(min, max + 1);
+    // Slightly adjusting the formula to potentially include the exact max value
+    return ThreadLocalRandom.current().nextFloat(min, max);
 }

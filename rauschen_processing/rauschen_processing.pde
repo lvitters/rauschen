@@ -26,20 +26,18 @@ Noise toggleSameStepDims;
 Noise toggleShader;
 Noise toggleNoiseColor;
 Noise rNoise;
-Noise rNoiseInc;
 Noise gNoise;
-Noise gNoiseInc;
 Noise bNoise;
-Noise bNoiseInc;
 Noise shaderTimeNoise;
 
 // toggles
-Boolean isApplyingShader = false;
 Boolean showFPS = false;
+Boolean isApplyingShader = false;
+Boolean isNoiseColor = false;
 
 // timed events
-float minSwitchTime = .01;
-float maxSwitchTime = .1;
+float minSwitchTime = 1;
+float maxSwitchTime = 2;
 float nextEvent = 1;		// init with 1 second
 float eventCounter = 0;
 
@@ -90,18 +88,12 @@ public void setup() {
 	noises.add(toggleShader);
 	toggleNoiseColor = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleNoiseColor);
-	rNoise = new Noise(intRandom(0, 100), .01);
+	rNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(rNoise);
-	rNoiseInc = new Noise(intRandom(0, 100), .01);
-	noises.add(rNoiseInc);
-	gNoise = new Noise(intRandom(0, 100), .01);
+	gNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(gNoise);
-	gNoiseInc = new Noise(intRandom(0, 100), .01);
-	noises.add(gNoiseInc);
-	bNoise = new Noise(intRandom(0, 100), .01);
+	bNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(bNoise);
-	bNoiseInc = new Noise(intRandom(0, 100), .01);
-	noises.add(bNoiseInc);
 	shaderTimeNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(shaderTimeNoise);
 }
@@ -120,11 +112,10 @@ public void draw() {
 	// display buffer
 	image(buffer, 0, 0, width, height);
 
-	// Disable shader before drawing text
+	// disable shader before drawing text
     resetShader();
 
 	if (showFPS) {
-		// display FPS
 		fill(100, 0, 0);
 		textSize(25);
 		text("fps: " + (int) frameRate, 50, 50);
@@ -143,8 +134,19 @@ void manipulatePixelArray() {
 				// offset only applies to first iteration
 				if (y > 0) yOffset = 0;
 				else yOffset = yOffsetRecord;
+				float r, g, b;
 				// get color in PVector (it stores three floats) for pixels or steps
-				PVector col = new PVector(intRandom(0, 100), intRandom(0, 100), intRandom(0, 100));
+				PVector col;
+				if (isNoiseColor) {
+					// with noise
+					rNoise.changeInc(floatRandom(.0005, .005));
+					gNoise.changeInc(floatRandom(.0005, .005));
+					bNoise.changeInc(floatRandom(.0005, .005));
+					col = new PVector(rNoise.getNoiseRange(0, 110), gNoise.getNoiseRange(0, 110), bNoise.getNoiseRange(0, 110));
+				} else {
+					// or at random
+					col = new PVector(intRandom(0, 100), intRandom(0, 100), intRandom(0, 100));
+				}
 				// determine indices for pixels array from coordinates and step
 				for (int dx = 0; dx < xStep; dx++) {
 					for (int dy = 0; dy < yStep; dy++) {
@@ -170,10 +172,18 @@ void applyShader() {
 	shaderTime += shaderTimeNoise.getNoiseRange(.05, .3);
 	shader.set("u_time", shaderTime);
 	shader.set("u_texture", tempBuffer);
-	buffer.beginDraw();
-		buffer.shader(shader);
-		buffer.rect(0, 0, width, height);
-	buffer.endDraw();
+	if (buffer != null) {
+		try {
+			buffer.beginDraw();
+				buffer.shader(shader);
+				buffer.rect(0, 0, width, height);
+			buffer.endDraw();
+		} catch (Exception e) {
+			println("buffer error: " + e.getMessage());
+			println(buffer);
+			buffer = createGraphics(width, height, P2D);
+		}
+	}
 }
 
 // load a random shader
@@ -201,7 +211,8 @@ void setNewGrid() {
 		println("same step");
 	}
 
-	// determine offset for first iteration so that the "cells" are cutoff not only on the right and bottom edge, that is of random size of the cuttoff cell
+	// determine offset for first iteration that is of random size of the cuttoff cell
+	// so that the "cells" are cutoff not only on the right and bottom edge
 	xOffset = (int)random(xStep % width);
 	xOffsetRecord = xOffset;
 	yOffset = (int)random(yStep % height);
@@ -219,14 +230,14 @@ void resizeBuffer(float w, float h) {
 void timedEvents() {
 	eventCounter++;
 	if (eventCounter > (nextEvent * 60)) {
-		chooseRandomEvent(intRandom(0, 1));
+		chooseEvent(intRandom(0, 2));
 		nextEvent = floatRandom(minSwitchTime, maxSwitchTime);
 		eventCounter = 0;
 	}
 }
 
 // switch between which events to fire
-void chooseRandomEvent(int event) {
+void chooseEvent(int event) {
 	println("event: " + event);
 	switch (event) {
 		case 0:
@@ -238,10 +249,17 @@ void chooseRandomEvent(int event) {
 		break;
 		case 1:
 			isApplyingShader = toggleShader.getNoiseBool(-1, 1);
-			println("applying shader: " + isApplyingShader);
-			if (isApplyingShader) tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
+			if (isApplyingShader) {
+				println("applying shader: ");
+				tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
+			}
 			resizeBuffer(width, height);
 		break;
+		case 2:
+			isNoiseColor = toggleNoiseColor.getNoiseBool(-1, 1);
+			if (xStep < 20 || yStep < 20) {
+				isNoiseColor = false;
+			}
 	}
 }
 
@@ -251,8 +269,6 @@ void keyPressed() {
 		showFPS = !showFPS;
 	}
 }
-
-// ------------------------------------------------ UNUSED ------------------------------------------------ //
 
 // empty the display buffer 
 void clearBuffer(PGraphics buffer) {
@@ -267,25 +283,4 @@ void clearBuffer(PGraphics buffer) {
 float cutoff(float value, float cutoff) {
 	if (value > cutoff) return value;
 	else return cutoff;
-}
-
-// determine a color for a pixel or a step in the pixel array
-PVector getColor() {
-	float r, g, b;
-	if (isApplyingShader) {
-		// inc noises randomly so not all pixels have the same color
-		rNoise.changeInc(floatRandom(.005, .01));
-		gNoise.changeInc(floatRandom(.005, .01));
-		bNoise.changeInc(floatRandom(.005, .01));
-		// get color values from noise
-		r = rNoise.getNoiseRange(0, 110);
-		g = gNoise.getNoiseRange(0, 110);
-		b = bNoise.getNoiseRange(0, 110);
-	} else {
-		// get color values at random
-		r = intRandom(0, 360);
-		g = intRandom(20, 100);
-		b = intRandom(20, 100);
-	}
-	return new PVector(r, g, b);
 }

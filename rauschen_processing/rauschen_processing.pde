@@ -194,10 +194,10 @@ void applyShader() {
 void setNewGrid() {
 
 	// get new step close to old step with noise, bias towards lower numbers
-	// xStep = (int)xStepNoise.getVariableNoiseRange(- maxStep, -maxStep/2, maxStep/2, maxStep, 2);
-	// yStep = (int)yStepNoise.getVariableNoiseRange(- maxStep, -maxStep/2, maxStep/2, maxStep, 2);
-	xStep = (int)xStepNoise.getNoiseRange(-maxStep/2, maxStep, 2);
-	yStep = (int)yStepNoise.getNoiseRange(-maxStep/2, maxStep, 2);
+	xStep = (int)xStepNoise.getVariableNoiseRange(-maxStep/2, 0, maxStep/2, maxStep, 2);
+	yStep = (int)yStepNoise.getVariableNoiseRange(-maxStep/2, 0, maxStep/2, maxStep, 2);
+	// xStep = (int)xStepNoise.getNoiseRange(-10, maxStep, 2);
+	// yStep = (int)yStepNoise.getNoiseRange(-10, maxStep, 2);
 
 	// cutoff over one and apply
 	if (xStep < 1) xStep = 1;
@@ -224,7 +224,7 @@ void setNewGrid() {
 void resizeBuffer(float w, float h) {
 	buffer.dispose();
 	buffer = createGraphics((int)w, (int)h, P2D);
-	println("buffer resized to: x:" + w + " y: " + h);
+	println("buffer resized to: x:" + (int)w + " y: " + (int)h);
 }
 
 // choose a random event after a random interval
@@ -246,13 +246,7 @@ void chooseEvent(int event) {
 			if (!isApplyingShader) {
 				setNewGrid();
 			} else {
-				float xStepToWidth = xStepNoise.getNoiseRange(-maxStep/2, maxStep, 3);
-				if (xStepToWidth < 1) xStepToWidth = 1;
-				xStepToWidth = width / xStepToWidth;
-				float yStepToWidth = yStepNoise.getNoiseRange(-maxStep/2, maxStep, 3);
-				if (yStepToWidth < 1) yStepToWidth = 1;
-				yStepToWidth = width / yStepToWidth;
-				resizeBuffer( xStepToWidth, yStepToWidth);
+				resizeBuffer(intRandom(0, width), intRandom(0, height));
 			}
 		break;
 		case 1:

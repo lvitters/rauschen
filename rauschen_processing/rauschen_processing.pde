@@ -1,4 +1,8 @@
 import java.util.concurrent.ThreadLocalRandom;		// faster random functions
+import javax.sound.midi.*;							// midi controller input
+
+MidiDevice inputDevice;
+int[] knobValues = new int[2]; // currently using two knobs
 
 // main window
 int width = 1000;
@@ -31,8 +35,8 @@ Noise blueNoise;
 Noise shaderTimeNoise;
 
 // toggles
-Boolean showFPS = false;
-Boolean debug = false;
+Boolean showDebug = false;
+Boolean printDebug = false;
 Boolean isApplyingShader = false;
 Boolean isNoiseColor = false;
 
@@ -64,6 +68,8 @@ public void setup() {
 	// can't go in settings for some reason
 	frameRate(60);
 	colorMode(RGB, 255, 255, 255);
+
+	setupMidi();
 
 	// create buffer
 	buffer = createGraphics((int)width, (int)height, P2D);
@@ -98,6 +104,8 @@ public void setup() {
 }
 
 public void draw() {
+	receiveMidi();
+
 	// handle any timed events first because it may affect the pixel array manipulation
 	timedEvents();
 
@@ -117,10 +125,11 @@ public void draw() {
 	// disable shader before drawing text
     resetShader();
 
-	if (showFPS) {
+	if (showDebug) {
 		fill(255, 0, 0);
 		textSize(25);
 		text("fps: " + (int) frameRate, 50, 50);
+		text("nextEvent: " + (int) nextEvent, 50, 75);
 	}
 }
 
@@ -203,13 +212,13 @@ void setNewGrid() {
 	if (xStep < 1) xStep = 1;
 	if (yStep < 1) yStep = 1;
 
-	if (debug) println("xStep: " + xStep + " yStep: " + yStep);
+	if (printDebug) println("xStep: " + xStep + " yStep: " + yStep);
 
 	// determine if step should be the same in both dimensions
 	if (toggleSameStepDims.getNoiseBool(-4, 3)) {
 		// apply same step to both dimensions
 		yStep = xStep;
-		if (debug) println("same step");
+		if (printDebug) println("same step");
 	}
 
 	// determine offset for first iteration that is of random size of the cuttoff cell
@@ -224,7 +233,7 @@ void setNewGrid() {
 void resizeBuffer(float w, float h) {
 	buffer.dispose();
 	buffer = createGraphics((int)w, (int)h, P2D);
-	if (debug) println("buffer resized to: x:" + (int)w + " y: " + (int)h);
+	if (printDebug) println("buffer resized to: x:" + (int)w + " y: " + (int)h);
 }
 
 // choose a random event after a random interval
@@ -232,15 +241,18 @@ void timedEvents() {
 	eventCounter++;
 	if (eventCounter > (nextEvent * 60)) {
 		chooseEvent(intRandom(0, 2));
-		nextEvent = floatRandom(minSwitchTime, maxSwitchTime);
-		nextEvent = 0;
+		if (maxSwitchTime > minSwitchTime) {
+			nextEvent = floatRandom(minSwitchTime, maxSwitchTime);
+		} else {
+			nextEvent = 0;
+		}
 		eventCounter = 0;
 	}
 }
 
 // switch between which events to fire
 void chooseEvent(int event) {
-	if (debug) println("event: " + event);
+	if (printDebug) println("event: " + event);
 	switch (event) {
 		case 0:
 			if (!isApplyingShader) {
@@ -252,7 +264,7 @@ void chooseEvent(int event) {
 		case 1:
 			isApplyingShader = toggleShader.getNoiseBool(-1, 1);
 			if (isApplyingShader) {
-				if (debug) println("applying shader: ");
+				if (printDebug) println("applying shader: ");
 				tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
 			}
 			resizeBuffer(width, height);
@@ -281,10 +293,43 @@ float cutoff(float value, float cutoff) {
 void keyPressed() {
 	// f - show fps
 	if (keyCode == 70) {
-		showFPS = !showFPS;
+		showDebug = !showDebug;
 	}
-	// d - debug
+	// d - printDebug
 	if (keyCode == 68) {
-		debug = !debug;
+		printDebug = !printDebug;
+	}
+}
+
+// map variables to midi input
+void receiveMidi() {
+	minSwitchTime = (1 + knobValues[0]) / 10;	// cannot be 0
+	maxSwitchTime = (1 + knobValues[1]) / 10;	// cannot be 0
+}
+
+// get info from device list and set controller as input device
+void setupMidi() {
+	try {
+		// get all MIDI devices
+		MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
+		
+		// look specifically for MPKmini2 with transmitter capability
+		for (int i = 0; i < infos.length; i++) {
+			MidiDevice device = MidiSystem.getMidiDevice(infos[i]);
+			if (infos[i].getName().equals("MPKmini2") && device.getMaxTransmitters() != 0) {
+				inputDevice = device;
+				inputDevice.open();
+				Transmitter transmitter = inputDevice.getTransmitter();
+				transmitter.setReceiver(new MidiInputReceiver());
+				println("Successfully opened MPKmini2 for input");
+				break;
+			}
+		}
+		if (inputDevice == null) {
+			println("Could not find MPKmini2 with input capability");
+		}
+	} catch (Exception e) {
+		println("Error: " + e.getMessage());
+		e.printStackTrace();
 	}
 }

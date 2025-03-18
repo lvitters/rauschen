@@ -2,7 +2,7 @@ import java.util.concurrent.ThreadLocalRandom;		// faster random functions
 import javax.sound.midi.*;							// midi controller input
 
 MidiDevice inputDevice;
-int[] knobValues = new int[2]; // currently using two knobs
+int[] knobValues = new int[3]; // currently using two knobs
 
 // main window
 int width = 1000;
@@ -37,10 +37,12 @@ Noise shaderTimeNoise;
 // toggles
 Boolean showDebug = false;
 Boolean printDebug = false;
+Boolean isRandomSwitchTime = true;
 Boolean isApplyingShader = false;
 Boolean isNoiseColor = false;
 
 // timed events
+float switchTime = 1;
 float minSwitchTime = 1;
 float maxSwitchTime = 2;
 float nextEvent = 1;		// init with 1 second
@@ -127,11 +129,12 @@ public void draw() {
 
 	if (showDebug) {
 		fill(0, 0, 0);
-		rect(40, 25, 200, 60);
+		rect(0, 0, 300, 100);
 		fill(255, 0, 0);
 		textSize(25);
-		text("fps: " + (int) frameRate, 50, 50);
-		text("nextEvent: " + nf(nextEvent, 2, 3), 50, 75);
+		text("fps: " + (int) frameRate, 10, 30);
+		text("next switch in: " + nf(nextEvent, 2, 3), 10, 55);
+		text("random switch time: " + isRandomSwitchTime, 10, 80);
 	}
 }
 
@@ -238,16 +241,14 @@ void resizeBuffer(float w, float h) {
 	if (printDebug) println("buffer resized to: x:" + (int)w + " y: " + (int)h);
 }
 
-// choose a random event after a random interval
+// choose a random event after a random interval, or set the time until the next event to switchTime
 void timedEvents() {
 	eventCounter++;
+	if (!isRandomSwitchTime) nextEvent = switchTime;
 	if (eventCounter > (nextEvent * 60)) {
 		chooseEvent(intRandom(0, 2));
-		if (maxSwitchTime > minSwitchTime) {
-			nextEvent = floatRandom(minSwitchTime, maxSwitchTime);
-		} else {
-			nextEvent = 0;
-		}
+		if (maxSwitchTime > minSwitchTime) nextEvent = floatRandom(minSwitchTime, maxSwitchTime);
+		else nextEvent = 0;
 		eventCounter = 0;
 	}
 }
@@ -297,9 +298,13 @@ void keyPressed() {
 	if (keyCode == 70) {
 		showDebug = !showDebug;
 	}
-	// d - printDebug
+	// d - print debug
 	if (keyCode == 68) {
 		printDebug = !printDebug;
+	}
+	// r - use random time for next event
+	if (keyCode == 82) {
+		isRandomSwitchTime = !isRandomSwitchTime;
 	}
 }
 
@@ -307,6 +312,7 @@ void keyPressed() {
 void receiveMidi() {
 	minSwitchTime = (1 + knobValues[0]) / 12.8;	// cannot be 0
 	maxSwitchTime = (1 + knobValues[1]) / 12.8;	// cannot be 0
+	switchTime = (knobValues[2]) / 12.8 / 2;	// can be 0
 }
 
 // get info from device list and set controller as input device

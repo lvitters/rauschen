@@ -1,4 +1,4 @@
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.ThreadLocalRandom;		// faster random functions
 
 // main window
 int width = 1000;
@@ -32,6 +32,7 @@ Noise shaderTimeNoise;
 
 // toggles
 Boolean showFPS = false;
+Boolean debug = false;
 Boolean isApplyingShader = false;
 Boolean isNoiseColor = false;
 
@@ -54,10 +55,6 @@ public void settings() {
 }
 
 public void setup() {
-	// create buffer
-	buffer = createGraphics((int)width, (int)height, P2D);
-	tempBuffer = createGraphics((int)width, (int)height, P2D);
-
 	// set this window title
 	windowTitle("Rauschen");
 
@@ -67,6 +64,10 @@ public void setup() {
 	// can't go in settings for some reason
 	frameRate(60);
 	colorMode(RGB, 255, 255, 255);
+
+	// create buffer
+	buffer = createGraphics((int)width, (int)height, P2D);
+	tempBuffer = createGraphics((int)width, (int)height, P2D);
 
 	// shader stuff
 	shader = loadShader("1DNoise.glsl");
@@ -183,7 +184,6 @@ void applyShader() {
 			buffer.endDraw();
 		} catch (Exception e) {
 			println("buffer error: " + e.getMessage());
-			println(buffer);
 			buffer = createGraphics(width, height, P2D);
 		}
 	}
@@ -203,13 +203,13 @@ void setNewGrid() {
 	if (xStep < 1) xStep = 1;
 	if (yStep < 1) yStep = 1;
 
-	println("xStep: " + xStep + " yStep: " + yStep);
+	if (debug) println("xStep: " + xStep + " yStep: " + yStep);
 
 	// determine if step should be the same in both dimensions
 	if (toggleSameStepDims.getNoiseBool(-4, 3)) {
 		// apply same step to both dimensions
 		yStep = xStep;
-		println("same step");
+		if (debug) println("same step");
 	}
 
 	// determine offset for first iteration that is of random size of the cuttoff cell
@@ -224,7 +224,7 @@ void setNewGrid() {
 void resizeBuffer(float w, float h) {
 	buffer.dispose();
 	buffer = createGraphics((int)w, (int)h, P2D);
-	println("buffer resized to: x:" + (int)w + " y: " + (int)h);
+	if (debug) println("buffer resized to: x:" + (int)w + " y: " + (int)h);
 }
 
 // choose a random event after a random interval
@@ -240,7 +240,7 @@ void timedEvents() {
 
 // switch between which events to fire
 void chooseEvent(int event) {
-	println("event: " + event);
+	if (debug) println("event: " + event);
 	switch (event) {
 		case 0:
 			if (!isApplyingShader) {
@@ -252,20 +252,13 @@ void chooseEvent(int event) {
 		case 1:
 			isApplyingShader = toggleShader.getNoiseBool(-1, 1);
 			if (isApplyingShader) {
-				println("applying shader: ");
+				if (debug) println("applying shader: ");
 				tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
 			}
 			resizeBuffer(width, height);
 		break;
 		case 2:
 			isNoiseColor = toggleNoiseColor.getNoiseBool(-1, 1);
-	}
-}
-
-// listen to key presses
-void keyPressed() {
-	if (keyCode == 70) {
-		showFPS = !showFPS;
 	}
 }
 
@@ -282,4 +275,16 @@ void clearBuffer(PGraphics buffer) {
 float cutoff(float value, float cutoff) {
 	if (value > cutoff) return value;
 	else return cutoff;
+}
+
+// listen to key presses
+void keyPressed() {
+	// f - show fps
+	if (keyCode == 70) {
+		showFPS = !showFPS;
+	}
+	// d - debug
+	if (keyCode == 68) {
+		debug = !debug;
+	}
 }

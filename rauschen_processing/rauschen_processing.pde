@@ -126,10 +126,12 @@ public void draw() {
     resetShader();
 
 	if (showDebug) {
+		fill(0, 0, 0);
+		rect(40, 25, 200, 60);
 		fill(255, 0, 0);
 		textSize(25);
 		text("fps: " + (int) frameRate, 50, 50);
-		text("nextEvent: " + (int) nextEvent, 50, 75);
+		text("nextEvent: " + nf(nextEvent, 2, 3), 50, 75);
 	}
 }
 
@@ -264,7 +266,7 @@ void chooseEvent(int event) {
 		case 1:
 			isApplyingShader = toggleShader.getNoiseBool(-1, 1);
 			if (isApplyingShader) {
-				if (printDebug) println("applying shader: ");
+				if (printDebug) println("applying shader");
 				tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
 			}
 			resizeBuffer(width, height);
@@ -303,8 +305,8 @@ void keyPressed() {
 
 // map variables to midi input
 void receiveMidi() {
-	minSwitchTime = (1 + knobValues[0]) / 10;	// cannot be 0
-	maxSwitchTime = (1 + knobValues[1]) / 10;	// cannot be 0
+	minSwitchTime = (1 + knobValues[0]) / 12.8;	// cannot be 0
+	maxSwitchTime = (1 + knobValues[1]) / 12.8;	// cannot be 0
 }
 
 // get info from device list and set controller as input device

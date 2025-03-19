@@ -2,7 +2,7 @@ import java.util.concurrent.ThreadLocalRandom;		// faster random functions
 import javax.sound.midi.*;							// midi controller input
 
 MidiDevice inputDevice;
-int[] knobValues = new int[3]; // currently using two knobs
+int[] knobValues = new int[4]; // currently using two knobs
 
 // main window
 int width = 1000;
@@ -37,6 +37,7 @@ Noise shaderTimeNoise;
 // toggles
 Boolean showDebug = false;
 Boolean printDebug = false;
+Boolean isAutoMode = true;
 Boolean isRandomSwitchTime = true;
 Boolean isApplyingShader = false;
 Boolean isNoiseColor = false;
@@ -44,7 +45,8 @@ Boolean isNoiseColor = false;
 // timed events
 float switchTime = 1;
 float minSwitchTime = 1;
-float maxSwitchTime = 2;
+float maxSwitchTime = 10;
+float switchTimeMultiplier = 0;
 float nextEvent = 1;		// init with 1 second
 float eventCounter = 0;
 
@@ -68,7 +70,7 @@ public void setup() {
 	surface.setLocation(10, 60);
 
 	// can't go in settings for some reason
-	frameRate(60);
+	frameRate(120);
 	colorMode(RGB, 255, 255, 255);
 
 	setupMidi();
@@ -109,10 +111,11 @@ public void draw() {
 	receiveMidi();
 
 	// handle any timed events first because it may affect the pixel array manipulation
-	timedEvents();
+	if (isAutoMode) timedEvents();
 
 	// to avoid bad performance
 	if (xStep < 10 || yStep < 10) isNoiseColor = false;
+	else isNoiseColor = true;	//debug
 
 	// manipulate pixel array
 	if (!isApplyingShader) {
@@ -129,12 +132,16 @@ public void draw() {
 
 	if (showDebug) {
 		fill(0, 0, 0);
-		rect(0, 0, 300, 100);
+		rect(0, 0, 300, 200);
 		fill(255, 0, 0);
 		textSize(25);
 		text("fps: " + (int) frameRate, 10, 30);
-		text("next switch in: " + nf(nextEvent, 2, 3), 10, 55);
-		text("random switch time: " + isRandomSwitchTime, 10, 80);
+		text("xStep: " + xStep + " yStep: " + yStep, 10, 55);
+		text("auto mode: " + isAutoMode, 10, 80);
+		text("next switch in: " + nf(nextEvent, 2, 3), 10, 105);
+		text("random switch time: " + isRandomSwitchTime, 10, 130);
+		text("applying shader: " + isApplyingShader, 10, 155);
+		text("noise color: " + isNoiseColor, 10, 180);
 	}
 }
 
@@ -155,15 +162,15 @@ void manipulatePixelArray() {
 				PVector col;
 				if (isNoiseColor) {
 					// with noise
-					redNoise.changeInc(floatRandom(.001, .01));
-					greenNoise.changeInc(floatRandom(.001, .01));
-					blueNoise.changeInc(floatRandom(.001, .01));
-					col = new PVector(	redNoise.getNoiseRange(0, 260), 
-										greenNoise.getNoiseRange(0, 260), 
-										blueNoise.getNoiseRange(0, 260));
+					redNoise.changeInc(floatRandom(.01, .1));
+					greenNoise.changeInc(floatRandom(.01, .1));
+					blueNoise.changeInc(floatRandom(.01, .1));
+					col = new PVector(	redNoise.getNoiseRange(0, 255), 
+										greenNoise.getNoiseRange(0, 255), 
+										blueNoise.getNoiseRange(0, 255));
 				} else {
 					// or at random
-					col = new PVector(intRandom(0, 260), intRandom(0, 260), intRandom(0, 260));
+					col = new PVector(intRandom(0, 255), intRandom(0, 255), intRandom(0, 255));
 				}
 				// determine indices for pixels array from coordinates and step
 				for (int dx = 0; dx < xStep; dx++) {
@@ -244,10 +251,10 @@ void resizeBuffer(float w, float h) {
 // choose a random event after a random interval, or set the time until the next event to switchTime
 void timedEvents() {
 	eventCounter++;
-	if (!isRandomSwitchTime) nextEvent = switchTime;
+	if (!isRandomSwitchTime) nextEvent = switchTime + (switchTime * switchTimeMultiplier);
 	if (eventCounter > (nextEvent * 60)) {
 		chooseEvent(intRandom(0, 2));
-		if (maxSwitchTime > minSwitchTime) nextEvent = floatRandom(minSwitchTime, maxSwitchTime);
+		if (maxSwitchTime > minSwitchTime) nextEvent = floatRandom(minSwitchTime + (minSwitchTime * switchTimeMultiplier), maxSwitchTime + (maxSwitchTime * switchTimeMultiplier));
 		else nextEvent = 0;
 		eventCounter = 0;
 	}
@@ -306,6 +313,14 @@ void keyPressed() {
 	if (keyCode == 82) {
 		isRandomSwitchTime = !isRandomSwitchTime;
 	}
+	// a - use auto mode or not
+	if (keyCode == 65) {
+		isAutoMode = !isAutoMode;
+	}
+	// s - reset nextEvent / switch now!
+	if (keyCode == 83) {
+		nextEvent = 0;
+	}
 }
 
 // map variables to midi input
@@ -313,6 +328,7 @@ void receiveMidi() {
 	minSwitchTime = (1 + knobValues[0]) / 12.8;	// cannot be 0
 	maxSwitchTime = (1 + knobValues[1]) / 12.8;	// cannot be 0
 	switchTime = (knobValues[2]) / 12.8 / 2;	// can be 0
+	switchTimeMultiplier = knobValues[3];		// should be 0 most of the time
 }
 
 // get info from device list and set controller as input device

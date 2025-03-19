@@ -22,6 +22,8 @@ class MidiInputReceiver implements Receiver {
 					knobValues[1] = value;
 				} else if (number == 3) {
 					knobValues[2] = value;
+				} else if (number == 4) {
+					knobValues[3] = value;
 				}
 			}
 		}

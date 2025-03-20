@@ -1,10 +1,10 @@
 import java.util.concurrent.ThreadLocalRandom;		// faster random functions
 import javax.sound.midi.*;							// midi controller input
 import wellen.*;									// audio stuff
-import wellen.dsp.*;								// should be included in the above, but for some reason no?
+import wellen.dsp.*;								// should be included in the above, but for some reason isn't
 
 MidiDevice inputDevice;
-int[] knobValues = new int[4]; // currently using two knobs
+int[] knobValues = new int[4]; // currently using 4 knobs
 
 // main window
 int width = 1000;
@@ -123,18 +123,17 @@ public void draw() {
 	if (xStep < 10 || yStep < 10) isNoiseColor = false;
 	else isNoiseColor = true;	//debug
 
-	// manipulate pixel array
+	// manipulate buffer's pixels
 	if (!isApplyingShader) {
 		manipulatePixelArray();
 	} else {
 		applyShader();
+		// load shader pixels into buffer for audioblock() to generate sound from
+		buffer.loadPixels();
 	}
 
 	// display buffer
 	image(buffer, 0, 0, width, height);
-
-	// disable shader before drawing text
-    resetShader();
 
 	if (showDebug) showDebug();
 }

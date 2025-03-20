@@ -1,5 +1,7 @@
 import java.util.concurrent.ThreadLocalRandom;		// faster random functions
 import javax.sound.midi.*;							// midi controller input
+import wellen.*;									// audio stuff
+import wellen.dsp.*;								// should be included in the above, but for some reason no?
 
 MidiDevice inputDevice;
 int[] knobValues = new int[4]; // currently using two knobs
@@ -73,7 +75,11 @@ public void setup() {
 	frameRate(120);
 	colorMode(RGB, 255, 255, 255);
 
+	// midi controls
 	setupMidi();
+
+	// start wellen's digital signal processing
+	DSP.start(this);
 
 	// create buffer
 	buffer = createGraphics((int)width, (int)height, P2D);
@@ -130,19 +136,7 @@ public void draw() {
 	// disable shader before drawing text
     resetShader();
 
-	if (showDebug) {
-		fill(0, 0, 0);
-		rect(0, 0, 300, 200);
-		fill(255, 0, 0);
-		textSize(25);
-		text("fps: " + (int) frameRate, 10, 30);
-		text("xStep: " + xStep + " yStep: " + yStep, 10, 55);
-		text("auto mode: " + isAutoMode, 10, 80);
-		text("next switch in: " + nf(nextEvent, 2, 3), 10, 105);
-		text("random switch time: " + isRandomSwitchTime, 10, 130);
-		text("applying shader: " + isApplyingShader, 10, 155);
-		text("noise color: " + isNoiseColor, 10, 180);
-	}
+	if (showDebug) showDebug();
 }
 
 // apply from setNewGrid() to the pixel array 
@@ -297,6 +291,39 @@ void clearBuffer(PGraphics buffer) {
 float cutoff(float value, float cutoff) {
 	if (value > cutoff) return value;
 	else return cutoff;
+}
+
+// this gets called by wellen's digital signal processing (DSP) and takes an array of samples for playback
+void audioblock(float[] pSamples) {
+	for (int i = 0; i < pSamples.length; i++) {
+		// extract RGB components from buffer pixel array
+		float red = red(buffer.pixels[i]);
+		float green = green(buffer.pixels[i]);
+		float blue = blue(buffer.pixels[i]);
+
+		// calculate the average
+		float average = (red + green + blue) / 3.0;
+
+		// map to (desired) audio sample range
+		pSamples[i] = map(average, 0, 255, -.5, 5);
+
+		//println(pSamples[i]);
+	}
+}
+
+// render some debug info to the main window
+void showDebug() {
+		fill(0, 0, 0);
+		rect(0, 0, 300, 200);
+		fill(255, 0, 0);
+		textSize(25);
+		text("fps: " + (int) frameRate, 10, 30);
+		text("xStep: " + xStep + " yStep: " + yStep, 10, 55);
+		text("auto mode: " + isAutoMode, 10, 80);
+		text("next switch in: " + nf(nextEvent, 2, 3), 10, 105);
+		text("random switch time: " + isRandomSwitchTime, 10, 130);
+		text("applying shader: " + isApplyingShader, 10, 155);
+		text("noise color: " + isNoiseColor, 10, 180);
 }
 
 // listen to key presses

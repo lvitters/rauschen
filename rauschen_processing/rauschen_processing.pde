@@ -317,9 +317,9 @@ void keyPressed() {
 	if (keyCode == 65) {
 		isAutoMode = !isAutoMode;
 	}
-	// s - reset nextEvent / switch now!
+	// s - switch now!
 	if (keyCode == 83) {
-		nextEvent = 0;
+		chooseEvent(intRandom(0, 2));
 	}
 }
 

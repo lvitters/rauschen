@@ -149,8 +149,9 @@ public void draw() {
 
 	if (showDebug) showDebug();
 
-	// send noises over OSC
+	// send information to control sketch
 	sendNoisesOSC();
+	sendInfoOSC();
 }
 
 // apply from setNewGrid() to the pixel array 
@@ -408,14 +409,28 @@ void setupMidi() {
 
 // send noises over OSC
 void sendNoisesOSC() {
-	// Create a new OSC message
+	// create a new OSC message
 	OscMessage msg = new OscMessage("/noises");
 	
-	// Add all noise values to the message
+	// add all noise values to the message
 	for (Noise n : noises) {
 		msg.add(n.value);
 	}
 	
-	// Send the message
+	// send the message
 	oscP5.send(msg, controlSketchLocation);
+}
+
+// send debug info over OSC
+void sendInfoOSC() {
+    // send each parameter as its own OSC message (booleans need to be converted to 1 and 0)
+    oscP5.send(new OscMessage("/info/fps").add((int)frameRate), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/xStep").add(xStep), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/yStep").add(yStep), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/isAutoMode").add(isAutoMode ? 1 : 0), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/nextSwitch").add(nextEvent), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/isRandomSwitchTime").add(isRandomSwitchTime ? 1 : 0), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/isApplyingShader").add(isApplyingShader ? 1 : 0), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/isNoiseColor").add(isNoiseColor ? 1 : 0), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/isMakingSound").add(isMakingSound ? 1 : 0), controlSketchLocation);
 }

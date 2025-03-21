@@ -8,9 +8,9 @@ class MidiInputReceiver implements Receiver {
 				int number = sm.getData1();  // CC number (identifies which knob)
 				int value = sm.getData2();   // CC value (0-127)
 				
-				//println("Knob/Controller: CC#" + number + " Value: " + value + " Channel: " + channel);
+				// println("Knob/Controller: CC#" + number + " Value: " + value + " Channel: " + channel);
 				
-				// // store the knob value (if within our array range), using knob 1 and 2
+				// // store the knob value (if within array range), using knob 1 and 2
 				// if (number >= 0 && number < knobValues.length) {
 				// 	knobValues[number - 1] = value;
 				// }

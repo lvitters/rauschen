@@ -3,8 +3,13 @@ import javax.sound.midi.*;							// midi controller input
 import wellen.*;									// audio stuff
 import wellen.dsp.*;								// should be included in the above, but for some reason isn't
 
-MidiDevice inputDevice;
-int[] knobValues = new int[4]; // currently using 4 knobs
+// buffer for display
+PGraphics buffer;
+PGraphics tempBuffer;
+
+// shader stuff
+PShader shader;
+float shaderTime = 0;
 
 // main window
 int width = 1000;
@@ -43,6 +48,7 @@ Boolean isAutoMode = true;
 Boolean isRandomSwitchTime = true;
 Boolean isApplyingShader = false;
 Boolean isNoiseColor = false;
+Boolean isMakingSound = false;
 
 // timed events
 float switchTime = 1;
@@ -52,13 +58,12 @@ float switchTimeMultiplier = 0;
 float nextEvent = 1;		// init with 1 second
 float eventCounter = 0;
 
-// buffer for display
-PGraphics buffer;
-PGraphics tempBuffer;
+// input
+MidiDevice inputDevice;
+int[] knobValues = new int[4]; // currently using 4 knobs
 
-// shader stuff
-PShader shader;
-float shaderTime = 0;
+// audio
+int[] audioPixels;
 
 public void settings() {
 	size(width, height, P2D);
@@ -78,8 +83,9 @@ public void setup() {
 	// midi controls
 	setupMidi();
 
-	// start wellen's digital signal processing
+	// start wellen's digital signal processing but pause for now
 	DSP.start(this);
+	DSP.pause(true);
 
 	// create buffer
 	buffer = createGraphics((int)width, (int)height, P2D);
@@ -294,19 +300,21 @@ float cutoff(float value, float cutoff) {
 
 // this gets called by wellen's digital signal processing (DSP) and takes an array of samples for playback
 void audioblock(float[] pSamples) {
-	for (int i = 0; i < pSamples.length; i++) {
-		// extract RGB components from buffer pixel array
-		float red = red(buffer.pixels[i]);
-		float green = green(buffer.pixels[i]);
-		float blue = blue(buffer.pixels[i]);
+	if (buffer.pixels != null) {
+		for (int i = 0; i < pSamples.length; i++) {
+			// extract RGB components from buffer pixel array
+			float red = red(buffer.pixels[i]);
+			float green = green(buffer.pixels[i]);
+			float blue = blue(buffer.pixels[i]);
 
-		// calculate the average
-		float average = (red + green + blue) / 3.0;
+			// calculate the average
+			float average = (red + green + blue) / 3.0;
 
-		// map to (desired) audio sample range
-		pSamples[i] = map(average, 0, 255, -.5, 5);
+			// map to (desired) audio sample range
+			pSamples[i] = map(average, 0, 255, -.5, 5);
 
-		//println(pSamples[i]);
+			//println(pSamples[i]);
+		}
 	}
 }
 
@@ -346,6 +354,11 @@ void keyPressed() {
 	// s - switch now!
 	if (keyCode == 83) {
 		chooseEvent(intRandom(0, 2));
+	}
+	// n - stop noise (audio)
+	if (keyCode == 78) {
+		if (DSP.is_paused()) DSP.pause(false);
+		else DSP.pause(true);
 	}
 }
 

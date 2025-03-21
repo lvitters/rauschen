@@ -13,7 +13,7 @@ class Graph {
 	// add a point to the graph
 	public void addPoint(float point) {
 		// if the graph is wider than the window, remove the first point
-		if (points.size() > gWidth) {
+		if (points.size() > width) {
 			points.remove(0);
 		}
 		// add a new point
@@ -22,22 +22,22 @@ class Graph {
 
 	// add empty points to the graph on setup
 	public void init() {
-		for (int i = 0; i < gWidth; i++) {
+		for (int i = 0; i < width; i++) {
 			points.add(0.0);
 		}
 	}
 
 	// display points from graph // CURRENTLY UNUSED BECAUSE VERTICES ONLY DISPLAY WHEN DONE IN GRAPHS DIRECTLY
-	// public void display() {
-	// 	stroke(col);
-	// 	beginShape(LINES);
-	// 		for (int x = 0; x < points.size(); x++) {
-	// 			// draw the points
-	// 			Float y = points.get(x);
-	// 			if (y != null) {
-	// 				vertex(x, map(y, 0, 1, height - 20, 20));
-	// 			}
-	// 		}
-	// 	endShape();
-	// }
+	public void display() {
+		stroke(col);
+		beginShape(LINES);
+			for (int x = 0; x < points.size(); x++) {
+				// draw the points
+				Float y = points.get(x);
+				if (y != null) {
+					vertex(x, map(y, 0, 1, height - 20, 20));
+				}
+			}
+		endShape();
+	}
 }

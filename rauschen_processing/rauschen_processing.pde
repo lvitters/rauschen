@@ -2,6 +2,11 @@ import java.util.concurrent.ThreadLocalRandom;		// faster random functions
 import javax.sound.midi.*;							// midi controller input
 import wellen.*;									// audio stuff
 import wellen.dsp.*;								// should be included in the above, but for some reason isn't
+import oscP5.*;
+import netP5.*;
+
+OscP5 oscP5;
+NetAddress controlSketchLocation;
 
 // buffer for display
 PGraphics buffer;
@@ -62,9 +67,6 @@ float eventCounter = 0;
 MidiDevice inputDevice;
 int[] knobValues = new int[4]; // currently using 4 knobs
 
-// audio
-int[] audioPixels;
-
 public void settings() {
 	size(width, height, P2D);
 }
@@ -82,6 +84,10 @@ public void setup() {
 
 	// midi controls
 	setupMidi();
+
+	// init OSC
+	oscP5 = new OscP5(this, 9000); // local port for this sketch
+	controlSketchLocation = new NetAddress("127.0.0.1", 12000); // receiver IP and port
 
 	// start wellen's digital signal processing but pause for now
 	DSP.start(this);
@@ -142,6 +148,9 @@ public void draw() {
 	image(buffer, 0, 0, width, height);
 
 	if (showDebug) showDebug();
+
+	// send noises over OSC
+	sendNoisesOSC();
 }
 
 // apply from setNewGrid() to the pixel array 
@@ -395,4 +404,18 @@ void setupMidi() {
 		println("Error: " + e.getMessage());
 		e.printStackTrace();
 	}
+}
+
+// send noises over OSC
+void sendNoisesOSC() {
+	// Create a new OSC message
+	OscMessage msg = new OscMessage("/noises");
+	
+	// Add all noise values to the message
+	for (Noise n : noises) {
+		msg.add(n.value);
+	}
+	
+	// Send the message
+	oscP5.send(msg, controlSketchLocation);
 }

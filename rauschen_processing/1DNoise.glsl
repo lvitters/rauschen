@@ -11,7 +11,7 @@ float map(float value, float min1, float max1, float min2, float max2) {
 }
 
 // Random function based on pixel position
-float rand(vec2 co) {f
+float rand(vec2 co) {
     return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453123);
 }
 

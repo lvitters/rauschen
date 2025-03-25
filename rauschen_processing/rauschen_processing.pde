@@ -13,7 +13,7 @@ PGraphics buffer;
 PGraphics tempBuffer;
 
 // shader stuff
-PShader shader;
+ArrayList<PShader> shaders = new ArrayList<PShader>();
 float shaderTime = 0;
 
 // main window
@@ -34,7 +34,7 @@ int maxIndex = width * height * 4;
 color c;
 
 // noises
-ArrayList<Noise> noises;
+ArrayList<Noise> noises = new ArrayList<Noise>();
 Noise xStepNoise;
 Noise yStepNoise;
 Noise stepBiasNoise;
@@ -97,12 +97,15 @@ public void setup() {
 	buffer = createGraphics((int)width, (int)height, P2D);
 	tempBuffer = createGraphics((int)width, (int)height, P2D);
 
-	// shader stuff
-	shader = loadShader("GameOfLife.glsl");
-	shader.set("u_resolution", (float)width, (float)height);
-
-	// init ArrayList of noises
-	noises = new ArrayList<Noise>();
+	// set up shaders
+	shaders = new ArrayList<PShader>();
+	shaders.add(loadShader("1DNoise.glsl"));
+  	shaders.add(loadShader("GameOfLife.glsl"));
+  
+	// set uniform variables for all shaders
+	for (int i = 0; i < shaders.size(); i++) {
+		shaders.get(i).set("u_resolution", (float)width, (float)height);
+	}
 
 	// init NoiseInstances with starting value and increment, add to list of noises
 	xStepNoise = new Noise(intRandom(0, 100), .01);
@@ -139,7 +142,7 @@ public void draw() {
 	if (!isApplyingShader) {
 		manipulatePixelArray();
 	} else {
-		applyShader();
+		applyShader(intRandom(0, shaders.size() - 1));
 		// load shader pixels into buffer for audioblock() to generate sound from
 		buffer.loadPixels();
 	}
@@ -202,14 +205,14 @@ void manipulatePixelArray() {
 }
 
 // for resource intensive calculations on individual pixels, use a shader
-void applyShader() {
+void applyShader(int shader) {
 	shaderTime += shaderTimeNoise.getNoiseRange(.05, .3);
-	shader.set("u_time", shaderTime);
-	shader.set("u_texture", tempBuffer);
+	shaders.get(shader).set("u_time", shaderTime);
+	shaders.get(shader).set("u_texture", tempBuffer);
 	if (buffer != null) {
 		try {
 			buffer.beginDraw();
-				buffer.shader(shader);
+				buffer.shader(shaders.get(shader));
 				buffer.rect(0, 0, width, height);
 			buffer.endDraw();
 		} catch (Exception e) {

@@ -100,13 +100,13 @@ void oscEvent(OscMessage msg) {
 			graphs.get(i).addPoint(value);
 		}
 	}
-	// General handler for all debug info messages
+	// general handler for all debug info messages
 	else if (msg.addrPattern().startsWith("/info/")) {
-		String key = msg.addrPattern().substring(6); // Remove "/info/" prefix to get the key
+		String key = msg.addrPattern().substring(6); // remove "/info/" prefix to get the key
 		
-		// Extract the value based on the OSC message's typetag
+		// extract the value based on the OSC message's typetag
 		Object value = null;
-		char type = msg.typetag().charAt(0); // Get the type of the first argument
+		char type = msg.typetag().charAt(0); // get the type of the first argument
 		
 		switch(type) {
 		case 'i': // integer
@@ -119,21 +119,21 @@ void oscEvent(OscMessage msg) {
 			value = msg.get(0).stringValue();
 			break;
 		default:
-			// Default to float for unknown types
+			// default to float for unknown types
 			value = msg.get(0).floatValue();
 		}
 		
-		// Special handling for boolean values (sent as integers)
+		// special handling for boolean values (sent as integers)
 		if (key.startsWith("is") && value instanceof Integer) {
 			value = ((Integer)value == 1);
 		}
 		
-		// Store the value in our map
+		// store the value in our map
 		debugInfo.put(key, value);
 	}
 }
 
-// Display function to show debug info
+// display function to show debug info
 void displayDebugInfo() {
 	if (debugInfo.isEmpty()) return;
 	
@@ -144,7 +144,7 @@ void displayDebugInfo() {
 	float y = 20;
 	float x = 10;
 	
-	// Sort keys alphabetically for consistent display
+	// sort keys alphabetically for consistent display
 	ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet());
 	java.util.Collections.sort(keys);
 	
@@ -152,20 +152,17 @@ void displayDebugInfo() {
 			Object value = debugInfo.get(key);
 			String display;
 			
-			// Format different types of values
+			// format different types of values
 			if (value instanceof Boolean) {
-			display = (Boolean)value ? "ON" : "OFF";
-			}
-			else if (value instanceof Float && (key.equals("nextSwitch") || key.contains("Time"))) {
-			// Format time values nicely
-			display = nf((Float)value, 2, 3);
-			}
-			else if (value instanceof Float) {
-			// Round other floats to 2 decimal places
-			display = nf((Float)value, 0, 2);
-			}
-			else {
-			display = value.toString();
+				display = (Boolean)value ? "ON" : "OFF";
+			} else if (value instanceof Float && (key.equals("nextSwitch") || key.contains("Time"))) {
+				// format time values nicely
+				display = nf((Float)value, 2, 3);
+			} else if (value instanceof Float) {
+				// round other floats to 2 decimal places
+				display = nf((Float)value, 0, 2);
+			} else {
+				display = value.toString();
 			}
 			
 			text(key + ": " + display, x, y);

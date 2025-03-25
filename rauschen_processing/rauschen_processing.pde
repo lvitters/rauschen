@@ -98,7 +98,7 @@ public void setup() {
 	tempBuffer = createGraphics((int)width, (int)height, P2D);
 
 	// shader stuff
-	shader = loadShader("1DNoise.glsl");
+	shader = loadShader("GameOfLife.glsl");
 	shader.set("u_resolution", (float)width, (float)height);
 
 	// init ArrayList of noises
@@ -367,6 +367,7 @@ void keyPressed() {
 	}
 	// n - stop noise (audio)
 	if (keyCode == 78) {
+		isMakingSound = !isMakingSound;
 		if (DSP.is_paused()) DSP.pause(false);
 		else DSP.pause(true);
 	}

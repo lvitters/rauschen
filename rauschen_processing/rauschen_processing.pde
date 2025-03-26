@@ -441,14 +441,13 @@ void oscEvent(OscMessage message) {
 		stepUpdated = true;
 	}
 	else if (message.checkAddrPattern("/stepMultiplier")) {
-		// get the base values first (assuming they're controlled by other knobs)
-		int baseX = constrain(nextX, 1, width/10);  // ensure base is within original range
+		// get base values first to use multiplier on
+		int baseX = constrain(nextX, 1, width/10);  // ensure base is within the range set by the other knobs
 		int baseY = constrain(nextY, 1, width/10);
 		
+		// get value from message and map to /100 of full res 
 		float value = message.get(0).floatValue();
-		float multiplier = map(value, 0, 127, 1, width/10/10);  // multiplier ranges from 1 to 10
-
-		println("Multiplier: " + multiplier);
+		float multiplier = map(value, 0, 127, 1, width/100);  // multiplier ranges from 1 to 10
 		
 		// apply the multiplier to the base values
 		nextX = (int) (baseX * multiplier);

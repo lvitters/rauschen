@@ -6,17 +6,17 @@ uniform vec2 u_resolution;
 uniform sampler2D u_texture;
 uniform float u_time;
 
-// Helper function to map values from one range to another
+// helper function to map values from one range to another
 float map(float value, float min1, float max1, float min2, float max2) {
   return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
 
-// Random function based on pixel position
+// random function based on pixel position
 float rand(vec2 co) {
     return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453123);
 }
 
-// Check if a color has dominant red
+// check if a color has dominant red
 bool isDominantRed(vec4 color) {
     float maxC = max(max(color.r, color.g), color.b);
     if (maxC <= 0.0) return false;
@@ -24,7 +24,7 @@ bool isDominantRed(vec4 color) {
     return norm.r > 0.7 && norm.g < 0.5 && norm.b < 0.5;
 }
 
-// Check if a color has dominant green
+// check if a color has dominant green
 bool isDominantGreen(vec4 color) {
     float maxC = max(max(color.r, color.g), color.b);
     if (maxC <= 0.0) return false;
@@ -32,7 +32,7 @@ bool isDominantGreen(vec4 color) {
     return norm.g > 0.7 && norm.r < 0.5 && norm.b < 0.5;
 }
 
-// Check if a color has dominant blue
+// check if a color has dominant blue
 bool isDominantBlue(vec4 color) {
     float maxC = max(max(color.r, color.g), color.b);
     if (maxC <= 0.0) return false;
@@ -44,7 +44,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution.xy;
     vec4 texColor = texture2D(u_texture, uv);
     
-    // Simplify by using a 3x3 neighborhood
+    // simplify by using a 3x3 neighborhood
     float dx = 1.0 / u_resolution.x;
     float dy = 1.0 / u_resolution.y;
     
@@ -57,7 +57,7 @@ void main() {
     vec4 n7 = texture2D(u_texture, uv + vec2(0.0, dy));
     vec4 n8 = texture2D(u_texture, uv + vec2(dx, dy));
     
-    // Count neighbors by dominant color
+    // count neighbors by dominant color
     int rNeighbors = 0;
     int gNeighbors = 0;
     int bNeighbors = 0;
@@ -89,17 +89,17 @@ void main() {
     if (isDominantBlue(n7)) bNeighbors++;
     if (isDominantBlue(n8)) bNeighbors++;
     
-    // Check current cell state
+    // check current cell state
     bool isRAlive = isDominantRed(texColor);
     bool isGAlive = isDominantGreen(texColor);
     bool isBAlive = isDominantBlue(texColor);
     
-    // Start with neutral color
+    // start with neutral color
     vec3 newColor = vec3(0.2);
     
     // Apply Conway's Game of Life rules to each channel independently
     
-    // Red channel rules
+    // red channel rules
     if (isRAlive) {
         if (rNeighbors == 2 || rNeighbors == 3) {
             newColor.r = 0.9; // Red cell survives
@@ -110,7 +110,7 @@ void main() {
         }
     }
     
-    // Green channel rules
+    // green channel rules
     if (isGAlive) {
         if (gNeighbors == 2 || gNeighbors == 3) {
             newColor.g = 0.9; // Green cell survives
@@ -121,7 +121,7 @@ void main() {
         }
     }
     
-    // Blue channel rules
+    // blue channel rules
     if (isBAlive) {
         if (bNeighbors == 2 || bNeighbors == 3) {
             newColor.b = 0.9; // Blue cell survives
@@ -132,7 +132,7 @@ void main() {
         }
     }
     
-    // Initial pattern to seed the simulation
+    // initial pattern to seed the simulation
     if (u_time < 1.0) {
         float cellSize = 20.0;
         float patternX = mod(floor(uv.x * cellSize), 3.0);
@@ -148,10 +148,10 @@ void main() {
         }
     }
     
-    // Blend with original texture
+    // blend with original texture
     vec3 finalColor = mix(texColor.rgb, newColor, 0.8);
     
-    // Occasional randomness to prevent stagnation
+    // occasional randomness to prevent stagnation
     if (rand(uv + vec2(u_time * 0.01)) > 0.995) {
         finalColor = mix(finalColor, vec3(rand(uv + vec2(u_time))), 0.3);
     }

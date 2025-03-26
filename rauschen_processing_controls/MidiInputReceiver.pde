@@ -18,38 +18,34 @@ class MidiInputReceiver implements Receiver {
 					int index = number - 1;
 					
 					// calculate the actual parameter value
-					float paramValue = 0;
+					float paramValue = value;
 					String paramName = "";
 					
 					// map the knob index to the correct parameter
 					switch(index) {
 						case 0:
-						paramValue = (1 + value) / 12.8;	// cannot be 0
-						paramName = "/minSwitchTime";
+							paramName = "/minSwitchTime";
 						break;
 						case 1:
-						paramValue = (1 + value) / 12.8;	// cannot be 0
-						paramName = "/maxSwitchTime";
+							paramName = "/maxSwitchTime";
 						break;
 						case 2:
-						paramValue = value / 12.8 / 2;		// can be 0
-						paramName = "/switchTime";
+							paramName = "/switchTime";
 						break;
 						case 3:
-						paramValue = value;					// should be 0 most of the time
-						paramName = "/switchTimeMultiplier";
+							paramName = "/switchTimeMultiplier";
 						break;
 						case 4:
-						paramValue = 1 + value;				// cannot be 0
-						paramName = "/xStep";
+							paramName = "/xStep";
 						break;
 						case 5:
-						paramValue = 1 + value;				// cannot be 0
-						paramName = "/yStep";
+							paramName = "/yStep";
 						break;
 						case 6:
-						paramValue = 1 + value;				// cannot be 0
-						paramName = "/sameStep";
+							paramName = "/sameStep";
+						break;
+						case 7:
+							paramName = "/stepMultiplier";
 						break;
 					}
 					

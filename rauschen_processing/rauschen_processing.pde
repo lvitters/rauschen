@@ -12,6 +12,9 @@ int height = 1000;
 int maxStep = width;
 int xStep = 1;
 int yStep = 1;
+int nextX = 1;
+int nextY = 1;
+Boolean stepUpdated = false;
 int xOffset = 0;
 int xOffsetRecord = 0;
 int yOffset = 0;
@@ -132,7 +135,6 @@ public void draw() {
 
 	// to avoid bad performance
 	if (xStep < 10 || yStep < 10) isNoiseColor = false;
-	else isNoiseColor = true;	//debug
 
 	// manipulate buffer's pixels
 	if (!isApplyingShader) {
@@ -156,6 +158,12 @@ public void draw() {
 
 // apply from setNewGrid() to the pixel array 
 void manipulatePixelArray() {
+	// update steps from controller, if there are new steps
+	if (stepUpdated) {
+		xStep = nextX;
+		yStep = nextY;
+		stepUpdated = false;
+	}
 	buffer.loadPixels();
 		// iterate through pixel array with step and apply offset
 		for (int x = 0; x < buffer.width; x += xStep - xOffset) {
@@ -191,8 +199,10 @@ void manipulatePixelArray() {
 						if (px < buffer.width && py < buffer.height) {
 							// get index
 							int index = py * width + px;
-							// apply respective color to pixels array
-							buffer.pixels[index] = 0xFF000000 | ((int)col.x << 16) | ((int)col.y << 8) | (int)col.z;
+							// apply respective color to pixels array, handle out of bounds
+							if (index >= 0 && index < buffer.pixels.length) {
+								buffer.pixels[index] = 0xFF000000 | ((int)col.x << 16) | ((int)col.y << 8) | (int)col.z;
+							}
 						}
 					}
 				}
@@ -362,6 +372,10 @@ void keyPressed() {
 		if (DSP.is_paused()) DSP.pause(false);
 		else DSP.pause(true);
 	}
+	// c - toggle noise color
+	if (keyCode == 67) {
+		isNoiseColor = !isNoiseColor;
+	}
 }
 
 // send noises over OSC
@@ -396,24 +410,54 @@ void sendDebugOSC() {
 void oscEvent(OscMessage message) {
 	// handle parameter updates according to names given in "MidiInputReceiver" which should correspond to variables here
 	if (message.checkAddrPattern("/minSwitchTime")) {
-		minSwitchTime = message.get(0).floatValue();
+		float value = message.get(0).floatValue();
+		minSwitchTime = (1 + value) / 12.8;						// cannot be 0
 	}
 	else if (message.checkAddrPattern("/maxSwitchTime")) {
-		maxSwitchTime = message.get(0).floatValue();
+		float value = message.get(0).floatValue();
+		maxSwitchTime = (1 + value) / 12.8;						// cannot be 0
 	}
 	else if (message.checkAddrPattern("/switchTime")) {
-		switchTime = message.get(0).floatValue();
+		float value = message.get(0).floatValue();
+		switchTime = value / 12.8 / 2;							// cannot be 0
 	}
 	else if (message.checkAddrPattern("/switchTimeMultiplier")) {
-		switchTimeMultiplier = message.get(0).floatValue();
+		float value = message.get(0).floatValue();
+		switchTimeMultiplier = value;							// should be 0 most of the time
 	}
 	else if (message.checkAddrPattern("/xStep")) {
-		xStep = (int)message.get(0).floatValue();
+		float value = message.get(0).floatValue();
+		nextX = (int) map(value, 0, 127, 1, width/10);			// cannot be 0, should depend on the res
+		stepUpdated = true;
 	}
 	else if (message.checkAddrPattern("/yStep")) {
-		yStep = (int)message.get(0).floatValue();
+		float value = message.get(0).floatValue();
+		nextY = (int) map(value, 0, 127, 1, height/10);			// cannot be 0, should depend on the res
+		stepUpdated = true;
 	}
 	else if (message.checkAddrPattern("/sameStep")) {
-		xStep = yStep = (int)message.get(0).floatValue();
+		float value = message.get(0).floatValue();
+		nextX = nextY = (int) map(value, 0, 127, 1, width/10);	// cannot be 0, should depend on the res
+		stepUpdated = true;
+	}
+	else if (message.checkAddrPattern("/stepMultiplier")) {
+		// get the base values first (assuming they're controlled by other knobs)
+		int baseX = constrain(nextX, 1, width/10);  // ensure base is within original range
+		int baseY = constrain(nextY, 1, width/10);
+		
+		float value = message.get(0).floatValue();
+		float multiplier = map(value, 0, 127, 1, width/10/10);  // multiplier ranges from 1 to 10
+
+		println("Multiplier: " + multiplier);
+		
+		// apply the multiplier to the base values
+		nextX = (int) (baseX * multiplier);
+		nextY = (int) (baseY * multiplier);
+		
+		// constrain to ensure they don't exceed screen boundaries
+		nextX = constrain(nextX, 1, width);
+		nextY = constrain(nextY, 1, height);
+		
+		stepUpdated = true;
 	}
 }

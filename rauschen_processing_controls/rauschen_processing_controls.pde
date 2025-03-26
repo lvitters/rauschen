@@ -1,11 +1,12 @@
+import javax.sound.midi.*;
 import oscP5.*;
 import netP5.*;
 
 OscP5 oscP5;
 NetAddress mainSketchLocation;
 
-int width = 700;
-int height = 700;
+int width = 750;
+int height = 500;
 
 // init some predetermined colors so that they are easily differentiated
 color[] colors = new color[] {
@@ -49,22 +50,42 @@ ArrayList<Graph> graphs = new ArrayList<Graph>();
 // HashMap to store debugInfo values
 HashMap<String, Object> debugInfo = new HashMap<String, Object>();
 
+// midi input
+MidiDevice inputDevice;
+
+// variables to change with Midi to send over to main sketch
+float minSwitchTime;
+float maxSwitchTime;
+float switchTime;
+float switchTimeMultiplier;
+int xStep;
+int yStep;
+
 public void settings() {
 	size(width, height);
 }
 
-public void setup() {
+public void setup() {	
+	// set this window title
+	windowTitle("controls");
+	
 	// determine window location on screen
-	surface.setLocation(1050, 60);
+	surface.setLocation(1020, 60);
+
+	// can't go in settings for some reason
+	frameRate(120);
+	colorMode(RGB, 255, 255, 255);
 
 	// init OSC
 	oscP5 = new OscP5(this, 12000); // local port for this sketch
 	mainSketchLocation = new NetAddress("127.0.0.1", 9000); // receiver on port 12000
+
+	// midi controls
+	setupMidi();
 }
 
 public void draw() {
 	background(0);
-	strokeWeight(2);
 
 	// display all graphs
 	for (int i = 0; i < graphs.size(); i++) {
@@ -78,11 +99,11 @@ public void draw() {
 
 // called when new OSC message is received
 void oscEvent(OscMessage msg) {
-	// check if it's the message with our noise values
+	// check if it's the message with noises
 	if (msg.checkAddrPattern("/noises")) {
-		// Get the typetag to know how many values were sent
+		// get the typetag to know how many values were sent
 		String typetag = msg.typetag();
-		int numValues = typetag.length() - 1; // Subtract 1 for the comma at the beginning
+		int numValues = typetag.length() - 1; // subtract 1 for the comma at the beginning
 
 		// ensure there is the right number of graphs
 		while (graphs.size() < numValues) {
@@ -100,7 +121,7 @@ void oscEvent(OscMessage msg) {
 			graphs.get(i).addPoint(value);
 		}
 	}
-	// general handler for all debug info messages
+	// general handler for debug info messages
 	else if (msg.addrPattern().startsWith("/info/")) {
 		String key = msg.addrPattern().substring(6); // remove "/info/" prefix to get the key
 		
@@ -137,35 +158,63 @@ void oscEvent(OscMessage msg) {
 void displayDebugInfo() {
 	if (debugInfo.isEmpty()) return;
 	
-	fill(255);
-	textAlign(LEFT);
-	textSize(12);
-	
-	float y = 20;
+	// text parameters
 	float x = 10;
-	
-	// sort keys alphabetically for consistent display
+	float y = 25;
+	fill(255, 255, 255);
+	textSize(20);
+
+	// display debug alphabetically (order wouldn't be what it is in the other sketch anyways)
 	ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet());
-	java.util.Collections.sort(keys);
+	java.util.Collections.sort(keys);		// sort alphabetically
 	
+	// from all the received keys
 	for (String key : keys) {
+			// get the value
 			Object value = debugInfo.get(key);
 			String display;
 			
-			// format different types of values
+			// display different formats
 			if (value instanceof Boolean) {
-				display = (Boolean)value ? "ON" : "OFF";
-			} else if (value instanceof Float && (key.equals("nextSwitch") || key.contains("Time"))) {
-				// format time values nicely
-				display = nf((Float)value, 2, 3);
+				// get boolean from 1 and 0
+				display = (Boolean)value ? "TRUE" : "FALSE";
 			} else if (value instanceof Float) {
-				// round other floats to 2 decimal places
+				// round floats to 2 decimal places
 				display = nf((Float)value, 0, 2);
+			// everything else
 			} else {
 				display = value.toString();
 			}
 			
+			// display
 			text(key + ": " + display, x, y);
 			y += 20;
+	}
+}
+
+// get info from device list and set controller as input device
+void setupMidi() {
+	try {
+		// get all MIDI devices
+		MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
+		
+		// look specifically for MPKmini2 with transmitter capability
+		for (int i = 0; i < infos.length; i++) {
+			MidiDevice device = MidiSystem.getMidiDevice(infos[i]);
+			if (infos[i].getName().equals("MPKmini2") && device.getMaxTransmitters() != 0) {
+				inputDevice = device;
+				inputDevice.open();
+				Transmitter transmitter = inputDevice.getTransmitter();
+				transmitter.setReceiver(new MidiInputReceiver());
+				println("Successfully opened MPKmini2 for input");
+				break;
+			}
+		}
+		if (inputDevice == null) {
+			println("Could not find MPKmini2 with input capability");
+		}
+	} catch (Exception e) {
+		println("Error: " + e.getMessage());
+		e.printStackTrace();
 	}
 }

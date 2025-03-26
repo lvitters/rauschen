@@ -1,5 +1,4 @@
 import java.util.concurrent.ThreadLocalRandom;		// faster random functions
-import javax.sound.midi.*;
 import wellen.*;									// audio stuff
 import wellen.dsp.*;								// should be included in the above, but for some reason isn't
 import oscP5.*;
@@ -67,17 +66,13 @@ float eventCounter = 0;
 OscP5 oscP5;
 NetAddress controlSketchLocation;
 
-// input
-MidiDevice inputDevice;
-int[] knobValues = new int[4]; // currently using 4 knobs
-
 public void settings() {
 	size(width, height, P2D);
 }
 
 public void setup() {
 	// set this window title
-	windowTitle("Rauschen");
+	windowTitle("RAUSCHEN");
 
 	// determine this window location on screen
 	surface.setLocation(10, 60);
@@ -99,9 +94,6 @@ public void setup() {
 	for (int i = 0; i < shaders.size(); i++) {
 		shaders.get(i).set("u_resolution", (float)width, (float)height);
 	}
-
-	// midi controls
-	setupMidi();
 
 	// init OSC
 	oscP5 = new OscP5(this, 9000); // local port for this sketch
@@ -135,8 +127,6 @@ public void setup() {
 }
 
 public void draw() {
-	receiveMidi();
-
 	// handle any timed events first because it may affect the pixel array manipulation
 	if (isAutoMode) timedEvents();
 
@@ -161,7 +151,7 @@ public void draw() {
 
 	// send information to control sketch
 	sendNoisesOSC();
-	sendInfoOSC();
+	sendDebugOSC();
 }
 
 // apply from setNewGrid() to the pixel array 
@@ -332,26 +322,26 @@ void audioblock(float[] pSamples) {
 void showDebug() {
 		fill(0, 0, 0);
 		rect(0, 0, 400, 220);
-		fill(255, 0, 0);
+		fill(255, 255, 255);
 		textSize(25);
 		text("fps: " + (int) frameRate, 10, 30);
 		text("xStep: " + xStep + " yStep: " + yStep, 10, 55);
-		text("auto mode: " + isAutoMode, 10, 80);
-		text("next switch in: " + nf(nextEvent, 2, 3), 10, 105);
-		text("random switch time: " + isRandomSwitchTime, 10, 130);
-		text("noise color: " + isNoiseColor, 10, 155);
-		text("applying shader: " + isApplyingShader, 10, 180);
-		text("random shader each frame: " + isRandomShaderEachFrame, 10, 205);
+		text("isAutoMode: " + isAutoMode, 10, 80);
+		text("nextEvent: " + nf(nextEvent, 2, 3), 10, 105);
+		text("isRandomSwitchTime: " + isRandomSwitchTime, 10, 130);
+		text("isNoiseColor: " + isNoiseColor, 10, 155);
+		text("isApplyingShader: " + isApplyingShader, 10, 180);
+		text("isRandomShaderEachFrame: " + isRandomShaderEachFrame, 10, 205);
 }
 
 // listen to key presses
 void keyPressed() {
-	// f - show fps
+	// f - show debug / fps
 	if (keyCode == 70) {
 		showDebug = !showDebug;
 	}
-	// d - print debug
-	if (keyCode == 68) {
+	// p - print (more) debug info
+	if (keyCode == 80) {
 		printDebug = !printDebug;
 	}
 	// r - use random time for next event
@@ -374,41 +364,6 @@ void keyPressed() {
 	}
 }
 
-// map variables to midi input
-void receiveMidi() {
-	minSwitchTime = (1 + knobValues[0]) / 12.8;	// cannot be 0
-	maxSwitchTime = (1 + knobValues[1]) / 12.8;	// cannot be 0
-	switchTime = (knobValues[2]) / 12.8 / 2;	// can be 0
-	switchTimeMultiplier = knobValues[3];		// should be 0 most of the time
-}
-
-// get info from device list and set controller as input device
-void setupMidi() {
-	try {
-		// get all MIDI devices
-		MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
-		
-		// look specifically for MPKmini2 with transmitter capability
-		for (int i = 0; i < infos.length; i++) {
-			MidiDevice device = MidiSystem.getMidiDevice(infos[i]);
-			if (infos[i].getName().equals("MPKmini2") && device.getMaxTransmitters() != 0) {
-				inputDevice = device;
-				inputDevice.open();
-				Transmitter transmitter = inputDevice.getTransmitter();
-				transmitter.setReceiver(new MidiInputReceiver());
-				println("Successfully opened MPKmini2 for input");
-				break;
-			}
-		}
-		if (inputDevice == null) {
-			println("Could not find MPKmini2 with input capability");
-		}
-	} catch (Exception e) {
-		println("Error: " + e.getMessage());
-		e.printStackTrace();
-	}
-}
-
 // send noises over OSC
 void sendNoisesOSC() {
 	// create a new OSC message
@@ -424,15 +379,41 @@ void sendNoisesOSC() {
 }
 
 // send debug info over OSC
-void sendInfoOSC() {
+void sendDebugOSC() {
     // send each parameter as its own OSC message (booleans need to be converted to 1 and 0)
     oscP5.send(new OscMessage("/info/fps").add((int)frameRate), controlSketchLocation);
     oscP5.send(new OscMessage("/info/xStep").add(xStep), controlSketchLocation);
     oscP5.send(new OscMessage("/info/yStep").add(yStep), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isAutoMode").add(isAutoMode ? 1 : 0), controlSketchLocation);
-    oscP5.send(new OscMessage("/info/nextSwitch").add(nextEvent), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/nextEvent").add(nextEvent), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isRandomSwitchTime").add(isRandomSwitchTime ? 1 : 0), controlSketchLocation);
-    oscP5.send(new OscMessage("/info/isApplyingShader").add(isApplyingShader ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isNoiseColor").add(isNoiseColor ? 1 : 0), controlSketchLocation);
-    oscP5.send(new OscMessage("/info/isMakingSound").add(isMakingSound ? 1 : 0), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/isApplyingShader").add(isApplyingShader ? 1 : 0), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/isRandomShaderEachFrame").add(isRandomShaderEachFrame ? 1 : 0), controlSketchLocation);
+}
+
+// handle incoming OSC messages from control sketch
+void oscEvent(OscMessage message) {
+	// handle parameter updates according to names given in "MidiInputReceiver" which should correspond to variables here
+	if (message.checkAddrPattern("/minSwitchTime")) {
+		minSwitchTime = message.get(0).floatValue();
+	}
+	else if (message.checkAddrPattern("/maxSwitchTime")) {
+		maxSwitchTime = message.get(0).floatValue();
+	}
+	else if (message.checkAddrPattern("/switchTime")) {
+		switchTime = message.get(0).floatValue();
+	}
+	else if (message.checkAddrPattern("/switchTimeMultiplier")) {
+		switchTimeMultiplier = message.get(0).floatValue();
+	}
+	else if (message.checkAddrPattern("/xStep")) {
+		xStep = (int)message.get(0).floatValue();
+	}
+	else if (message.checkAddrPattern("/yStep")) {
+		yStep = (int)message.get(0).floatValue();
+	}
+	else if (message.checkAddrPattern("/sameStep")) {
+		xStep = yStep = (int)message.get(0).floatValue();
+	}
 }

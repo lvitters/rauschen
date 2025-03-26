@@ -35,7 +35,7 @@ class Graph {
 				// draw the points
 				Float y = points.get(x);
 				if (y != null) {
-					vertex(x, map(y, 0, 1, height - 20, 20));
+					vertex(x, map(y, 0, 1, height - 20, height/2));
 				}
 			}
 		endShape();

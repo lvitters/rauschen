@@ -1,20 +1,9 @@
 import java.util.concurrent.ThreadLocalRandom;		// faster random functions
-import javax.sound.midi.*;							// midi controller input
+import javax.sound.midi.*;
 import wellen.*;									// audio stuff
 import wellen.dsp.*;								// should be included in the above, but for some reason isn't
 import oscP5.*;
 import netP5.*;
-
-OscP5 oscP5;
-NetAddress controlSketchLocation;
-
-// buffer for display
-PGraphics buffer;
-PGraphics tempBuffer;
-
-// shader stuff
-ArrayList<PShader> shaders = new ArrayList<PShader>();
-float shaderTime = 0;
 
 // main window
 int width = 1000;
@@ -30,6 +19,15 @@ int yOffset = 0;
 int yOffsetRecord = 0;
 int maxIndex = width * height * 4;
 
+// buffer for display
+PGraphics buffer;
+PGraphics tempBuffer;
+
+// shader stuff
+ArrayList<PShader> shaders = new ArrayList<PShader>();
+float shaderTime = 0;
+int shaderChoice = 0;
+
 // color
 color c;
 
@@ -38,21 +36,23 @@ ArrayList<Noise> noises = new ArrayList<Noise>();
 Noise xStepNoise;
 Noise yStepNoise;
 Noise stepBiasNoise;
-Noise toggleSameStepDims;
-Noise toggleShader;
-Noise toggleNoiseColor;
+Noise toggleSameStepDimsNoise;
+Noise toggleNoiseColorNoise;
 Noise redNoise;
 Noise greenNoise;
 Noise blueNoise;
+Noise toggleShader;
 Noise shaderTimeNoise;
+Noise toggleRandomShaderEachFrameNoise;
 
 // toggles
 Boolean showDebug = false;
 Boolean printDebug = false;
 Boolean isAutoMode = true;
 Boolean isRandomSwitchTime = true;
-Boolean isApplyingShader = false;
 Boolean isNoiseColor = false;
+Boolean isApplyingShader = false;
+Boolean isRandomShaderEachFrame = false;
 Boolean isMakingSound = false;
 
 // timed events
@@ -62,6 +62,10 @@ float maxSwitchTime = 10;
 float switchTimeMultiplier = 0;
 float nextEvent = 1;		// init with 1 second
 float eventCounter = 0;
+
+// communication with control sketch
+OscP5 oscP5;
+NetAddress controlSketchLocation;
 
 // input
 MidiDevice inputDevice;
@@ -82,18 +86,7 @@ public void setup() {
 	frameRate(120);
 	colorMode(RGB, 255, 255, 255);
 
-	// midi controls
-	setupMidi();
-
-	// init OSC
-	oscP5 = new OscP5(this, 9000); // local port for this sketch
-	controlSketchLocation = new NetAddress("127.0.0.1", 12000); // receiver IP and port
-
-	// start wellen's digital signal processing but pause for now
-	DSP.start(this);
-	DSP.pause(true);
-
-	// create buffer
+	// create buffers
 	buffer = createGraphics((int)width, (int)height, P2D);
 	tempBuffer = createGraphics((int)width, (int)height, P2D);
 
@@ -107,25 +100,38 @@ public void setup() {
 		shaders.get(i).set("u_resolution", (float)width, (float)height);
 	}
 
+	// midi controls
+	setupMidi();
+
+	// init OSC
+	oscP5 = new OscP5(this, 9000); // local port for this sketch
+	controlSketchLocation = new NetAddress("127.0.0.1", 12000); // receiver IP and port
+
+	// start wellen's digital signal processing but pause for now
+	DSP.start(this);
+	DSP.pause(true);
+
 	// init NoiseInstances with starting value and increment, add to list of noises
 	xStepNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(xStepNoise);
 	yStepNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(yStepNoise);
-	toggleSameStepDims = new Noise(intRandom(0, 100), 1);
-	noises.add(toggleSameStepDims);		// TODO: do I want Booleans to show their actual number on the graph or do I want it as 1 and 0?
-	toggleShader = new Noise(intRandom(0, 100), 1);
-	noises.add(toggleShader);
-	toggleNoiseColor = new Noise(intRandom(0, 100), 1);
-	noises.add(toggleNoiseColor);
+	toggleSameStepDimsNoise = new Noise(intRandom(0, 100), 1);
+	noises.add(toggleSameStepDimsNoise);		// TODO: do I want Booleans to show their actual number on the graph or do I want it as 1 and 0?
+	toggleNoiseColorNoise = new Noise(intRandom(0, 100), 1);
+	noises.add(toggleNoiseColorNoise);
 	redNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(redNoise);
 	greenNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(greenNoise);
 	blueNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(blueNoise);
+	toggleShader = new Noise(intRandom(0, 100), 1);
+	noises.add(toggleShader);
 	shaderTimeNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(shaderTimeNoise);
+	toggleRandomShaderEachFrameNoise = new Noise(intRandom(0, 100), .01);
+	noises.add(toggleRandomShaderEachFrameNoise);
 }
 
 public void draw() {
@@ -142,7 +148,8 @@ public void draw() {
 	if (!isApplyingShader) {
 		manipulatePixelArray();
 	} else {
-		applyShader(intRandom(0, shaders.size() - 1));
+		if (isRandomShaderEachFrame) applyShader(intRandom(0, shaders.size() - 1));
+		else applyShader(shaderChoice);
 		// load shader pixels into buffer for audioblock() to generate sound from
 		buffer.loadPixels();
 	}
@@ -239,7 +246,7 @@ void setNewGrid() {
 	if (printDebug) println("xStep: " + xStep + " yStep: " + yStep);
 
 	// determine if step should be the same in both dimensions
-	if (toggleSameStepDims.getNoiseBool(-4, 3)) {
+	if (toggleSameStepDimsNoise.getNoiseBool(-4, 3)) {
 		// apply same step to both dimensions
 		yStep = xStep;
 		if (printDebug) println("same step");
@@ -265,7 +272,7 @@ void timedEvents() {
 	eventCounter++;
 	if (!isRandomSwitchTime) nextEvent = switchTime + (switchTime * switchTimeMultiplier);
 	if (eventCounter > (nextEvent * 60)) {
-		chooseEvent(intRandom(0, 2));
+		chooseEvent(intRandom(0, 3));
 		if (maxSwitchTime > minSwitchTime) nextEvent = floatRandom(minSwitchTime + (minSwitchTime * switchTimeMultiplier), maxSwitchTime + (maxSwitchTime * switchTimeMultiplier));
 		else nextEvent = 0;
 		eventCounter = 0;
@@ -292,23 +299,13 @@ void chooseEvent(int event) {
 			resizeBuffer(width, height);
 		break;
 		case 2:
-			isNoiseColor = toggleNoiseColor.getNoiseBool(-1, 1);
+			isNoiseColor = toggleNoiseColorNoise.getNoiseBool(-1, 1);
+		break;
+		case 3:
+			isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);
+			if (!isRandomShaderEachFrame) shaderChoice = intRandom(0, shaders.size() - 1);
+		break;
 	}
-}
-
-// empty the display buffer 
-void clearBuffer(PGraphics buffer) {
-	buffer.loadPixels();
-	for (int i = 0; i < buffer.pixels.length; i++) {
-		buffer.pixels[i] = 0;
-	}
-	buffer.updatePixels();
-}
-
-// take range and cut at cutoff; useful when a value needs to stick towards the cutoff but should still change sometimes
-float cutoff(float value, float cutoff) {
-	if (value > cutoff) return value;
-	else return cutoff;
 }
 
 // this gets called by wellen's digital signal processing (DSP) and takes an array of samples for playback
@@ -334,7 +331,7 @@ void audioblock(float[] pSamples) {
 // render some debug info to the main window
 void showDebug() {
 		fill(0, 0, 0);
-		rect(0, 0, 300, 200);
+		rect(0, 0, 400, 220);
 		fill(255, 0, 0);
 		textSize(25);
 		text("fps: " + (int) frameRate, 10, 30);
@@ -342,8 +339,9 @@ void showDebug() {
 		text("auto mode: " + isAutoMode, 10, 80);
 		text("next switch in: " + nf(nextEvent, 2, 3), 10, 105);
 		text("random switch time: " + isRandomSwitchTime, 10, 130);
-		text("applying shader: " + isApplyingShader, 10, 155);
-		text("noise color: " + isNoiseColor, 10, 180);
+		text("noise color: " + isNoiseColor, 10, 155);
+		text("applying shader: " + isApplyingShader, 10, 180);
+		text("random shader each frame: " + isRandomShaderEachFrame, 10, 205);
 }
 
 // listen to key presses

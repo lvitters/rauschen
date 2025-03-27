@@ -1,0 +1,88 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+			"label": "Run RAUSCHEN",
+			"type": "shell",
+			"group": {
+			  "kind": "build",
+			  "isDefault": true
+			},
+			"command": "${config:processing.path}",
+			"presentation": {
+			  "echo": true,
+			  "reveal": "always",
+			  "focus": false,
+			  "panel": "dedicated"
+			},
+			"args": [
+			  "--force",
+			  "--sketch=${workspaceRoot}/rauschen_processing",
+			  "--output=${workspaceRoot}/rauschen_processing/out",
+			  "--run"
+			],
+			"windows": {
+			  "type": "process",
+			  "args": [
+				"--force",
+				{
+				  "value": "--sketch=${workspaceRoot}/rauschen_processing",
+				  "quoting": "strong"
+				},
+				{
+				  "value": "--output=${workspaceRoot}/rauschen_processing\\out",
+				  "quoting": "strong"
+				},
+				"--run"
+			  ]
+			}
+		  },        {
+			"label": "Run RAUSCHEN_controls",
+			"type": "shell",
+			"group": {
+			  "kind": "build",
+			  "isDefault": true
+			},
+			"command": "${config:processing.path}",
+			"presentation": {
+			  "echo": true,
+			  "reveal": "always",
+			  "focus": false,
+			  "panel": "dedicated"
+			},
+			"args": [
+			  "--force",
+			  "--sketch=${workspaceRoot}/rauschen_processing_controls",
+			  "--output=${workspaceRoot}/rauschen_processing_controls/out",
+			  "--run"
+			],
+			"windows": {
+			  "type": "process",
+			  "args": [
+				"--force",
+				{
+				  "value": "--sketch=${workspaceRoot}/rauschen_processing_controls",
+				  "quoting": "strong"
+				},
+				{
+				  "value": "--output=${workspaceRoot}/rauschen_processing_controls\\out",
+				  "quoting": "strong"
+				},
+				"--run"
+			  ]
+			}
+		},
+		{
+			"label": "Run Both",
+			"dependsOrder": "parallel",
+			"dependsOn": [
+				"Run Sketch 1",
+				"Run Sketch 2"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+    ]
+}

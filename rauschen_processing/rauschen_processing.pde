@@ -411,15 +411,15 @@ void oscEvent(OscMessage message) {
 	// handle parameter updates according to names given in "MidiInputReceiver" which should correspond to variables here
 	if (message.checkAddrPattern("/minSwitchTime")) {
 		float value = message.get(0).floatValue();
-		minSwitchTime = (1 + value) / 12.8;						// cannot be 0
+		minSwitchTime = map(value, 0, 127, 1, 10);				// cannot be 0
 	}
 	else if (message.checkAddrPattern("/maxSwitchTime")) {
 		float value = message.get(0).floatValue();
-		maxSwitchTime = (1 + value) / 12.8;						// cannot be 0
+		maxSwitchTime = map(value, 0, 127, 1, 10);				// cannot be 0
 	}
 	else if (message.checkAddrPattern("/switchTime")) {
 		float value = message.get(0).floatValue();
-		switchTime = value / 12.8 / 2;							// cannot be 0
+		switchTime = map(value, 0, 127, 0, 10);					// can be 0
 	}
 	else if (message.checkAddrPattern("/switchTimeMultiplier")) {
 		float value = message.get(0).floatValue();
@@ -442,12 +442,12 @@ void oscEvent(OscMessage message) {
 	}
 	else if (message.checkAddrPattern("/stepMultiplier")) {
 		// get base values first to use multiplier on
-		int baseX = constrain(nextX, 1, width/10);  // ensure base is within the range set by the other knobs
+		int baseX = constrain(nextX, 1, width/10);  			// ensure base is within the range set by the other knobs
 		int baseY = constrain(nextY, 1, width/10);
 		
 		// get value from message and map to /100 of full res 
 		float value = message.get(0).floatValue();
-		float multiplier = map(value, 0, 127, 1, width/100);  // multiplier ranges from 1 to 10
+		float multiplier = map(value, 0, 127, 1, width/100);  	// multiplier ranges from 1 to 10
 		
 		// apply the multiplier to the base values
 		nextX = (int) (baseX * multiplier);

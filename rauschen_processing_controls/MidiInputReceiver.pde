@@ -17,11 +17,11 @@ class MidiInputReceiver implements Receiver {
 					// get knob index
 					int index = number - 1;
 					
-					// calculate the actual parameter value
+					// set the parameter value
 					float paramValue = value;
-					String paramName = "";
 					
 					// map the knob index to the correct parameter
+					String paramName = "";
 					switch(index) {
 						case 0:
 							paramName = "/minSwitchTime";

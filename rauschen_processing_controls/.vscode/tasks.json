@@ -20,22 +20,7 @@
 		  "--sketch=${workspaceRoot}",
 		  "--output=${workspaceRoot}/out",
 		  "--run"
-		],
-		"windows": {
-		  "type": "process",
-		  "args": [
-			"--force",
-			{
-			  "value": "--sketch=${workspaceRoot}",
-			  "quoting": "strong"
-			},
-			{
-			  "value": "--output=${workspaceRoot}\\out",
-			  "quoting": "strong"
-			},
-			"--run"
-		  ]
-		}
+		]
 	  }
 	]
   }

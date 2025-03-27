@@ -14,7 +14,8 @@ int xStep = 1;
 int yStep = 1;
 int nextX = 1;
 int nextY = 1;
-float stepMultiplier = 1;			// has to start at 1 
+float xStepMultiplier = 1;			// has to start at 1 
+float yStepMultiplier = 1;			// has to start at 1 
 Boolean stepUpdated = false;
 int xOffset = 0;
 int xOffsetRecord = 0;
@@ -157,13 +158,14 @@ public void draw() {
 	sendDebugOSC();
 }
 
-// apply from setNewGrid() to the pixel array 
+// apply from setNewGridWithNoise() to the pixel array 
 void manipulatePixelArray() {
 	// update steps from controller, if there are new steps
 	if (stepUpdated) {
-		xStep = (int) (nextX * stepMultiplier);
-		yStep = (int) (nextY * stepMultiplier);
+		xStep = (int) (nextX * xStepMultiplier);
+		yStep = (int) (nextY * yStepMultiplier);
 		stepUpdated = false;
+		determineOffset(xStep, yStep);
 	}
 	buffer.loadPixels();
 		// iterate through pixel array with step and apply offset
@@ -212,27 +214,8 @@ void manipulatePixelArray() {
 	buffer.updatePixels();
 }
 
-// for resource intensive calculations on individual pixels, use a shader
-void applyShader(int shader) {
-	shaderTime += shaderTimeNoise.getNoiseRange(.05, .3);
-	shaders.get(shader).set("u_time", shaderTime);
-	shaders.get(shader).set("u_texture", tempBuffer);
-	if (buffer != null) {
-		try {
-			buffer.beginDraw();
-				buffer.shader(shaders.get(shader));
-				buffer.rect(0, 0, width, height);
-			buffer.endDraw();
-		} catch (Exception e) {
-			println("buffer error: " + e.getMessage());
-			buffer = createGraphics(width, height, P2D);
-		}
-	}
-}
-
-
 // set canvas and sketch to a new resolution
-void setNewGrid() {
+void setNewGridWithNoise() {
 
 	// get new step close to old step with noise, bias towards lower numbers
 	xStep = (int)xStepNoise.getVariableNoiseRange(-maxStep/2, 0, maxStep/2, maxStep, 2);
@@ -253,15 +236,37 @@ void setNewGrid() {
 		if (printDebug) println("same step");
 	}
 
-	// determine offset for first iteration that is of random size of the cuttoff cell
-	// so that the "cells" are cutoff not only on the right and bottom edge
-	xOffset = (int)random(xStep % width);
+	determineOffset(xStep, yStep);
+}
+
+// determine offset for first iteration of manipulatePixels() that is of random size of the cuttoff cell
+// so that the "cells" are cutoff not only on the right and bottom edge
+void determineOffset(int x, int y) {
+	xOffset = (int)random(x % width);
 	xOffsetRecord = xOffset;
-	yOffset = (int)random(yStep % height);
+	yOffset = (int)random(y % height);
 	yOffsetRecord = yOffset;
 }
 
-// like "setNewGrid()", but just resize for shader use
+// for resource intensive calculations on individual pixels, use a shader
+void applyShader(int shader) {
+	shaderTime += shaderTimeNoise.getNoiseRange(.05, .3);
+	shaders.get(shader).set("u_time", shaderTime);
+	shaders.get(shader).set("u_texture", tempBuffer);
+	if (buffer != null) {
+		try {
+			buffer.beginDraw();
+				buffer.shader(shaders.get(shader));
+				buffer.rect(0, 0, width, height);
+			buffer.endDraw();
+		} catch (Exception e) {
+			println("buffer error: " + e.getMessage());
+			buffer = createGraphics(width, height, P2D);
+		}
+	}
+}
+
+// rsize buffer for "zooming into" shader
 void resizeBuffer(float w, float h) {
 	buffer.dispose();
 	buffer = createGraphics((int)w, (int)h, P2D);
@@ -286,7 +291,7 @@ void chooseEvent(int event) {
 	switch (event) {
 		case 0:
 			if (!isApplyingShader) {
-				setNewGrid();
+				setNewGridWithNoise();
 			} else {
 				resizeBuffer(intRandom(0, width), intRandom(0, height));
 			}
@@ -410,11 +415,7 @@ void sendDebugOSC() {
 // handle incoming OSC messages from control sketch
 void oscEvent(OscMessage message) {
 	// handle parameter updates according to names given in "MidiInputReceiver" which should correspond to variables here
-	if (message.checkAddrPattern("/minSwitchTime")) {
-		float value = message.get(0).floatValue();
-		minSwitchTime = map(value, 0, 127, 1, 10);				// cannot be 0
-	}
-	else if (message.checkAddrPattern("/maxSwitchTime")) {
+	if (message.checkAddrPattern("/maxSwitchTime")) {
 		float value = message.get(0).floatValue();
 		maxSwitchTime = map(value, 0, 127, 1, 10);				// cannot be 0
 	}
@@ -424,11 +425,21 @@ void oscEvent(OscMessage message) {
 	}
 	else if (message.checkAddrPattern("/switchTimeMultiplier")) {
 		float value = message.get(0).floatValue();
-		switchTimeMultiplier = value;							// should be 0 most of the time
+		switchTimeMultiplier = map(value, 0, 127, 1, 6);		// should be 0 most of the time
+	}
+	else if (message.checkAddrPattern("/sameStep")) {
+		float value = message.get(0).floatValue();
+		nextX = nextY = (int) map(value, 0, 127, 1, width/10);	// cannot be 0, should depend on the res
+		stepUpdated = true;
 	}
 	else if (message.checkAddrPattern("/xStep")) {
 		float value = message.get(0).floatValue();
 		nextX = (int) map(value, 0, 127, 1, width/10);			// cannot be 0, should depend on the res
+		stepUpdated = true;
+	}
+	else if (message.checkAddrPattern("/xStepMultiplier")) {
+		float value = message.get(0).floatValue();
+		xStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
 		stepUpdated = true;
 	}
 	else if (message.checkAddrPattern("/yStep")) {
@@ -436,14 +447,9 @@ void oscEvent(OscMessage message) {
 		nextY = (int) map(value, 0, 127, 1, height/10);			// cannot be 0, should depend on the res
 		stepUpdated = true;
 	}
-	else if (message.checkAddrPattern("/sameStep")) {
+	else if (message.checkAddrPattern("/yStepMultiplier")) {
 		float value = message.get(0).floatValue();
-		nextX = nextY = (int) map(value, 0, 127, 1, width/10);	// cannot be 0, should depend on the res
-		stepUpdated = true;
-	}
-	else if (message.checkAddrPattern("/stepMultiplier")) {
-		float value = message.get(0).floatValue();
-		stepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
+		yStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
 		stepUpdated = true;
 	}
 }

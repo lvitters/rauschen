@@ -14,6 +14,7 @@ int xStep = 1;
 int yStep = 1;
 int nextX = 1;
 int nextY = 1;
+float stepMultiplier = 1;			// has to start at 1 
 Boolean stepUpdated = false;
 int xOffset = 0;
 int xOffsetRecord = 0;
@@ -160,8 +161,8 @@ public void draw() {
 void manipulatePixelArray() {
 	// update steps from controller, if there are new steps
 	if (stepUpdated) {
-		xStep = nextX;
-		yStep = nextY;
+		xStep = (int) (nextX * stepMultiplier);
+		yStep = (int) (nextY * stepMultiplier);
 		stepUpdated = false;
 	}
 	buffer.loadPixels();
@@ -441,22 +442,8 @@ void oscEvent(OscMessage message) {
 		stepUpdated = true;
 	}
 	else if (message.checkAddrPattern("/stepMultiplier")) {
-		// get base values first to use multiplier on
-		int baseX = constrain(nextX, 1, width/10);  			// ensure base is within the range set by the other knobs
-		int baseY = constrain(nextY, 1, width/10);
-		
-		// get value from message and map to /100 of full res 
 		float value = message.get(0).floatValue();
-		float multiplier = map(value, 0, 127, 1, width/100);  	// multiplier ranges from 1 to 10
-		
-		// apply the multiplier to the base values
-		nextX = (int) (baseX * multiplier);
-		nextY = (int) (baseY * multiplier);
-		
-		// constrain to ensure they don't exceed screen boundaries
-		nextX = constrain(nextX, 1, width);
-		nextY = constrain(nextY, 1, height);
-		
+		stepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
 		stepUpdated = true;
 	}
 }

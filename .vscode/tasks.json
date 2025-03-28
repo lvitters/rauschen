@@ -46,8 +46,8 @@
 			"label": "Run Both",
 			"dependsOrder": "parallel",
 			"dependsOn": [
-				"Run Sketch 1",
-				"Run Sketch 2"
+				"Run RAUSCHEN",
+				"Run RAUSCHEN_controls"
 			],
 			"group": {
 				"kind": "build",

@@ -315,21 +315,45 @@ void chooseEvent(int event) {
 }
 
 // this gets called by wellen's digital signal processing (DSP) and takes an array of samples for playback
+// creates audio samples from a diagonal line through the buffer's pixels
 void audioblock(float[] pSamples) {
 	if (buffer.pixels != null) {
+
+		// calculate step sizes for moving along the diagonal
+		float xStep = (float)buffer.width / pSamples.length;
+		float yStep = (float)buffer.height / pSamples.length;
+		
 		for (int i = 0; i < pSamples.length; i++) {
-			// extract RGB components from buffer pixel array
-			float red = red(buffer.pixels[i]);
-			float green = green(buffer.pixels[i]);
-			float blue = blue(buffer.pixels[i]);
-
-			// calculate the average
-			float average = (red + green + blue) / 3.0;
-
-			// map to (desired) audio sample range
-			pSamples[i] = map(average, 0, 255, -.5, 5);
-
-			//println(pSamples[i]);
+			// calculate position along the diagonal
+			// going from top-left (0,0) to bottom-right (width,height)
+			int x = (int)(i * xStep);
+			int y = (int)(i * yStep);
+			
+			// get the index
+			int pixelIndex = y * buffer.width + x;
+			
+			// make sure within bounds
+			if (pixelIndex < buffer.pixels.length) {
+				// extract RGB components
+				float red = red(buffer.pixels[pixelIndex]);
+				float green = green(buffer.pixels[pixelIndex]);
+				float blue = blue(buffer.pixels[pixelIndex]);
+				
+				// calculate the average
+				float average = (red + green + blue) / 3.0;
+				
+				// map to audio sample range
+				pSamples[i] = map(average, 0, 255, -.5, .5);
+			} else {
+				pSamples[i] = 0;
+				println("index over buffer length");
+			}
+		}
+	} else {
+		println("buffer null");
+		// fill with silence if no pixels
+		for (int i = 0; i < pSamples.length; i++) {
+			pSamples[i] = 0;
 		}
 	}
 }

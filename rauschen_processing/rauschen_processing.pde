@@ -326,54 +326,50 @@ void chooseEvent(int event) {
 // creates audio samples from a diagonal line through the buffer's pixels
 void audioblock(float[] pSamples) {
 	if (buffer.pixels != null) {
+		// get buffer dimensions
+		int bufferWidth = buffer.width;
+		int bufferHeight = buffer.height;
 		
-		// Find center of buffer
-		int centerX = width / 2;
-		int centerY = height / 2;
+		// find the shorter dimension
+		int minDimension = min(bufferWidth, bufferHeight);
 		
-		// Calculate a fixed diagonal length that doesn't depend on buffer size
-		// For example, make it about half the size of the smaller buffer dimension
-		int diagonalLength = min(width, height) / 2;
-		
-		// Calculate half the diagonal (for each direction from center)
-		int halfDiagonal = diagonalLength / 2;
-		
+		// map to buffer dimensions
 		for (int i = 0; i < pSamples.length; i++) {
-			// Map sample index to a position on our fixed-length diagonal
-			float t = map(i, 0, pSamples.length - 1, -1, 1);
+			// map sample index to position along diagonal
+			int position = (int) map(i, 0, pSamples.length - 1, 0, minDimension - 1);
 			
-			// Calculate positions relative to center
-			int offsetX = int(t * halfDiagonal);
-			int offsetY = int(t * halfDiagonal);
+			// calculate x,y for diagonal, using the same relative position in both dimensions
+			float xRatio = (float) position / (minDimension - 1);
+			float yRatio = xRatio;
 			
-			// Apply offset to center coordinates
-			int x = centerX + offsetX;
-			int y = centerY + offsetY;
+			// convert ratio to actual pixel coordinates
+			int x = (int) (xRatio * (bufferWidth - 1));
+			int y = (int) (yRatio * (bufferHeight - 1));
 			
-			// store debug pixels
+			// store for debug visualization
 			audioDebugPixels.set(i, new PVector(x, y));
 			
-			// Make sure coordinates are within bounds
-			if (x >= 0 && x < width && y >= 0 && y < height) {
-				// Get the pixel index
-				int pixelIndex = y * width + x;
-				
-				// Extract RGB components
+			// get pixel index
+			int pixelIndex = y * bufferWidth + x;
+			
+			// check bounds
+			if (pixelIndex >= 0 && pixelIndex < buffer.pixels.length) {
+				// extract RGB components
 				float red = red(buffer.pixels[pixelIndex]);
 				float green = green(buffer.pixels[pixelIndex]);
 				float blue = blue(buffer.pixels[pixelIndex]);
 				
-				// Calculate the average
+				// calculate the average
 				float average = (red + green + blue) / 3.0;
 				
-				// Map to audio sample range
-				pSamples[i] = map(average, 0, 255, -.5, .5);
+				// map to audio sample range
+				pSamples[i] = map(average, 0, 255, -0.5, 0.5);
 			} else {
 				pSamples[i] = 0;
 			}
 		}
 	} else {
-		// Fill with silence if no pixels
+		// fill with silence if no pixels
 		for (int i = 0; i < pSamples.length; i++) {
 			pSamples[i] = 0;
 		}

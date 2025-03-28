@@ -110,6 +110,11 @@ public void setup() {
 	// start wellen's digital signal processing but pause for now
 	DSP.start(this);
 	DSP.pause(true);
+	
+	// fill audioDebugPixels with empty pixels to ensure correct size
+	while (audioDebugPixels.size() < 1024) {
+		audioDebugPixels.add(null); // add placeholder elements
+	}
 
 	// init NoiseInstances with starting value and increment, add to list of noises
 	xStepNoise = new Noise(intRandom(0, 100), .01);
@@ -155,17 +160,6 @@ public void draw() {
 	image(buffer, 0, 0, width, height);
 
 	if (showDebug) showDebug();
-	if (showDebug && audioDebugPixels != null) {
-		for (int i = 0; i < audioDebugPixels.size(); i++) {
-			PVector p = audioDebugPixels.get(i);
-			if (i == audioDebugPixels.size() - 3) stroke(0, 255, 0);
-			else stroke(255, 0, 0);
-			if (i == audioDebugPixels.size() - 3) strokeWeight(5);
-			else strokeWeight(2);
-			if (p != null) rect(p.x, p.y, 1, 1);
-			noStroke();
-		}
-	}
 
 	// send information to control sketch
 	sendNoisesOSC();
@@ -332,24 +326,17 @@ void chooseEvent(int event) {
 // creates audio samples from a diagonal line through the buffer's pixels
 void audioblock(float[] pSamples) {
 	if (buffer.pixels != null) {
-		int bufferWidth = buffer.width;
-		int bufferHeight = buffer.height;
 		
 		// Find center of buffer
-		int centerX = bufferWidth / 2;
-		int centerY = bufferHeight / 2;
+		int centerX = width / 2;
+		int centerY = height / 2;
 		
 		// Calculate a fixed diagonal length that doesn't depend on buffer size
 		// For example, make it about half the size of the smaller buffer dimension
-		int diagonalLength = min(bufferWidth, bufferHeight) / 2;
+		int diagonalLength = min(width, height) / 2;
 		
 		// Calculate half the diagonal (for each direction from center)
 		int halfDiagonal = diagonalLength / 2;
-		
-		// Clear audioDebugPixels and ensure it has enough space
-		while (audioDebugPixels.size() <= pSamples.length) {
-			audioDebugPixels.add(null); // add placeholder elements
-		}
 		
 		for (int i = 0; i < pSamples.length; i++) {
 			// Map sample index to a position on our fixed-length diagonal
@@ -363,13 +350,13 @@ void audioblock(float[] pSamples) {
 			int x = centerX + offsetX;
 			int y = centerY + offsetY;
 			
-			// Store debug pixels
+			// store debug pixels
 			audioDebugPixels.set(i, new PVector(x, y));
 			
 			// Make sure coordinates are within bounds
-			if (x >= 0 && x < bufferWidth && y >= 0 && y < bufferHeight) {
+			if (x >= 0 && x < width && y >= 0 && y < height) {
 				// Get the pixel index
-				int pixelIndex = y * bufferWidth + x;
+				int pixelIndex = y * width + x;
 				
 				// Extract RGB components
 				float red = red(buffer.pixels[pixelIndex]);
@@ -388,7 +375,7 @@ void audioblock(float[] pSamples) {
 	} else {
 		// Fill with silence if no pixels
 		for (int i = 0; i < pSamples.length; i++) {
-		pSamples[i] = 0;
+			pSamples[i] = 0;
 		}
 	}
 }
@@ -407,6 +394,22 @@ void showDebug() {
 		text("isNoiseColor: " + isNoiseColor, 10, 155);
 		text("isApplyingShader: " + isApplyingShader, 10, 180);
 		text("isRandomShaderEachFrame: " + isRandomShaderEachFrame, 10, 205);
+
+		// audio pixels debug line
+		if (showDebug && audioDebugPixels != null) {
+			for (int i = 0; i < audioDebugPixels.size(); i++) {
+				PVector p = audioDebugPixels.get(i);
+				if (i == 0 || i == audioDebugPixels.size() - 1) {
+					stroke(0, 255, 0);
+					strokeWeight(5);
+				} else {
+					stroke(255, 0, 0);
+					strokeWeight(2);
+				}
+				if (p != null) point(p.x, p.y);
+				noStroke();
+			}
+		}
 }
 
 // listen to key presses

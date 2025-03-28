@@ -1,4 +1,5 @@
 import java.util.concurrent.ThreadLocalRandom;		// faster random functions
+import java.util.concurrent.*;						
 import wellen.*;									// audio stuff
 import wellen.dsp.*;								// should be included in the above, but for some reason isn't
 import oscP5.*;
@@ -26,6 +27,9 @@ int maxIndex = width * height * 4;
 // buffer for display
 PGraphics buffer;
 PGraphics tempBuffer;
+
+// audio debug pixels
+CopyOnWriteArrayList<PVector> audioDebugPixels = new CopyOnWriteArrayList<PVector>();
 
 // shader stuff
 ArrayList<PShader> shaders = new ArrayList<PShader>();
@@ -91,7 +95,6 @@ public void setup() {
 	tempBuffer = createGraphics((int)width, (int)height, P2D);
 
 	// set up shaders
-	shaders = new ArrayList<PShader>();
 	shaders.add(loadShader("1DNoise.glsl"));
   	shaders.add(loadShader("GameOfLife.glsl"));
   
@@ -152,6 +155,17 @@ public void draw() {
 	image(buffer, 0, 0, width, height);
 
 	if (showDebug) showDebug();
+	if (showDebug && audioDebugPixels != null) {
+		for (int i = 0; i < audioDebugPixels.size(); i++) {
+			PVector p = audioDebugPixels.get(i);
+			if (i == audioDebugPixels.size() - 3) stroke(0, 255, 0);
+			else stroke(255, 0, 0);
+			if (i == audioDebugPixels.size() - 3) strokeWeight(5);
+			else strokeWeight(2);
+			if (p != null) rect(p.x, p.y, 1, 1);
+			noStroke();
+		}
+	}
 
 	// send information to control sketch
 	sendNoisesOSC();
@@ -318,42 +332,63 @@ void chooseEvent(int event) {
 // creates audio samples from a diagonal line through the buffer's pixels
 void audioblock(float[] pSamples) {
 	if (buffer.pixels != null) {
-
-		// calculate step sizes for moving along the diagonal
-		float xStep = (float)buffer.width / pSamples.length;
-		float yStep = (float)buffer.height / pSamples.length;
+		int bufferWidth = buffer.width;
+		int bufferHeight = buffer.height;
+		
+		// Find center of buffer
+		int centerX = bufferWidth / 2;
+		int centerY = bufferHeight / 2;
+		
+		// Calculate a fixed diagonal length that doesn't depend on buffer size
+		// For example, make it about half the size of the smaller buffer dimension
+		int diagonalLength = min(bufferWidth, bufferHeight) / 2;
+		
+		// Calculate half the diagonal (for each direction from center)
+		int halfDiagonal = diagonalLength / 2;
+		
+		// Clear audioDebugPixels and ensure it has enough space
+		while (audioDebugPixels.size() <= pSamples.length) {
+			audioDebugPixels.add(null); // add placeholder elements
+		}
 		
 		for (int i = 0; i < pSamples.length; i++) {
-			// calculate position along the diagonal
-			// going from top-left (0,0) to bottom-right (width,height)
-			int x = (int)(i * xStep);
-			int y = (int)(i * yStep);
+			// Map sample index to a position on our fixed-length diagonal
+			float t = map(i, 0, pSamples.length - 1, -1, 1);
 			
-			// get the index
-			int pixelIndex = y * buffer.width + x;
+			// Calculate positions relative to center
+			int offsetX = int(t * halfDiagonal);
+			int offsetY = int(t * halfDiagonal);
 			
-			// make sure within bounds
-			if (pixelIndex < buffer.pixels.length) {
-				// extract RGB components
+			// Apply offset to center coordinates
+			int x = centerX + offsetX;
+			int y = centerY + offsetY;
+			
+			// Store debug pixels
+			audioDebugPixels.set(i, new PVector(x, y));
+			
+			// Make sure coordinates are within bounds
+			if (x >= 0 && x < bufferWidth && y >= 0 && y < bufferHeight) {
+				// Get the pixel index
+				int pixelIndex = y * bufferWidth + x;
+				
+				// Extract RGB components
 				float red = red(buffer.pixels[pixelIndex]);
 				float green = green(buffer.pixels[pixelIndex]);
 				float blue = blue(buffer.pixels[pixelIndex]);
 				
-				// calculate the average
+				// Calculate the average
 				float average = (red + green + blue) / 3.0;
 				
-				// map to audio sample range
+				// Map to audio sample range
 				pSamples[i] = map(average, 0, 255, -.5, .5);
 			} else {
 				pSamples[i] = 0;
-				println("index over buffer length");
 			}
 		}
 	} else {
-		println("buffer null");
-		// fill with silence if no pixels
+		// Fill with silence if no pixels
 		for (int i = 0; i < pSamples.length; i++) {
-			pSamples[i] = 0;
+		pSamples[i] = 0;
 		}
 	}
 }

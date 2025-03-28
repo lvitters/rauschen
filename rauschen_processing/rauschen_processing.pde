@@ -185,7 +185,6 @@ void manipulatePixelArray() {
 				// offset only applies to first iteration
 				if (y > 0) yOffset = 0;
 				else yOffset = yOffsetRecord;
-				float r, g, b;
 				// get color in PVector (it stores three floats) for pixels or steps
 				PVector col;
 				if (isNoiseColor) {

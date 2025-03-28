@@ -32,6 +32,8 @@ PGraphics tempBuffer;
 CopyOnWriteArrayList<PVector> audioDebugPixels = new CopyOnWriteArrayList<PVector>();
 // audio sampling line orientation: 0 = diagonal, 1 = horizontal, 2 = vertical
 int audioSamplingMode = 0;
+// thread-safe pixel array copy for audio to access
+int[] audioPixels;
 
 // shader stuff
 ArrayList<PShader> shaders = new ArrayList<PShader>();
@@ -154,9 +156,9 @@ public void draw() {
 	} else {
 		if (isRandomShaderEachFrame) applyShader(intRandom(0, shaders.size() - 1));
 		else applyShader(shaderChoice);
-		// load shader pixels into buffer for audioblock() to generate sound from
-		buffer.loadPixels();
 	}
+
+	makeBufferCopyForAudio();
 
 	// display buffer
 	image(buffer, 0, 0, width, height);
@@ -324,10 +326,22 @@ void chooseEvent(int event) {
 	}
 }
 
+// make a thread-safe copy for the audio sampler to use
+void makeBufferCopyForAudio() {
+	if (buffer != null) {
+		if (buffer.pixels != null) {
+			if (audioPixels == null || audioPixels.length != buffer.pixels.length) {
+				audioPixels = new int[buffer.pixels.length];
+			}
+			System.arraycopy(buffer.pixels, 0, audioPixels, 0, buffer.pixels.length);
+		}
+	}
+}
+
 // this gets called by wellen's digital signal processing (DSP) and takes an array of samples for playback
 // creates audio samples from a diagonal line through the buffer's pixels
 void audioblock(float[] pSamples) {
-	if (buffer.pixels != null) {
+	if (audioPixels != null) {
 		int bufferWidth = buffer.width;
 		int bufferHeight = buffer.height;
 		
@@ -369,9 +383,9 @@ void audioblock(float[] pSamples) {
 			int pixelIndex = y * bufferWidth + x;
 			
 			// extract RGB components - no need for bounds check as we've mapped directly to buffer dimensions
-			float red = red(buffer.pixels[pixelIndex]);
-			float green = green(buffer.pixels[pixelIndex]);
-			float blue = blue(buffer.pixels[pixelIndex]);
+			float red = red(audioPixels[pixelIndex]);
+			float green = green(audioPixels[pixelIndex]);
+			float blue = blue(audioPixels[pixelIndex]);
 			
 			// calculate the average
 			float average = (red + green + blue) / 3.0;
@@ -390,19 +404,6 @@ void audioblock(float[] pSamples) {
 
 // render some debug info to the main window
 void showDebug() {
-		fill(0, 0, 0);
-		rect(0, 0, 400, 220);
-		fill(255, 255, 255);
-		textSize(25);
-		text("fps: " + (int) frameRate, 10, 30);
-		text("xStep: " + xStep + " yStep: " + yStep, 10, 55);
-		text("isAutoMode: " + isAutoMode, 10, 80);
-		text("nextEvent: " + nf(nextEvent, 2, 3), 10, 105);
-		text("isRandomSwitchTime: " + isRandomSwitchTime, 10, 130);
-		text("isNoiseColor: " + isNoiseColor, 10, 155);
-		text("isApplyingShader: " + isApplyingShader, 10, 180);
-		text("isRandomShaderEachFrame: " + isRandomShaderEachFrame, 10, 205);
-
 		// audio pixels debug line
 		if (showDebug && audioDebugPixels != null) {
 			for (int i = 0; i < audioDebugPixels.size(); i++) {
@@ -418,6 +419,20 @@ void showDebug() {
 				noStroke();
 			}
 		}
+
+		// debug info
+		fill(0, 0, 0);
+		rect(0, 0, 400, 220);
+		fill(255, 255, 255);
+		textSize(25);
+		text("fps: " + (int) frameRate, 10, 30);
+		text("xStep: " + xStep + " yStep: " + yStep, 10, 55);
+		text("isAutoMode: " + isAutoMode, 10, 80);
+		text("nextEvent: " + nf(nextEvent, 2, 3), 10, 105);
+		text("isRandomSwitchTime: " + isRandomSwitchTime, 10, 130);
+		text("isNoiseColor: " + isNoiseColor, 10, 155);
+		text("isApplyingShader: " + isApplyingShader, 10, 180);
+		text("isRandomShaderEachFrame: " + isRandomShaderEachFrame, 10, 205);
 }
 
 // listen to key presses

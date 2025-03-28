@@ -28,8 +28,10 @@ int maxIndex = width * height * 4;
 PGraphics buffer;
 PGraphics tempBuffer;
 
-// audio debug pixels
+// audio sampling line debug pixels
 CopyOnWriteArrayList<PVector> audioDebugPixels = new CopyOnWriteArrayList<PVector>();
+// audio sampling line orientation: 0 = diagonal, 1 = horizontal, 2 = vertical
+int audioSamplingMode = 0;
 
 // shader stuff
 ArrayList<PShader> shaders = new ArrayList<PShader>();
@@ -295,6 +297,7 @@ void timedEvents() {
 // switch between which events to fire
 void chooseEvent(int event) {
 	if (printDebug) println("event: " + event);
+	audioSamplingMode = intRandom(0, 2);
 	switch (event) {
 		case 0:
 			if (!isApplyingShader) {
@@ -325,52 +328,62 @@ void chooseEvent(int event) {
 // creates audio samples from a diagonal line through the buffer's pixels
 void audioblock(float[] pSamples) {
 	if (buffer.pixels != null) {
-		// get buffer dimensions
 		int bufferWidth = buffer.width;
 		int bufferHeight = buffer.height;
 		
-		// find the shorter dimension
-		int minDimension = min(bufferWidth, bufferHeight);
-		
-		// map to buffer dimensions
+		// map samples to pixels along line
 		for (int i = 0; i < pSamples.length; i++) {
-			// map sample index to position along diagonal
-			int position = (int) map(i, 0, pSamples.length - 1, 0, minDimension - 1);
+			int x, y;
 			
-			// calculate x,y for diagonal, using the same relative position in both dimensions
-			float xRatio = (float) position / (minDimension - 1);
-			float yRatio = xRatio;
+			// calculate position based on current mode
+			switch (audioSamplingMode) {
+				case 0: 
+					// diagonal (top-left to bottom-right)
+					// map sample index directly to buffer diagonal
+					float diagonalPos = map(i, 0, pSamples.length - 1, 0, 1);
+					x = (int) (diagonalPos * (bufferWidth - 1));
+					y = (int) (diagonalPos * (bufferHeight - 1));
+				break;
+				case 1: 
+					// horizontal (left to right)
+					// map sample index directly to buffer width
+					x = (int) map(i, 0, pSamples.length - 1, 0, bufferWidth - 1);
+					y = bufferHeight / 2; // middle of the buffer
+				break;
+				case 2: 
+					// vertical (top to bottom)
+					// map sample index directly to buffer height
+					x = bufferWidth / 2; // middle of the buffer
+					y = (int) map(i, 0, pSamples.length - 1, 0, bufferHeight - 1);
+				break;
+				default:
+					x = 0;
+					y = 0;
+				break;
+			}
 			
-			// convert ratio to actual pixel coordinates
-			int x = (int) (xRatio * (bufferWidth - 1));
-			int y = (int) (yRatio * (bufferHeight - 1));
-			
-			// store for debug visualization
+			// store coordinates for debug visualization
 			audioDebugPixels.set(i, new PVector(x, y));
 			
-			// get pixel index
+			// calculate pixel index
 			int pixelIndex = y * bufferWidth + x;
 			
-			// check bounds
-			if (pixelIndex >= 0 && pixelIndex < buffer.pixels.length) {
-				// extract RGB components
-				float red = red(buffer.pixels[pixelIndex]);
-				float green = green(buffer.pixels[pixelIndex]);
-				float blue = blue(buffer.pixels[pixelIndex]);
-				
-				// calculate the average
-				float average = (red + green + blue) / 3.0;
-				
-				// map to audio sample range
-				pSamples[i] = map(average, 0, 255, -0.5, 0.5);
-			} else {
-				pSamples[i] = 0;
-			}
+			// extract RGB components - no need for bounds check as we've mapped directly to buffer dimensions
+			float red = red(buffer.pixels[pixelIndex]);
+			float green = green(buffer.pixels[pixelIndex]);
+			float blue = blue(buffer.pixels[pixelIndex]);
+			
+			// calculate the average
+			float average = (red + green + blue) / 3.0;
+			
+			// map to audio sample range, at half volume
+			pSamples[i] = map(average, 0, 255, -0.5, 0.5);
 		}
 	} else {
 		// fill with silence if no pixels
 		for (int i = 0; i < pSamples.length; i++) {
 			pSamples[i] = 0;
+			println("buffer empty");
 		}
 	}
 }
@@ -396,10 +409,10 @@ void showDebug() {
 				PVector p = audioDebugPixels.get(i);
 				if (i == 0 || i == audioDebugPixels.size() - 1) {
 					stroke(0, 255, 0);
-					strokeWeight(5);
+					strokeWeight(10);
 				} else {
 					stroke(255, 0, 0);
-					strokeWeight(2);
+					strokeWeight(5);
 				}
 				if (p != null) point(p.x, p.y);
 				noStroke();

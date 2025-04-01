@@ -402,6 +402,13 @@ void audioblock(float[] pSamples) {
 	}
 }
 
+// toggle DSP on/off
+void toggleSound() {
+	isMakingSound = !isMakingSound;
+	if (DSP.is_paused()) DSP.pause(false);
+	else DSP.pause(true);
+}
+
 // render some debug info to the main window
 void showDebug() {
 		// audio pixels debug line
@@ -459,9 +466,7 @@ void keyPressed() {
 	}
 	// n - stop noise (audio)
 	if (keyCode == 78) {
-		isMakingSound = !isMakingSound;
-		if (DSP.is_paused()) DSP.pause(false);
-		else DSP.pause(true);
+		toggleSound();
 	}
 	// c - toggle noise color
 	if (keyCode == 67) {
@@ -548,5 +553,14 @@ void oscEvent(OscMessage message) {
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1
 		if (value == 0) isRandomSwitchTime = false;
 		if (value == 1) isRandomSwitchTime = true;
+	}
+	else if (message.checkAddrPattern("/isMakingSound")) {
+		toggleSound();
+	}
+	else if (message.checkAddrPattern("/isNoiseColor")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1
+		if (value == 0) isNoiseColor = false;
+		if (value == 1) isNoiseColor = true;
 	}
 }

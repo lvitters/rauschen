@@ -53,6 +53,12 @@ class MidiInputReceiver implements Receiver {
 						case 10:
 							paramName = "/isRandomSwitchTime";
 						break;
+						case 11:
+							paramName = "/isMakingSound";
+						break;
+						case 12:
+							paramName = "/isNoiseColor";
+						break;
 					}
 					
 					// send OSC message with the calculated value

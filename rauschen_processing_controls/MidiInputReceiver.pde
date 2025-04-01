@@ -10,12 +10,12 @@ class MidiInputReceiver implements Receiver {
 				int number = sm.getData1();  // CC number (identifies which knob)
 				int value = sm.getData2();   // CC value (value between 0-127)
 				
-				//println("Knob/Controller: CC#" + number + " Value: " + value + " Channel: " + channel);
+				println("Knob/Controller: CC#" + number + " Value: " + value + " Channel: " + channel);
 				
 				// if it is from a knob
-				if (number >= 0) {
+				if (number >= 1) {
 					// get knob index
-					int index = number - 1;
+					int index = number;
 					
 					// set the parameter value
 					float paramValue = value;
@@ -23,28 +23,28 @@ class MidiInputReceiver implements Receiver {
 					// map the knob index to the correct parameter
 					String paramName = "";
 					switch(index) {
-						case 0:
+						case 1:
 							paramName = "/maxSwitchTime";
 						break;
-						case 1:
+						case 2:
 							paramName = "/switchTime";
 						break;
-						case 2:
-							paramName = "/switchTimeMultiplier";
-						break;
 						case 3:
-							paramName = "/sameStep";
-						break;
-						case 4:
 							paramName = "/xStep";
 						break;
-						case 5:
-							paramName = "/xStepMultiplier";
-						break;
-						case 6:
+						case 4:
 							paramName = "/yStep";
 						break;
+						case 5:
+							paramName = "/switchTimeMultiplier";
+						break;
+						case 6:
+							paramName = "/sameStep";
+						break;
 						case 7:
+							paramName = "/xStepMultiplier";
+						break;
+						case 8:
 							paramName = "/yStepMultiplier";
 						break;
 					}

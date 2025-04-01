@@ -47,6 +47,12 @@ class MidiInputReceiver implements Receiver {
 						case 8:
 							paramName = "/yStepMultiplier";
 						break;
+						case 9:
+							paramName = "/isAutoMode";
+						break;
+						case 10:
+							paramName = "/isRandomSwitchTime";
+						break;
 					}
 					
 					// send OSC message with the calculated value

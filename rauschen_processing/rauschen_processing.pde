@@ -60,8 +60,8 @@ Noise toggleRandomShaderEachFrameNoise;
 // toggles
 Boolean showDebug = false;
 Boolean printDebug = false;
-Boolean isAutoMode = true;
-Boolean isRandomSwitchTime = true;
+Boolean isAutoMode = false;
+Boolean isRandomSwitchTime = false;
 Boolean isNoiseColor = false;
 Boolean isApplyingShader = false;
 Boolean isRandomShaderEachFrame = false;
@@ -536,5 +536,17 @@ void oscEvent(OscMessage message) {
 		float value = message.get(0).floatValue();
 		yStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
 		stepUpdated = true;
+	}
+	else if (message.checkAddrPattern("/isAutoMode")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1
+		if (value == 0) isAutoMode = false;
+		if (value == 1) isAutoMode = true;
+	}
+	else if (message.checkAddrPattern("/isRandomSwitchTime")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1
+		if (value == 0) isRandomSwitchTime = false;
+		if (value == 1) isRandomSwitchTime = true;
 	}
 }

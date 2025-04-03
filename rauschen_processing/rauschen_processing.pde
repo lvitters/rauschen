@@ -65,7 +65,7 @@ Boolean isRandomSwitchTime = false;
 Boolean isNoiseColor = false;
 Boolean isApplyingShader = false;
 Boolean isRandomShaderEachFrame = false;
-Boolean isMakingSound = false;
+Boolean isGeneratingSound = false;
 Boolean isTakingScreenshots = false;
 Boolean isEvenOffset = false;
 
@@ -417,10 +417,15 @@ void audioblock(float[] pSamples) {
 }
 
 // toggle DSP on/off
-void toggleSound() {
-	isMakingSound = !isMakingSound;
-	if (DSP.is_paused()) DSP.pause(false);
-	else DSP.pause(true);
+void toggleSound(Boolean generateSound) {
+	if (DSP.is_paused() && generateSound) {
+		DSP.pause(false);
+		isGeneratingSound = true;
+	}
+	else if (!generateSound) {
+		DSP.pause(true);
+		isGeneratingSound = false;
+	}
 }
 
 // take a screenshot with date and time to special path (change for exhibition)
@@ -429,10 +434,10 @@ void takeScreenshot() {
 	saveFrame("../rauschen_screens/rauschen-" + timeStamp + ".png");
 }
 
-// render some debug info to the main window
+// render rudimentary debug info to the main window (rest is handled in control sketch)
 void showDebug() {
-		// audio pixels debug line
-		if (showDebug && audioDebugPixels != null) {
+		// audio pixels debug line (only show when sound is actually playing)
+		if (isGeneratingSound && audioDebugPixels != null) {
 			for (int i = 0; i < audioDebugPixels.size(); i++) {
 				PVector p = audioDebugPixels.get(i);
 				if (i == 0 || i == audioDebugPixels.size() - 1) {
@@ -446,23 +451,16 @@ void showDebug() {
 				noStroke();
 			}
 		}
-
-		// debug info
+		// rudimentary debug info
 		fill(0, 0, 0);
-		rect(0, 0, 400, 220);
+		rect(0, 0, 210, 65);
 		fill(255, 255, 255);
 		textSize(25);
 		text("fps: " + (int) frameRate, 10, 30);
-		text("xStep: " + xStep + " yStep: " + yStep, 10, 55);
-		text("isAutoMode: " + isAutoMode, 10, 80);
-		text("nextEvent: " + nf(nextEvent, 2, 3), 10, 105);
-		text("isRandomSwitchTime: " + isRandomSwitchTime, 10, 130);
-		text("isNoiseColor: " + isNoiseColor, 10, 155);
-		text("isApplyingShader: " + isApplyingShader, 10, 180);
-		text("isRandomShaderEachFrame: " + isRandomShaderEachFrame, 10, 205);
+		text("isAutoMode: " + isAutoMode, 10, 55);
 }
 
-// listen to key presses
+// listen to key presses (fallback - stuff generally handled by control sketch)
 void keyPressed() {
 	// f - show debug / fps
 	if (keyCode == 70) {
@@ -471,10 +469,6 @@ void keyPressed() {
 	// p - print (more) debug info
 	if (keyCode == 80) {
 		printDebug = !printDebug;
-	}
-	// r - use random time for next event
-	if (keyCode == 82) {
-		isRandomSwitchTime = !isRandomSwitchTime;
 	}
 	// a - use auto mode or not
 	if (keyCode == 65) {
@@ -486,11 +480,8 @@ void keyPressed() {
 	}
 	// n - stop noise (audio)
 	if (keyCode == 78) {
-		toggleSound();
-	}
-	// c - toggle noise color
-	if (keyCode == 67) {
-		isNoiseColor = !isNoiseColor;
+		if (!isGeneratingSound) toggleSound(true);
+		else toggleSound(false);
 	}
 }
 
@@ -520,6 +511,10 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/isNoiseColor").add(isNoiseColor ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isApplyingShader").add(isApplyingShader ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isRandomShaderEachFrame").add(isRandomShaderEachFrame ? 1 : 0), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/isEvenOffset").add(isEvenOffset ? 1 : 0), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/isTakingScreenshots").add(isTakingScreenshots ? 1 : 0), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/isGeneratingSound").add(isGeneratingSound ? 1 : 0), controlSketchLocation);
+
 }
 
 // handle incoming OSC messages from control sketch
@@ -588,8 +583,11 @@ void oscEvent(OscMessage message) {
 		if (value == 0) isNoiseColor = false;
 		if (value == 1) isNoiseColor = true;
 	}
-	else if (message.checkAddrPattern("/isMakingSound")) {
-		toggleSound();											// turn DSP on or off
+	else if (message.checkAddrPattern("/isGeneratingSound")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+		if (value == 0) toggleSound(false);						// turn DSP on
+		if (value == 1) toggleSound(true);						// or off
 	}
 	else if (message.checkAddrPattern("/isRandomShaderEachFrame")) {
 		float value = message.get(0).floatValue();
@@ -598,7 +596,7 @@ void oscEvent(OscMessage message) {
 		if (value == 1) isRandomShaderEachFrame = false;
 	}
 	else if (message.checkAddrPattern("/isTakingScreenshots")) {
-				float value = message.get(0).floatValue();
+		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isTakingScreenshots = false;
 		if (value == 1) isTakingScreenshots = true;

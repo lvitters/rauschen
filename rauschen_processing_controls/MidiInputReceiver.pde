@@ -60,7 +60,7 @@ class MidiInputReceiver implements Receiver {
 							paramName = "/isNoiseColor";
 						break;
 						case 21:
-							paramName = "/isMakingSound";
+							paramName = "/isGeneratingSound";
 						break;
 						case 22:
 							paramName = "/isTakingScreenshots";

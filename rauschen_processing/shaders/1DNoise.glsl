@@ -2,6 +2,8 @@
 precision mediump float;
 #endif
 
+// chatGPT vibe coding
+
 uniform vec2 u_resolution;
 uniform sampler2D u_texture;
 uniform float u_time;
@@ -10,12 +12,12 @@ float map(float value, float min1, float max1, float min2, float max2) {
   return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
 
-// Random function based on pixel position
+// random function based on pixel position
 float rand(vec2 co) {
     return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453123);
 }
 
-// Basic 1D noise function
+// basic 1D noise function
 float noise(float p){
     float fl = floor(p);
     float fc = fract(p);
@@ -26,7 +28,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution.xy; 	// normalize pixel coords
 	vec4 texColor = texture2D(u_texture, uv); 		// get original buffer color
 
-    // Use pixel position to get different randomness per pixel
+    // ese pixel position to get different randomness per pixel
     float r = noise(u_time + rand(uv));
     float g = noise(u_time + rand(uv) + rand(uv));
     float b = noise(u_time + rand(uv) + rand(uv) + rand(uv));

@@ -101,8 +101,9 @@ public void setup() {
 	tempBuffer = createGraphics((int)width, (int)height, P2D);
 
 	// set up shaders
-	shaders.add(loadShader("1DNoise.glsl"));
-  	shaders.add(loadShader("GameOfLife.glsl"));
+	shaders.add(loadShader("shaders/1DNoise.glsl"));
+  	shaders.add(loadShader("shaders/GameOfLife.glsl"));
+  	shaders.add(loadShader("shaders/FlowField.glsl"));
   
 	// set uniform variables for all shaders
 	for (int i = 0; i < shaders.size(); i++) {

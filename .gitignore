@@ -1,4 +1,5 @@
 rauschen.code-workspace
+/rauschen_screens/
 /rauschen_processing/out
 /rauschen_processing_controls/out
 /_other/rauschen_processing_shader_test/out

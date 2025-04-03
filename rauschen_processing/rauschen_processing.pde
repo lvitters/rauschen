@@ -17,7 +17,7 @@ int nextX = 1;
 int nextY = 1;
 float xStepMultiplier = 1;			// has to start at 1 
 float yStepMultiplier = 1;			// has to start at 1 
-Boolean stepUpdated = false;
+Boolean stepUpdatedManually = false;
 int xOffset = 0;
 int xOffsetRecord = 0;
 int yOffset = 0;
@@ -66,11 +66,13 @@ Boolean isNoiseColor = false;
 Boolean isApplyingShader = false;
 Boolean isRandomShaderEachFrame = false;
 Boolean isMakingSound = false;
+Boolean isTakingScreenshots = false;
+Boolean isEvenOffset = false;
 
 // timed events
 float switchTime = 1;
-float minSwitchTime = 1;
-float maxSwitchTime = 10;
+float minSwitchTime = 0;
+float maxSwitchTime = 1;
 float switchTimeMultiplier = 0;
 float nextEvent = 1;		// init with 1 second
 float eventCounter = 0;
@@ -163,6 +165,9 @@ public void draw() {
 	// display buffer
 	image(buffer, 0, 0, width, height);
 
+	// take screenshots every 1 seconds
+	if (isTakingScreenshots && (frameCount % (60 * 1) == 0)) takeScreenshot();
+
 	if (showDebug) showDebug();
 
 	// send information to control sketch
@@ -173,11 +178,12 @@ public void draw() {
 // apply from setNewGridWithNoise() to the pixel array 
 void manipulatePixelArray() {
 	// update steps from controller, if there are new steps
-	if (stepUpdated) {
+	if (stepUpdatedManually) {
 		xStep = (int) (nextX * xStepMultiplier);
 		yStep = (int) (nextY * yStepMultiplier);
-		stepUpdated = false;
-		determineOffset(xStep, yStep);
+		stepUpdatedManually = false;
+		if (isEvenOffset) determineEvenOffset(xStep, yStep);
+		else determineRandomOffset(xStep, yStep);
 	}
 	buffer.loadPixels();
 		// iterate through pixel array with step and apply offset
@@ -247,15 +253,23 @@ void setNewGridWithNoise() {
 		if (printDebug) println("same step");
 	}
 
-	determineOffset(xStep, yStep);
+	determineRandomOffset(xStep, yStep);
 }
 
 // determine offset for first iteration of manipulatePixels() that is of random size of the cuttoff cell
 // so that the "cells" are cutoff not only on the right and bottom edge
-void determineOffset(int x, int y) {
+void determineRandomOffset(int x, int y) {
 	xOffset = (int)random(x % width);
 	xOffsetRecord = xOffset;
 	yOffset = (int)random(y % height);
+	yOffsetRecord = yOffset;
+}
+
+// determine offset but make it even (looks better with manual or gradual pixel manipulation)
+void determineEvenOffset(int x, int y) {
+	xOffset = (int)(x % width) / 2;
+	xOffsetRecord = xOffset;
+	yOffset = (int)(y % height) / 2;
 	yOffsetRecord = yOffset;
 }
 
@@ -409,6 +423,12 @@ void toggleSound() {
 	else DSP.pause(true);
 }
 
+// take a screenshot with date and time to special path (change for exhibition)
+void takeScreenshot() {
+	String timeStamp = year() + nf(month(), 2) + nf(day(), 2) + "-" + nf(hour(), 2) + nf(minute(), 2) + nf(second(), 2) + "-" + nf(millis() % 1000, 3);
+	saveFrame("../rauschen_screens/rauschen-" + timeStamp + ".png");
+}
+
 // render some debug info to the main window
 void showDebug() {
 		// audio pixels debug line
@@ -505,62 +525,82 @@ void sendDebugOSC() {
 // handle incoming OSC messages from control sketch
 void oscEvent(OscMessage message) {
 	// handle parameter updates according to names given in "MidiInputReceiver" which should correspond to variables here
-	if (message.checkAddrPattern("/maxSwitchTime")) {
+	if (message.checkAddrPattern("/switchTime")) {
 		float value = message.get(0).floatValue();
-		maxSwitchTime = map(value, 0, 127, 1, 10);				// cannot be 0
-	}
-	else if (message.checkAddrPattern("/switchTime")) {
-		float value = message.get(0).floatValue();
-		switchTime = map(value, 0, 127, 0, 10);					// can be 0
+		if (isRandomSwitchTime) maxSwitchTime = map(value, 0, 127, 0, 5);
+		else switchTime = map(value, 0, 127, 0, 5);				// 0 means switch every frame
 	}
 	else if (message.checkAddrPattern("/switchTimeMultiplier")) {
 		float value = message.get(0).floatValue();
-		switchTimeMultiplier = map(value, 0, 127, 1, 6);		// should be 0 most of the time
+		switchTimeMultiplier = map(value, 0, 127, 1, 5);		// should be 0 most of the time
 	}
 	else if (message.checkAddrPattern("/sameStep")) {
 		float value = message.get(0).floatValue();
 		nextX = nextY = (int) map(value, 0, 127, 1, width/10);	// cannot be 0, should depend on the res
-		stepUpdated = true;
+		stepUpdatedManually = true;
+	}
+	else if (message.checkAddrPattern("/sameStepMultiplier")) {
+		float value = message.get(0).floatValue();
+		xStepMultiplier = yStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
+		stepUpdatedManually = true;
 	}
 	else if (message.checkAddrPattern("/xStep")) {
 		float value = message.get(0).floatValue();
 		nextX = (int) map(value, 0, 127, 1, width/10);			// cannot be 0, should depend on the res
-		stepUpdated = true;
+		stepUpdatedManually = true;
 	}
 	else if (message.checkAddrPattern("/xStepMultiplier")) {
 		float value = message.get(0).floatValue();
 		xStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
-		stepUpdated = true;
+		stepUpdatedManually = true;
 	}
 	else if (message.checkAddrPattern("/yStep")) {
 		float value = message.get(0).floatValue();
 		nextY = (int) map(value, 0, 127, 1, height/10);			// cannot be 0, should depend on the res
-		stepUpdated = true;
+		stepUpdatedManually = true;
 	}
 	else if (message.checkAddrPattern("/yStepMultiplier")) {
 		float value = message.get(0).floatValue();
 		yStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
-		stepUpdated = true;
+		stepUpdatedManually = true;
 	}
 	else if (message.checkAddrPattern("/isAutoMode")) {
 		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isAutoMode = false;
 		if (value == 1) isAutoMode = true;
 	}
 	else if (message.checkAddrPattern("/isRandomSwitchTime")) {
 		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isRandomSwitchTime = false;
 		if (value == 1) isRandomSwitchTime = true;
 	}
-	else if (message.checkAddrPattern("/isMakingSound")) {
-		toggleSound();
+	else if (message.checkAddrPattern("/isEvenOffset")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+		if (value == 0) isEvenOffset = false;
+		if (value == 1) isEvenOffset = true;
 	}
 	else if (message.checkAddrPattern("/isNoiseColor")) {
 		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isNoiseColor = false;
 		if (value == 1) isNoiseColor = true;
+	}
+	else if (message.checkAddrPattern("/isMakingSound")) {
+		toggleSound();											// turn DSP on or off
+	}
+	else if (message.checkAddrPattern("/isRandomShaderEachFrame")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+		if (value == 0) isRandomShaderEachFrame = true;
+		if (value == 1) isRandomShaderEachFrame = false;
+	}
+	else if (message.checkAddrPattern("/isTakingScreenshots")) {
+				float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+		if (value == 0) isTakingScreenshots = false;
+		if (value == 1) isTakingScreenshots = true;
 	}
 }

@@ -3,6 +3,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.io.FilenameFilter;
 import java.util.Arrays;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import javax.sound.midi.*;
 
 import oscP5.*;
@@ -12,7 +14,11 @@ import netP5.*;
 PImage[] recentScreens;
 File[] files;
 int numScreensToShow = 3;
-String screensDir = "../rauschen_screens/";
+String screensDir = "../rauschen_screens/temp/";
+String savedScreensDir = "../rauschen_screens/saved/";
+int savedAnimation = 0;
+int savedImageIndex = -1;  // which image was saved (-1: none)
+public boolean mouseOver = true;
 
 OscP5 oscP5;
 NetAddress mainSketchLocation;
@@ -104,6 +110,7 @@ public void setup() {
 public void draw() {
 	background(0);
 
+	// display screenshot gallery
 	if (frameCount % 60 == 0) loadRecentScreens();
 	displayRecentScreens();
 
@@ -272,32 +279,129 @@ void keyPressed() {
 	}
 }
 
+// fire if mouse was pressed
+void mousePressed() {
+	if (recentScreens != null) {
+		int imgWidth = width / numScreensToShow;
+		
+		// check if click is within one of the image's location
+		for (int i = 0; i < recentScreens.length; i++) {
+			if (mouseX >= i * imgWidth && mouseX < (i + 1) * imgWidth && recentScreens[i] != null) {
+				saveScreenshot(files[i]);
+				
+				// reset animation variables
+				savedAnimation = 90;  // 1.5 seconds at 60fps
+				savedImageIndex = i;  // save which image was clicked
+				
+				break;
+			}
+		}
+	}
+}
+    
+// when the mouse exits the window
+public void mouseExited() {
+	mouseOver = false;
+	cursor(ARROW);
+}
+
+// when the mouse enters the window
+public void mouseEntered() {
+	mouseOver = true;
+}
+
+// copy a chosen screenshot to another folder
+void saveScreenshot(File sourceFile) {
+	try {
+		// create destination file in saved directory
+		File destDir = new File(sketchPath(savedScreensDir));
+		if (!destDir.exists()) {
+			destDir.mkdirs();
+		}
+		
+		File destFile = new File(destDir, sourceFile.getName());
+		
+		// copy the file
+		Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		
+		// println("Saved screenshot: " + sourceFile.getName() + " to " + destFile.getAbsolutePath());
+		
+	} catch (Exception e) {
+		println("Error saving screenshot: " + e.getMessage());
+		e.printStackTrace();
+	}
+}
+
 // display a set number from the images collected in loadRecentScreens()
 void displayRecentScreens() {
+	// remember if the mouse is over any of the screenshots
+	boolean mouseOverAnyImage = false;
+
+	// if there are recent screenshots
 	if (recentScreens != null) {
 		int imgWidth = width / numScreensToShow;
 		
 		// for all screenshots
 		for (int i = 0; i < recentScreens.length; i++) {
-			if (recentScreens[i] != null) {
-				// calculate position to display images side by side
-				float x = i * imgWidth;
-				float y = 0;
+		if (recentScreens[i] != null) {
+			// calculate position to display images side by side
+			float x = i * imgWidth;
+			float y = 0;
+			
+			// scale the image to fit while maintaining aspect ratio
+			float scaleFactor = min((float)imgWidth / recentScreens[i].width, 
+					(float)height / recentScreens[i].height);
+			
+			float w = recentScreens[i].width * scaleFactor;
+			float h = recentScreens[i].height * scaleFactor;
+			
+			// center the image in its section
+			x = x + (imgWidth - w) / 2;
+			
+			// display in descending order (images flow from right to left, like the graphs)
+			image(recentScreens[recentScreens.length - 1 - i], x, y, w, h);
+
+			// check if mouse is over this image
+			boolean isOverThisImage = (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h && mouseOver);
+
+			// draw transparent rect when hovering with mouse
+			if (isOverThisImage) {
+			mouseOverAnyImage = true;  // set flag for cursor change later
+			noStroke();
+			fill(50, 255, 50, 40);  // light green with low opacity
+			rect(x, y, w, h);
+			}
+
+			// draw a flash animation after a screenshot is saved, only for the saved image
+			if (savedAnimation > 0 && i == savedImageIndex) {
+				// calculate fade-out effect
+				float alpha = map(savedAnimation, 0, 90, 0, 230);
 				
-				// scale the image to fit while maintaining aspect ratio
-				float scaleFactor = min((float)imgWidth / recentScreens[i].width, 
-									(float)height / recentScreens[i].height);
+				// draw semi-transparent overlay
+				noStroke();
+				fill(0, 200, 0, alpha * 0.3);
+				rect(x, y, w, h);
 				
-				float w = recentScreens[i].width * scaleFactor;
-				float h = recentScreens[i].height * scaleFactor;
-				
-				// center the image in its section
-				x = x + (imgWidth - w) / 2;
-				
-				// display in descending order (images flow from right to left, like the graphs)
-				image(recentScreens[recentScreens.length - 1 - i], x, y, w, h);
+				// draw "SAVED" text
+				fill(255, alpha);
+				textAlign(CENTER, CENTER);
+				textSize(min(w, h) * 0.2);  // size text proportional to image
+				text("SAVED", x + w/2, y + h/2);
 			}
 		}
+		}
+
+		// set cursor only once after checking all images to avoid flashing
+		if (mouseOverAnyImage) {
+			cursor(HAND);
+		} else {
+			cursor(ARROW);
+		}
+	}
+	
+	// decrement the animation counter once per frame
+	if (savedAnimation > 0) {
+		savedAnimation--;
 	}
 }
 

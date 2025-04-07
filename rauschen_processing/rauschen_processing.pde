@@ -167,8 +167,8 @@ public void draw() {
 	// display buffer
 	image(buffer, 0, 0, width, height);
 
-	// take screenshots every 1 seconds
-	if (isTakingScreenshots && (frameCount % (60 * 1) == 0)) takeScreenshot();
+	// take screenshot every 3 seconds
+	if (isTakingScreenshots && (frameCount % (60 * 3) == 0)) takeScreenshot();
 
 	if (showDebug) showDebug();
 
@@ -433,7 +433,7 @@ void toggleSound(Boolean generateSound) {
 // take a screenshot with date and time to special path (change for exhibition)
 void takeScreenshot() {
 	String timeStamp = year() + nf(month(), 2) + nf(day(), 2) + "-" + nf(hour(), 2) + nf(minute(), 2) + nf(second(), 2) + "-" + nf(millis() % 1000, 3);
-	saveFrame("../rauschen_screens/rauschen-" + timeStamp + ".png");
+	saveFrame("../rauschen_screens/temp/rauschen-" + timeStamp + ".png");
 }
 
 // render rudimentary debug info to the main window (rest is handled in control sketch)

@@ -1,5 +1,8 @@
 import java.util.concurrent.ThreadLocalRandom;		// faster random functions
-import java.util.concurrent.*;						
+import java.util.concurrent.*;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;						
 import wellen.*;									// audio stuff
 import wellen.dsp.*;								// should be included in the above, but for some reason isn't
 import oscP5.*;
@@ -27,6 +30,11 @@ int maxIndex = width * height * 4;
 // buffer for display
 PGraphics buffer;
 PGraphics tempBuffer;
+
+// screenshots
+String screensDir = "../rauschen_screens/temp/";
+int maxFiles = 100; // maximum number of files to keep
+Boolean takeSingleScreenshot = false;
 
 // audio sampling line debug pixels
 CopyOnWriteArrayList<PVector> audioDebugPixels = new CopyOnWriteArrayList<PVector>();
@@ -90,7 +98,7 @@ public void setup() {
 	windowTitle("RAUSCHEN");
 
 	// determine this window location on screen
-	surface.setLocation(10, 60);
+	surface.setLocation(0, 40);
 
 	// can't go in settings for some reason
 	frameRate(120);
@@ -169,6 +177,10 @@ public void draw() {
 
 	// take screenshot every 3 seconds
 	if (isTakingScreenshots && (frameCount % (60 * 3) == 0)) takeScreenshot();
+	else if (takeSingleScreenshot) {
+		takeScreenshot();
+		takeSingleScreenshot = false;
+	}
 
 	if (showDebug) showDebug();
 
@@ -434,6 +446,31 @@ void toggleSound(Boolean generateSound) {
 void takeScreenshot() {
 	String timeStamp = year() + nf(month(), 2) + nf(day(), 2) + "-" + nf(hour(), 2) + nf(minute(), 2) + nf(second(), 2) + "-" + nf(millis() % 1000, 3);
 	saveFrame("../rauschen_screens/temp/rauschen-" + timeStamp + ".png");
+
+	// cleanup after every new screenshot
+	cleanupImageFolder();
+}
+
+// check if there are more than maxFiles files in the screenshot folder, delete oldest
+void cleanupImageFolder() {
+	File folder = new File(sketchPath(screensDir));
+	File[] files = folder.listFiles();
+	
+	if (files != null && files.length > maxFiles) {
+		// sort files by last modified date (oldest first)
+		Arrays.sort(files, new Comparator<File>() {
+			public int compare(File f1, File f2) {
+				return Long.compare(f1.lastModified(), f2.lastModified());
+			}
+		});
+		
+		// delete oldest files until we're back to the maximum
+		int numToDelete = files.length - maxFiles;
+		for (int i = 0; i < numToDelete; i++) {
+			if (printDebug) println("Deleting old file: " + files[i].getName());
+			files[i].delete();
+		}
+	}
 }
 
 // render rudimentary debug info to the main window (rest is handled in control sketch)
@@ -591,16 +628,19 @@ void oscEvent(OscMessage message) {
 		if (value == 0) toggleSound(false);						// turn DSP on
 		if (value == 1) toggleSound(true);						// or off
 	}
-	else if (message.checkAddrPattern("/isRandomShaderEachFrame")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isRandomShaderEachFrame = true;
-		if (value == 1) isRandomShaderEachFrame = false;
-	}
 	else if (message.checkAddrPattern("/isTakingScreenshots")) {
 		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isTakingScreenshots = false;
 		if (value == 1) isTakingScreenshots = true;
-	}
+	}	
+	// else if (message.checkAddrPattern("/isRandomShaderEachFrame")) {
+	// 	float value = message.get(0).floatValue();
+	// 	value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+	// 	if (value == 0) isRandomShaderEachFrame = true;
+	// 	if (value == 1) isRandomShaderEachFrame = false;
+	// }
+	// else if (message.checkAddrPattern("/takeScreenshot")) {	
+	// 	takeSingleScreenshot = true;
+	// }
 }

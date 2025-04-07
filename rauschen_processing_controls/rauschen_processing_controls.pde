@@ -13,7 +13,7 @@ import netP5.*;
 // screenshot gallery
 PImage[] recentScreens;
 File[] files;
-int numScreensToShow = 3;
+int numScreensToShow = 4;
 String screensDir = "../rauschen_screens/temp/";
 String savedScreensDir = "../rauschen_screens/saved/";
 int savedAnimation = 0;
@@ -23,7 +23,7 @@ public boolean mouseOver = true;
 OscP5 oscP5;
 NetAddress mainSketchLocation;
 
-int width = 750;
+int width = 800;
 int height = 500;
 Boolean showDebug = true;
 
@@ -89,7 +89,7 @@ public void setup() {
 	windowTitle("controls");
 	
 	// determine window location on screen
-	surface.setLocation(1020, 60);
+	surface.setLocation(1000, 40);
 
 	// can't go in settings for some reason
 	frameRate(120);
@@ -189,6 +189,7 @@ void displayDebugInfo() {
 	float x = 10;
 	float y = 25;
 	fill(255, 255, 255);
+	textAlign(CORNER, CORNER);
 	textSize(20);
 
 	// display debug alphabetically (order wouldn't be what it is in the other sketch anyways)
@@ -287,7 +288,8 @@ void mousePressed() {
 		// check if click is within one of the image's location
 		for (int i = 0; i < recentScreens.length; i++) {
 			if (mouseX >= i * imgWidth && mouseX < (i + 1) * imgWidth && recentScreens[i] != null) {
-				saveScreenshot(files[i]);
+				// screens are shown in reverse order, so they must be accessed from array in reverse order here
+				saveScreenshot(files[recentScreens.length - 1 - i]);
 				
 				// reset animation variables
 				savedAnimation = 90;  // 1.5 seconds at 60fps
@@ -366,10 +368,10 @@ void displayRecentScreens() {
 
 			// draw transparent rect when hovering with mouse
 			if (isOverThisImage) {
-			mouseOverAnyImage = true;  // set flag for cursor change later
-			noStroke();
-			fill(50, 255, 50, 40);  // light green with low opacity
-			rect(x, y, w, h);
+				mouseOverAnyImage = true;  // set flag for cursor change later
+				noStroke();
+				fill(50, 255, 50, 40);  // light green with low opacity
+				rect(x, y, w, h);
 			}
 
 			// draw a flash animation after a screenshot is saved, only for the saved image

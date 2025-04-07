@@ -56,13 +56,13 @@ class MidiInputReceiver implements Receiver {
 						case 11:
 							paramName = "/isEvenOffset";
 						break;
-						case 12:
+						case 13:
 							paramName = "/isNoiseColor";
 						break;
-						case 21:
+						case 15:
 							paramName = "/isGeneratingSound";
 						break;
-						case 22:
+						case 16:
 							paramName = "/isTakingScreenshots";
 						break;
 					}

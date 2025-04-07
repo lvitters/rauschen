@@ -1,12 +1,25 @@
+import java.util.PriorityQueue;
+import java.util.Collections;
+import java.util.Comparator;
+import java.io.FilenameFilter;
+import java.util.Arrays;
 import javax.sound.midi.*;
+
 import oscP5.*;
 import netP5.*;
+
+// screenshot gallery
+PImage[] recentScreens;
+File[] files;
+int numScreensToShow = 3;
+String screensDir = "../rauschen_screens/";
 
 OscP5 oscP5;
 NetAddress mainSketchLocation;
 
 int width = 750;
 int height = 500;
+Boolean showDebug = true;
 
 // init some predetermined colors so that they are easily differentiated
 color[] colors = new color[] {
@@ -83,10 +96,16 @@ public void setup() {
 	// midi controls
 	//listMidiControllers();
 	setupMidi();
+
+	// screenshot gallery
+	loadRecentScreens();
 }
 
 public void draw() {
 	background(0);
+
+	if (frameCount % 60 == 0) loadRecentScreens();
+	displayRecentScreens();
 
 	// display all graphs
 	for (int i = 0; i < graphs.size(); i++) {
@@ -95,7 +114,7 @@ public void draw() {
 		g.display();
 	}
 
-	displayDebugInfo();
+	if (showDebug) displayDebugInfo();
 }
 
 // called when new OSC message is received
@@ -242,5 +261,99 @@ void listMidiControllers() {
 	} catch (Exception e) {
 		println("Error: " + e.getMessage());
 		e.printStackTrace();
+	}
+}
+
+// listen to key presses (fallback - stuff generally handled by control sketch)
+void keyPressed() {
+	// f - show debug / fps
+	if (keyCode == 70) {
+		showDebug = !showDebug;
+	}
+}
+
+// display a set number from the images collected in loadRecentScreens()
+void displayRecentScreens() {
+	if (recentScreens != null) {
+		int imgWidth = width / numScreensToShow;
+		
+		// for all screenshots
+		for (int i = 0; i < recentScreens.length; i++) {
+			if (recentScreens[i] != null) {
+				// calculate position to display images side by side
+				float x = i * imgWidth;
+				float y = 0;
+				
+				// scale the image to fit while maintaining aspect ratio
+				float scaleFactor = min((float)imgWidth / recentScreens[i].width, 
+									(float)height / recentScreens[i].height);
+				
+				float w = recentScreens[i].width * scaleFactor;
+				float h = recentScreens[i].height * scaleFactor;
+				
+				// center the image in its section
+				x = x + (imgWidth - w) / 2;
+				
+				// display in descending order (images flow from right to left, like the graphs)
+				image(recentScreens[recentScreens.length - 1 - i], x, y, w, h);
+			}
+		}
+	}
+}
+
+// load only a set number of recent screenshots from the folder for display
+void loadRecentScreens() {
+	// create the directory if it doesn't exist
+	File dir = new File(sketchPath(screensDir));
+	if (!dir.exists()) {
+		dir.mkdirs();
+		return;
+	}
+	
+	// use a priority queue to keep track of only the N most recent files
+	PriorityQueue<File> mostRecentFiles = new PriorityQueue<File>(
+		numScreensToShow + 1, 
+		new Comparator<File>() {
+			public int compare(File f1, File f2) {
+				// sort by modified time (oldest first to allow easy removal of oldest items)
+				return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+			}
+		}
+	);
+	
+	// custom filenameFilter to only get png files
+	FilenameFilter imageFilter = new FilenameFilter() {
+		public boolean accept(File dir, String name) {
+			name = name.toLowerCase();
+			return name.endsWith(".png");
+		}
+	};
+	
+	// process files one by one, keeping only the most recent
+	for (File f : dir.listFiles(imageFilter)) {
+		mostRecentFiles.add(f);
+		
+		// if there are more than needed, remove the oldest
+		if (mostRecentFiles.size() > numScreensToShow) {
+			mostRecentFiles.poll();
+		}
+	}
+	
+	// convert to array and reverse to get most recent first
+	ArrayList<File> imageFiles = new ArrayList<File>(mostRecentFiles);
+	Collections.sort(imageFiles, new Comparator<File>() {
+		public int compare(File f1, File f2) {
+			return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified());
+		}
+	});
+	
+	// load the images
+	int count = imageFiles.size();
+	recentScreens = new PImage[count];
+	files = new File[count];
+	
+	for (int i = 0; i < count; i++) {
+		files[i] = imageFiles.get(i);
+		recentScreens[i] = loadImage(files[i].getAbsolutePath());
 	}
 }

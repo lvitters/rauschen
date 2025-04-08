@@ -633,7 +633,13 @@ void oscEvent(OscMessage message) {
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isTakingScreenshots = false;
 		if (value == 1) isTakingScreenshots = true;
-	}	
+	}
+	else if (message.checkAddrPattern("/showDebug")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+		if (value == 0) showDebug = false;
+		if (value == 1) showDebug = true;
+	}		
 	// else if (message.checkAddrPattern("/isRandomShaderEachFrame")) {
 	// 	float value = message.get(0).floatValue();
 	// 	value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value

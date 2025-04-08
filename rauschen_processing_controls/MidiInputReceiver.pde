@@ -8,68 +8,68 @@ class MidiInputReceiver implements Receiver {
 			if (sm.getCommand() == ShortMessage.CONTROL_CHANGE) {
 				int channel = sm.getChannel();
 				int number = sm.getData1();  // CC number (identifies which knob)
-				int value = sm.getData2();   // CC value (value between 0-127)
+				float value = sm.getData2();   // CC value (value between 0-127)
 				
 				//println("Knob/Controller: CC#" + number + " Value: " + value + " Channel: " + channel);
 				
-				// if it is from a knob
+				// map the control element number to the correct parameter
 				if (number >= 1) {
-					// get knob index
-					int index = number;
-					
-					// set the parameter value
-					float paramValue = value;
-					
-					// map the knob index to the correct parameter
-					String paramName = "";
-					switch(index) {
+					String name = "";
+					switch(number) {
 						case 1:
-							paramName = "/switchTime";
+							name = "/switchTime";
 						break;
 						case 5:
-							paramName = "/switchTimeMultiplier";
+							name = "/switchTimeMultiplier";
 						break;
 						case 2:
-							paramName = "/sameStep";
+							name = "/sameStep";
 						break;
 						case 6:
-							paramName = "/sameStepMultiplier";
+							name = "/sameStepMultiplier";
 						break;
 						case 3:
-							paramName = "/xStep";
+							name = "/xStep";
 						break;
 						case 7:
-							paramName = "/xStepMultiplier";
+							name = "/xStepMultiplier";
 						break;
 						case 4:
-							paramName = "/yStep";
+							name = "/yStep";
 						break;
 						case 8:
-							paramName = "/yStepMultiplier";
+							name = "/yStepMultiplier";
 						break;
 						case 9:
-							paramName = "/isAutoMode";
+							name = "/isAutoMode";
 						break;
 						case 10:
-							paramName = "/isRandomSwitchTime";
+							name = "/isRandomSwitchTime";
 						break;
 						case 11:
-							paramName = "/isEvenOffset";
+							name = "/isEvenOffset";
 						break;
 						case 13:
-							paramName = "/isNoiseColor";
+							name = "/isNoiseColor";
 						break;
 						case 15:
-							paramName = "/isGeneratingSound";
+							name = "/isGeneratingSound";
 						break;
 						case 16:
-							paramName = "/isTakingScreenshots";
+							name = "/isTakingScreenshots";
+						break;
+						case 31:
+							if (value == 0) showDebug = false;
+							else showDebug = true;
+						break;
+						case 32:
+							name = "/showDebug";
 						break;
 					}
 					
 					// send OSC message with the calculated value
-					OscMessage oscMessage = new OscMessage(paramName);
-					oscMessage.add(paramValue);
+					OscMessage oscMessage = new OscMessage(name);
+					oscMessage.add(value);
 					oscP5.send(oscMessage, mainSketchLocation);
 				}
 			}

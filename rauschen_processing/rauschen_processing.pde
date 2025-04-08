@@ -112,7 +112,7 @@ public void setup() {
 	shaders.add(loadShader("shaders/1DNoise.glsl"));
   	shaders.add(loadShader("shaders/GameOfLife.glsl"));
   	shaders.add(loadShader("shaders/FlowField.glsl"));
-  	shaders.add(loadShader("shaders/ReactionDiffusion.glsl"));
+  	shaders.add(loadShader("shaders/RectangularCells.glsl"));
   
 	// set uniform variables for all shaders
 	for (int i = 0; i < shaders.size(); i++) {

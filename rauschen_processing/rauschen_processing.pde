@@ -293,7 +293,8 @@ void determineEvenOffset(int x, int y) {
 void applyShader(int shader) {
 	shaderTime += shaderTimeNoise.getNoiseRange(.05, .3);
 	shaders.get(shader).set("u_time", shaderTime);
-	shaders.get(shader).set("u_texture", tempBuffer);
+	// shaders.get(shader).set("u_texture", buffer);
+	shaders.get(shader).set("u_texture", tempBuffer);	// is this actually needed?
 	if (buffer != null) {
 		try {
 			buffer.beginDraw();
@@ -335,7 +336,7 @@ void chooseEvent(int event) {
 			if (!isApplyingShader) {
 				setNewGridWithNoise();
 			} else {
-				resizeBuffer(intRandom(0, width), intRandom(0, height));
+				resizeBuffer(intRandom(width/3, width), intRandom(height/3, height));
 			}
 		break;
 		case 1:

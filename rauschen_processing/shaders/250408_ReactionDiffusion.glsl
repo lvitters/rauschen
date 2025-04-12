@@ -2,6 +2,8 @@
 precision mediump float;
 #endif
 
+// claude.ai vibe coding
+
 uniform vec2 u_resolution;
 uniform sampler2D u_texture;
 uniform float u_time;
@@ -20,19 +22,19 @@ void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution.xy;
     vec4 texColor = texture2D(u_texture, uv);
     
-    // Use time to create evolving parameters
-    // This makes the simulation change behavior over time
+    // use time to create evolving parameters
+    // this makes the simulation change behavior over time
     float timeCycle = sin(u_time * 0.1) * 0.5 + 0.5; // oscillates between 0 and 1
     
-    // Parameters that change over time
+    // parameters that change over time
     float feed = 0.035 + 0.01 * timeCycle;
     float kill = 0.062 - 0.01 * timeCycle;
     
-    // Create moving feed/kill zones using time
+    // create moving feed/kill zones using time
     float xWave = sin(uv.x * 10.0 + u_time * 0.2) * 0.5 + 0.5;
     float yWave = cos(uv.y * 8.0 - u_time * 0.15) * 0.5 + 0.5;
     
-    // Local parameter variations based on time and position
+    // local parameter variations based on time and position
     float localFeed = feed * (1.0 + 0.5 * xWave);
     float localKill = kill * (1.0 + 0.5 * yWave);
     
@@ -72,18 +74,18 @@ void main() {
     nextA = clamp(nextA, 0.0, 1.0);
     nextB = clamp(nextB, 0.0, 1.0);
     
-    // Use original texture to seed the system
+    // use original texture to seed the system
     float brightness = (texColor.r + texColor.g + texColor.b) / 3.0;
     
-    // Continuously inject new patterns over time
+    // continuously inject new patterns over time
     float timePhase = mod(u_time, 20.0);
     if (timePhase < 0.5) {
-        // Every 20 time units, inject new pattern seeds
+        // every 20 time units, inject new pattern seeds
         float seedPattern = step(0.85, random(uv + vec2(floor(u_time * 0.05))));
         nextB = mix(nextB, 1.0, seedPattern * 0.5);
     }
     
-    // Add moving seed points that drop chemical B
+    // add moving seed points that drop chemical B
     vec2 seedPos1 = vec2(0.5 + 0.4 * sin(u_time * 0.2), 0.5 + 0.4 * cos(u_time * 0.17));
     vec2 seedPos2 = vec2(0.5 + 0.4 * sin(u_time * 0.11 + 2.0), 0.5 + 0.4 * cos(u_time * 0.13));
     
@@ -94,17 +96,17 @@ void main() {
         nextB = mix(nextB, 1.0, 0.2);
     }
     
-    // Initial condition
+    // initial condition
     if (u_time < 0.5) {
-        // Start with a field of A with some B seeds
+        // start with a field of A with some B seeds
         nextA = 1.0;
         nextB = step(0.7, sin(uv.x * 20.0) * sin(uv.y * 20.0)) * 0.5;
         
-        // Use original texture to influence initial pattern
+        // use original texture to influence initial pattern
         nextB = mix(nextB, brightness * 0.8, 0.5);
     }
     
-    // Dynamic color mapping that changes with time
+    // dynamic color mapping that changes with time
     vec3 color1 = vec3(0.1, 0.0, 0.4 + 0.2 * sin(u_time * 0.1));
     vec3 color2 = vec3(0.8 - 0.2 * sin(u_time * 0.13), 0.8, 0.1);
     vec3 color3 = vec3(1.0, 0.4 + 0.2 * sin(u_time * 0.07), 0.0);
@@ -122,9 +124,9 @@ void main() {
         finalColor = mix(color2, color3, t);
     }
     
-    //// Store the reaction-diffusion state for the next frame
+    //// store the reaction-diffusion state for the next frame
     gl_FragColor = vec4(nextA, 0.5, nextB, 1.0);
     
-    // Alternative: Visualize the reaction-diffusion state
+    // alternative: Visualize the reaction-diffusion state
     gl_FragColor = vec4(finalColor, 1.0);
 }

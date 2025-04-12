@@ -2,6 +2,8 @@
 precision mediump float;
 #endif
 
+// claude.ai vibe coding
+
 uniform vec2 u_resolution;
 uniform sampler2D u_texture;
 uniform float u_time;

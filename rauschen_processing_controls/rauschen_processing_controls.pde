@@ -71,6 +71,8 @@ HashMap<String, Object> debugInfo = new HashMap<String, Object>();
 
 // midi input
 MidiDevice inputDevice;
+MidiDevice outputDevice;
+Receiver midiReceiver;
 
 // variables to change with Midi to send over to main sketch
 float minSwitchTime;
@@ -101,7 +103,8 @@ public void setup() {
 
 	// midi controls
 	//listMidiControllers();
-	setupMidi();
+	setupMidiOutput();
+	setupMidiInput();
 
 	// screenshot gallery
 	loadRecentScreens();

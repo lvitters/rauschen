@@ -69,6 +69,14 @@ ArrayList<Graph> graphs = new ArrayList<Graph>();
 // HashMap to store debugInfo values
 HashMap<String, Object> debugInfo = new HashMap<String, Object>();
 
+// debug table layout
+float tableX = 5;
+float tableY = 205;
+float rowHeight = 20;
+float keyWidth = 250;
+float valueWidth = 100;
+float padding = 5;
+
 // midi input
 MidiDevice inputDevice;
 MidiDevice outputDevice;
@@ -89,7 +97,7 @@ public void settings() {
 public void setup() {	
 	// set this window title
 	windowTitle("controls");
-	
+
 	// determine window location on screen
 	surface.setLocation(1000, 40);
 
@@ -111,7 +119,7 @@ public void setup() {
 }
 
 public void draw() {
-	background(0);
+	background(201, 203, 201);
 
 	// display screenshot gallery
 	if (frameCount % 60 == 0) loadRecentScreens();
@@ -127,43 +135,58 @@ public void draw() {
 	if (showDebug) displayDebugInfo();
 }
 
-// display function to show debug info
+// display function to show debug info in a table
 void displayDebugInfo() {
-	if (debugInfo.isEmpty()) return;
-	
-	// text parameters
-	float x = 10;
-	float y = 25;
-	fill(255, 255, 255);
-	textAlign(CORNER, CORNER);
-	textSize(20);
+    if (debugInfo.isEmpty()) return;
 
-	// display debug alphabetically (order wouldn't be what it is in the other sketch anyways)
-	ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet());
-	java.util.Collections.sort(keys);		// sort alphabetically
-	
-	// from all the received keys
-	for (String key : keys) {
-			// get the value
-			Object value = debugInfo.get(key);
-			String display;
-			
-			// display different formats
-			if (value instanceof Boolean) {
-				// get boolean from 1 and 0
-				display = (Boolean)value ? "TRUE" : "FALSE";
-			} else if (value instanceof Float) {
-				// round floats to 2 decimal places
-				display = nf((Float)value, 0, 2);
-			// everything else
-			} else {
-				display = value.toString();
-			}
-			
-			// display
-			text(key + ": " + display, x, y);
-			y += 20;
-	}
+    // text parameters
+    fill(0);
+    textAlign(LEFT, TOP);
+    textSize(20);
+
+    // display debug alphabetically (order wouldn't be what it is in the other sketch anyways)
+    ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet());
+    java.util.Collections.sort(keys);   // sort alphabetically
+
+    // draw table header
+    float headerY = tableY + padding;
+    text("Key", tableX + padding, headerY);
+    text("Value", tableX + keyWidth + padding * 2, headerY);
+    stroke(0);
+    line(tableX, tableY + rowHeight + padding / 2, tableX + keyWidth + valueWidth + padding * 3, tableY + rowHeight + (padding * 1.5) / 2); // line below header
+
+    // draw vertical separator line between columns
+    line(tableX + keyWidth + padding, tableY, tableX + keyWidth + padding, tableY + rowHeight * (keys.size() + 1) + padding);
+
+    // from all the received keys, display them and their values in rows
+    for (int i = 0; i < keys.size(); i++) {
+        // get the value
+        String key = keys.get(i);
+        Object value = debugInfo.get(key);
+        String display;
+
+        // format the value
+        if (value instanceof Boolean) {
+            // get boolean from 1 and 0
+            display = (Boolean)value ? "TRUE" : "FALSE";
+        } else if (value instanceof Float) {
+            // round floats to 2 decimal places
+            display = nf((Float)value, 0, 2);
+        // everything else
+        } else {
+            display = value.toString();
+        }
+
+        // display
+        float yPos = tableY + rowHeight * (i + 1) + padding * 1.5; // position text with some padding
+        text(key, tableX + padding, yPos);
+        text(display, tableX + keyWidth + padding * 2, yPos);
+    }
+
+    // draw table border
+    noFill();
+    stroke(0);
+    rect(tableX, tableY, keyWidth + valueWidth + padding * 3, rowHeight * (keys.size() + 1) + padding * 1.5); // adjust height for bottom padding
 }
 
 // copy a chosen screenshot to another folder

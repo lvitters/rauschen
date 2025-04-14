@@ -18,8 +18,8 @@ int xStep = 1;
 int yStep = 1;
 int nextX = 1;
 int nextY = 1;
-float xStepMultiplier = 1;			// has to start at 1 
-float yStepMultiplier = 1;			// has to start at 1 
+float xStepMultiplier = 1;							// has to start at 1 
+float yStepMultiplier = 1;							// has to start at 1 
 Boolean stepUpdatedManually = false;
 int xOffset = 0;
 int xOffsetRecord = 0;
@@ -336,7 +336,7 @@ void chooseEvent(int event) {
 			if (!isApplyingShader) {
 				setNewGridWithNoise();
 			} else {
-				resizeBuffer(intRandom(width/3, width), intRandom(height/3, height));
+				resizeBuffer(intRandom(width/4, width), intRandom(height/4, height));
 			}
 		break;
 		case 1:

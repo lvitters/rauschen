@@ -5,6 +5,7 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.awt.Rectangle;
 import javax.sound.midi.*;
 
 import oscP5.*;
@@ -26,6 +27,7 @@ NetAddress mainSketchLocation;
 int width = 800;
 int height = 500;
 Boolean showDebug = true;
+Rectangle[] screensBounds;
 
 // init some predetermined colors so that they are easily differentiated
 color[] colors = new color[] {
@@ -69,13 +71,14 @@ ArrayList<Graph> graphs = new ArrayList<Graph>();
 // HashMap to store debugInfo values
 HashMap<String, Object> debugInfo = new HashMap<String, Object>();
 
-// debug table layout
+// UI
 float tableX = 5;
 float tableY = 205;
 float rowHeight = 20;
 float keyWidth = 250;
 float valueWidth = 100;
 float padding = 5;
+float borderWeight = 1;
 
 // midi input
 MidiDevice inputDevice;
@@ -100,6 +103,12 @@ public void setup() {
 
 	// determine window location on screen
 	surface.setLocation(1000, 40);
+
+	// store the screenshots' bounds for mouse pressing
+	screensBounds = new Rectangle[numScreensToShow];  
+	for (int i = 0; i < screensBounds.length; i++) {
+    	screensBounds[i] = new Rectangle(); // init
+  	}
 
 	// can't go in settings for some reason
 	frameRate(120);
@@ -213,75 +222,109 @@ void saveScreenshot(File sourceFile) {
 
 // display a set number from the images collected in loadRecentScreens()
 void displayRecentScreens() {
-	// remember if the mouse is over any of the screenshots
-	boolean mouseOverAnyImage = false;
+    // remember if the mouse is over any of the screenshots
+    boolean mouseOverAnyImage = false;
 
-	// if there are recent screenshots
-	if (recentScreens != null) {
-		int imgWidth = width / numScreensToShow;
-		
-		// for all screenshots
-		for (int i = 0; i < recentScreens.length; i++) {
-		if (recentScreens[i] != null) {
-			// calculate position to display images side by side
-			float x = i * imgWidth;
-			float y = 0;
-			
-			// scale the image to fit while maintaining aspect ratio
-			float scaleFactor = min((float)imgWidth / recentScreens[i].width, 
-					(float)height / recentScreens[i].height);
-			
-			float w = recentScreens[i].width * scaleFactor;
-			float h = recentScreens[i].height * scaleFactor;
-			
-			// center the image in its section
-			x = x + (imgWidth - w) / 2;
-			
-			// display in descending order (images flow from right to left, like the graphs)
-			image(recentScreens[recentScreens.length - 1 - i], x, y, w, h);
+    // if there are recent screenshots and the bounds array is ready
+    if (recentScreens != null && screensBounds != null) {
 
-			// check if mouse is over this image
-			boolean isOverThisImage = (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h && mouseOver);
+		// get width allocated for each image slot
+        int imgWidth = width / numScreensToShow;
 
-			// draw transparent rect when hovering with mouse
-			if (isOverThisImage) {
-				mouseOverAnyImage = true;  // set flag for cursor change later
-				noStroke();
-				fill(50, 255, 50, 40);  // light green with low opacity
-				rect(x, y, w, h);
-			}
+        // for all display slots
+        for (int i = 0; i < numScreensToShow; i++) {
+            // calculate the index for the image data (displaying in reverse order)
+            int imgIndex = recentScreens.length - 1 - i;
 
-			// draw a flash animation after a screenshot is saved, only for the saved image
-			if (savedAnimation > 0 && i == savedImageIndex) {
-				// calculate fade-out effect
-				float alpha = map(savedAnimation, 0, 90, 0, 230);
-				
-				// draw semi-transparent overlay
-				noStroke();
-				fill(0, 200, 0, alpha * 0.3);
-				rect(x, y, w, h);
-				
-				// draw "SAVED" text
-				fill(255, alpha);
-				textAlign(CENTER, CENTER);
-				textSize(min(w, h) * 0.2);  // size text proportional to image
-				text("SAVED", x + w/2, y + h/2);
-			}
-		}
-		}
+            // check if imgIndex is valid and the corresponding screen exists
+            if (imgIndex >= 0 && imgIndex < recentScreens.length && recentScreens[imgIndex] != null) {
+                // calculate the available dimensions for scaling (respecting padding on both sides)
+                float availableWidthForScaling = imgWidth - 2 * padding;
+                float availableHeightForScaling = height - 2 * padding; // use sketch height minus padding
 
-		// set cursor only once after checking all images to avoid flashing
-		if (mouseOverAnyImage) {
-			cursor(HAND);
-		} else {
-			cursor(ARROW);
-		}
-	}
-	
-	// decrement the animation counter once per frame
-	if (savedAnimation > 0) {
-		savedAnimation--;
-	}
+                // default to safe values if calculation is impossible
+                float x = 0, y = 0, w = 0, h = 0;
+
+                // ensure available dimensions are positive before calculating scale
+                if (availableWidthForScaling > 0 && availableHeightForScaling > 0 && recentScreens[imgIndex].width > 0 && recentScreens[imgIndex].height > 0) {
+                    // scale the image to fit available space
+                    float scaleFactor = min(availableWidthForScaling / recentScreens[imgIndex].width,
+                                            availableHeightForScaling / recentScreens[imgIndex].height);
+
+                    // calculate scaled dimensions
+                    w = recentScreens[imgIndex].width * scaleFactor;
+                    h = recentScreens[imgIndex].height * scaleFactor;
+
+                    // calculate position relative to sketch origin (0,0)
+                    // place left edge exactly padding pixels into the slot i
+                    x = (i * imgWidth) + padding;
+
+                    // place top edge exactly padding pixels down from sketch origin
+                    y = padding;
+
+                    // store in screensBounds array, cast to int
+                    screensBounds[i].setBounds((int)x, (int)y, (int)w, (int)h);
+
+                } else {
+                    // If calculation wasn't possible, store empty bounds
+                    screensBounds[i].setBounds(0, 0, 0, 0); // Mark as invalid/empty
+                    continue; // Skip drawing etc for this invalid slot
+                }
+
+                // draw black border
+                pushStyle(); // save current drawing style
+					strokeWeight(borderWeight);
+					stroke(0);
+					noFill();
+					rect(x - borderWeight / 2, y - borderWeight / 2, w + borderWeight, h + borderWeight);
+                popStyle(); // restore previous drawing style
+
+                // display image
+                image(recentScreens[imgIndex], x, y, w, h);
+
+                // check if mouse is over this image (using precise float bounds is good here)
+                boolean isOverThisImage = (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h && mouseOver);
+
+                // draw transparent rect when hovering with mouse
+                if (isOverThisImage) {
+                    mouseOverAnyImage = true; // set flag for cursor change later
+                    noStroke();
+                    fill(50, 255, 50, 40); // light green with low opacity
+                    rect(x, y, w, h); // overlay on the image bounds
+                }
+
+                // draw a flash animation after a screenshot is saved
+                // check if the original index of the saved image matches this image's original index
+                if (savedAnimation > 0 && imgIndex == savedImageIndex) {
+                    // calculate fade-out effect
+                    float alpha = map(savedAnimation, 0, 90, 0, 230);
+
+                    // draw semi-transparent overlay
+                    noStroke();
+                    fill(0, 200, 0, alpha * 0.3);
+                    rect(x, y, w, h);
+
+                    // draw "SAVED" text
+                    fill(255, alpha);
+                    textAlign(CENTER, CENTER);
+                    textSize(min(w, h) * 0.2); // size text proportional to image
+                    text("SAVED", x + w/2, y + h/2);
+                }
+            }
+        }
+
+        // set cursor only once after checking all images to avoid flashing
+        if (mouseOverAnyImage) {
+            cursor(HAND);
+        } else {
+            cursor(ARROW);
+        }
+    }
+
+    // decrement the animation counter once per frame
+    if (savedAnimation > 0) {
+        savedAnimation--;
+    }
 }
 
 // load only a set number of recent screenshots from the folder for display
@@ -351,23 +394,30 @@ void keyPressed() {
 
 // fire if mouse was pressed
 void mousePressed() {
-	if (recentScreens != null) {
-		int imgWidth = width / numScreensToShow;
-		
-		// check if click is within one of the image's location
-		for (int i = 0; i < recentScreens.length; i++) {
-			if (mouseX >= i * imgWidth && mouseX < (i + 1) * imgWidth && recentScreens[i] != null) {
-				// screens are shown in reverse order, so they must be accessed from array in reverse order here
-				saveScreenshot(files[recentScreens.length - 1 - i]);
-				
-				// reset animation variables
-				savedAnimation = 90;  // 1.5 seconds at 60fps
-				savedImageIndex = i;  // save which image was clicked
-				
-				break;
-			}
-		}
-	}
+    if (screensBounds != null) {
+        // iterate through the stored bounds (which match display order)
+        for (int i = 0; i < screensBounds.length; i++) {
+            // check if click is within the bounds stored for display slot 'i'
+            if (screensBounds[i] != null && screensBounds[i].width > 0 && screensBounds[i].contains(mouseX, mouseY)) {
+
+                // calculate the original file index based on display slot 'i'
+                int imgIndex = recentScreens.length - 1 - i; // *** Still need this mapping ***
+
+                // ensure imgIndex is valid before accessing files/recentScreens
+                if (imgIndex >= 0 && imgIndex < files.length && recentScreens[imgIndex] != null ) {
+
+                    // get the file using the CORRECT reversed index
+                    saveScreenshot(files[imgIndex]);
+
+                    // reset animation variables
+                    savedAnimation = 90;
+                    savedImageIndex = imgIndex; // store the correct original index
+
+                    return; // exit after handling click
+                }
+            }
+        }
+    }
 }
     
 // when the mouse exits the window

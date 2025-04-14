@@ -291,21 +291,40 @@ void determineEvenOffset(int x, int y) {
 
 // for resource intensive calculations on individual pixels, use a shader
 void applyShader(int shader) {
-	shaderTime += shaderTimeNoise.getNoiseRange(.05, .3);
-	shaders.get(shader).set("u_time", shaderTime);
-	// shaders.get(shader).set("u_texture", buffer);
-	shaders.get(shader).set("u_texture", tempBuffer);	// is this actually needed?
-	if (buffer != null) {
-		try {
-			buffer.beginDraw();
-				buffer.shader(shaders.get(shader));
-				buffer.rect(0, 0, width, height);
-			buffer.endDraw();
-		} catch (Exception e) {
-			println("buffer error: " + e.getMessage());
-			buffer = createGraphics(width, height, P2D);
-		}
-	}
+	// apply shader time (like T in noise)
+    shaderTime += shaderTimeNoise.getNoiseRange(.05, .3); 
+    shaders.get(shader).set("u_time", shaderTime);
+    // set resolution uniform just in case it wasn't set universally or needs update
+    shaders.get(shader).set("u_resolution", (float)width, (float)height); 
+    
+    // set the input texture for the shader to read from tempBuffer with result from last frame's copy
+    shaders.get(shader).set("u_texture", tempBuffer); 
+                                        
+    if (buffer != null) {
+        try {
+            // draw the shader output onto 'buffer'
+            buffer.beginDraw();
+                buffer.shader(shaders.get(shader));
+                // draw rect covering the buffer to execute the shader for all pixels
+                buffer.rect(0, 0, width, height); 
+                //buffer.resetShader(); // good practice
+            buffer.endDraw();
+            // 'buffer' now holds the result of this frame's shader pass
+        } catch (Exception e) {
+            println("buffer draw error in applyShader: " + e.getMessage());
+        }
+    }
+
+    // copy the result drawn into buffer into tempBuffer
+    // so 'tempBuffer' is ready as the input for the next frame's call to applyShader
+    // if (buffer != null && tempBuffer != null) {
+    //     tempBuffer.beginDraw();
+	// 		// use image() to copy buffer's content onto tempBuffer
+	// 		tempBuffer.image(buffer, 0, 0); 
+    //     tempBuffer.endDraw();
+    // } else {
+    //      println("applyShader: cannot copy buffer to tempBuffer - one of them is null.");
+    // }
 }
 
 // rsize buffer for "zooming into" shader

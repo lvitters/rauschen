@@ -11,23 +11,16 @@ import javax.sound.midi.*;
 import oscP5.*;
 import netP5.*;
 
-// screenshot gallery
-PImage[] recentScreens;
-File[] files;
-int numScreensToShow = 4;
-String screensDir = "../rauschen_screens/temp/";
-String savedScreensDir = "../rauschen_screens/saved/";
-int savedAnimation = 0;
-int savedImageIndex = -1;  // which image was saved (-1: none)
-public boolean mouseOver = true;
 
+// sketch window
+int manualWidth = 800;
+int manualHeight = 500;
+Boolean showDebug = true;
+Boolean fullScreen = true;
+
+// main sketch communication
 OscP5 oscP5;
 NetAddress mainSketchLocation;
-
-int width = 800;
-int height = 500;
-Boolean showDebug = true;
-Rectangle[] screensBounds;
 
 // init some predetermined colors so that they are easily differentiated
 color[] colors = new color[] {
@@ -71,14 +64,25 @@ ArrayList<Graph> graphs = new ArrayList<Graph>();
 // HashMap to store debugInfo values
 HashMap<String, Object> debugInfo = new HashMap<String, Object>();
 
+// screenshot gallery
+PImage[] recentScreens;
+PImage[] scaledScreens; // store pre-scaled screens for better performance
+File[] files;
+Rectangle[] screensBounds;
+int numScreensToShow = 4;
+String screensDir = "../rauschen_screens/temp/";
+String savedScreensDir = "../rauschen_screens/saved/";
+int savedAnimation = 0;
+int savedImageIndex = -1;  // which image was saved (-1: none)
+public boolean mouseOver = true;
+
 // UI
-float tableX = 5;
-float tableY = 205;
+float padding = 5;
+float borderWeight = 1;
+// debug table
 float rowHeight = 20;
 float keyWidth = 250;
 float valueWidth = 100;
-float padding = 5;
-float borderWeight = 1;
 
 // midi input
 MidiDevice inputDevice;
@@ -94,7 +98,8 @@ int xStep;
 int yStep;
 
 public void settings() {
-	size(width, height);
+	if (!fullScreen) size(manualWidth, manualHeight);
+	else fullScreen(2);
 }
 
 public void setup() {	
@@ -102,13 +107,7 @@ public void setup() {
 	windowTitle("controls");
 
 	// determine window location on screen
-	surface.setLocation(1000, 40);
-
-	// store the screenshots' bounds for mouse pressing
-	screensBounds = new Rectangle[numScreensToShow];  
-	for (int i = 0; i < screensBounds.length; i++) {
-    	screensBounds[i] = new Rectangle(); // init
-  	}
+	if (!fullScreen) surface.setLocation(1000, 40);
 
 	// can't go in settings for some reason
 	frameRate(120);
@@ -124,14 +123,25 @@ public void setup() {
 	setupMidiInput();
 
 	// screenshot gallery
+	// store the screenshots' bounds for mouse pressing
+	screensBounds = new Rectangle[numScreensToShow];
+	// store scaled screenshots for better performance
+	scaledScreens = new PImage[numScreensToShow];
+	for (int i = 0; i < screensBounds.length; i++) {
+    	screensBounds[i] = new Rectangle(); // init
+  	}
 	loadRecentScreens();
+	updateScaledScreens();
 }
 
 public void draw() {
 	background(201, 203, 201);
 
-	// display screenshot gallery
-	if (frameCount % 60 == 0) loadRecentScreens();
+	// update screenshot gallery once every second
+	if (frameCount % 60 == 0) {
+		loadRecentScreens();
+		updateScaledScreens();
+	}
 	displayRecentScreens();
 
 	// display all graphs
@@ -142,189 +152,6 @@ public void draw() {
 	}
 
 	if (showDebug) displayDebugInfo();
-}
-
-// display function to show debug info in a table
-void displayDebugInfo() {
-    if (debugInfo.isEmpty()) return;
-
-    // text parameters
-    fill(0);
-    textAlign(LEFT, TOP);
-    textSize(20);
-
-    // display debug alphabetically (order wouldn't be what it is in the other sketch anyways)
-    ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet());
-    java.util.Collections.sort(keys);   // sort alphabetically
-
-    // draw table header
-    float headerY = tableY + padding;
-    text("Key", tableX + padding, headerY);
-    text("Value", tableX + keyWidth + padding * 2, headerY);
-    stroke(0);
-    line(tableX, tableY + rowHeight + padding / 2, tableX + keyWidth + valueWidth + padding * 3, tableY + rowHeight + (padding * 1.5) / 2); // line below header
-
-    // draw vertical separator line between columns
-    line(tableX + keyWidth + padding, tableY, tableX + keyWidth + padding, tableY + rowHeight * (keys.size() + 1) + padding);
-
-    // from all the received keys, display them and their values in rows
-    for (int i = 0; i < keys.size(); i++) {
-        // get the value
-        String key = keys.get(i);
-        Object value = debugInfo.get(key);
-        String display;
-
-        // format the value
-        if (value instanceof Boolean) {
-            // get boolean from 1 and 0
-            display = (Boolean)value ? "TRUE" : "FALSE";
-        } else if (value instanceof Float) {
-            // round floats to 2 decimal places
-            display = nf((Float)value, 0, 2);
-        // everything else
-        } else {
-            display = value.toString();
-        }
-
-        // display
-        float yPos = tableY + rowHeight * (i + 1) + padding * 1.5; // position text with some padding
-        text(key, tableX + padding, yPos);
-        text(display, tableX + keyWidth + padding * 2, yPos);
-    }
-
-    // draw table border
-    noFill();
-    stroke(0);
-    rect(tableX, tableY, keyWidth + valueWidth + padding * 3, rowHeight * (keys.size() + 1) + padding * 1.5); // adjust height for bottom padding
-}
-
-// copy a chosen screenshot to another folder
-void saveScreenshot(File sourceFile) {
-	try {
-		// create destination file in saved directory
-		File destDir = new File(sketchPath(savedScreensDir));
-		if (!destDir.exists()) {
-			destDir.mkdirs();
-		}
-		
-		File destFile = new File(destDir, sourceFile.getName());
-		
-		// copy the file
-		Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-		
-		// println("Saved screenshot: " + sourceFile.getName() + " to " + destFile.getAbsolutePath());
-		
-	} catch (Exception e) {
-		println("Error saving screenshot: " + e.getMessage());
-		e.printStackTrace();
-	}
-}
-
-// display a set number from the images collected in loadRecentScreens()
-void displayRecentScreens() {
-    // remember if the mouse is over any of the screenshots
-    boolean mouseOverAnyImage = false;
-
-    // if there are recent screenshots and the bounds array is ready
-    if (recentScreens != null && screensBounds != null) {
-
-		// get width allocated for each image slot
-        int imgWidth = width / numScreensToShow;
-
-        // for all display slots
-        for (int i = 0; i < numScreensToShow; i++) {
-            // calculate the index for the image data (displaying in reverse order)
-            int imgIndex = recentScreens.length - 1 - i;
-
-            // check if imgIndex is valid and the corresponding screen exists
-            if (imgIndex >= 0 && imgIndex < recentScreens.length && recentScreens[imgIndex] != null) {
-                // calculate the available dimensions for scaling (respecting padding on both sides)
-                float availableWidthForScaling = imgWidth - 2 * padding;
-                float availableHeightForScaling = height - 2 * padding; // use sketch height minus padding
-
-                // default to safe values if calculation is impossible
-                float x = 0, y = 0, w = 0, h = 0;
-
-                // ensure available dimensions are positive before calculating scale
-                if (availableWidthForScaling > 0 && availableHeightForScaling > 0 && recentScreens[imgIndex].width > 0 && recentScreens[imgIndex].height > 0) {
-                    // scale the image to fit available space
-                    float scaleFactor = min(availableWidthForScaling / recentScreens[imgIndex].width,
-                                            availableHeightForScaling / recentScreens[imgIndex].height);
-
-                    // calculate scaled dimensions
-                    w = recentScreens[imgIndex].width * scaleFactor;
-                    h = recentScreens[imgIndex].height * scaleFactor;
-
-                    // calculate position relative to sketch origin (0,0)
-                    // place left edge exactly padding pixels into the slot i
-                    x = (i * imgWidth) + padding;
-
-                    // place top edge exactly padding pixels down from sketch origin
-                    y = padding;
-
-                    // store in screensBounds array, cast to int
-                    screensBounds[i].setBounds((int)x, (int)y, (int)w, (int)h);
-
-                } else {
-                    // If calculation wasn't possible, store empty bounds
-                    screensBounds[i].setBounds(0, 0, 0, 0); // Mark as invalid/empty
-                    continue; // Skip drawing etc for this invalid slot
-                }
-
-                // draw black border
-                pushStyle(); // save current drawing style
-					strokeWeight(borderWeight);
-					stroke(0);
-					noFill();
-					rect(x - borderWeight / 2, y - borderWeight / 2, w + borderWeight, h + borderWeight);
-                popStyle(); // restore previous drawing style
-
-                // display image
-                image(recentScreens[imgIndex], x, y, w, h);
-
-                // check if mouse is over this image (using precise float bounds is good here)
-                boolean isOverThisImage = (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h && mouseOver);
-
-                // draw transparent rect when hovering with mouse
-                if (isOverThisImage) {
-                    mouseOverAnyImage = true; // set flag for cursor change later
-                    noStroke();
-                    fill(50, 255, 50, 40); // light green with low opacity
-                    rect(x, y, w, h); // overlay on the image bounds
-                }
-
-                // draw a flash animation after a screenshot is saved
-                // check if the original index of the saved image matches this image's original index
-                if (savedAnimation > 0 && imgIndex == savedImageIndex) {
-                    // calculate fade-out effect
-                    float alpha = map(savedAnimation, 0, 90, 0, 230);
-
-                    // draw semi-transparent overlay
-                    noStroke();
-                    fill(0, 200, 0, alpha * 0.3);
-                    rect(x, y, w, h);
-
-                    // draw "SAVED" text
-                    fill(255, alpha);
-                    textAlign(CENTER, CENTER);
-                    textSize(min(w, h) * 0.2); // size text proportional to image
-                    text("SAVED", x + w/2, y + h/2);
-                }
-            }
-        }
-
-        // set cursor only once after checking all images to avoid flashing
-        if (mouseOverAnyImage) {
-            cursor(HAND);
-        } else {
-            cursor(ARROW);
-        }
-    }
-
-    // decrement the animation counter once per frame
-    if (savedAnimation > 0) {
-        savedAnimation--;
-    }
 }
 
 // load only a set number of recent screenshots from the folder for display
@@ -384,10 +211,214 @@ void loadRecentScreens() {
 	}
 }
 
+// fill scaledScreens[] with screenshots scaled according to width and height
+void updateScaledScreens() {
+	if (recentScreens == null || scaledScreens == null || screensBounds == null) return;
+	if (numScreensToShow <= 0) return; // avoid division by zero
+
+	int imgWidth = width / numScreensToShow;
+	float screenshotAreaHeight = height * (2.0 / 3.0);
+	float availableWidthForScaling = imgWidth - 2 * padding;
+	float availableHeightForScaling = screenshotAreaHeight - 2 * padding;
+
+	if (availableWidthForScaling <= 0 || availableHeightForScaling <= 0) {
+		println("Cannot scale images, available area too small.");
+		// clear scaled images maybe?
+		for (int i = 0; i < numScreensToShow; i++) scaledScreens[i] = null;
+		return;
+	}
+
+
+	for (int i = 0; i < numScreensToShow; i++) {
+		int imgIndex = recentScreens.length - 1 - i;
+
+		if (imgIndex >= 0 && imgIndex < recentScreens.length && recentScreens[imgIndex] != null && recentScreens[imgIndex].width > 0 && recentScreens[imgIndex].height > 0) {
+			// calculate scale factor based on available area
+			float scaleFactor = min(availableWidthForScaling / recentScreens[imgIndex].width,
+									availableHeightForScaling / recentScreens[imgIndex].height);
+
+			// calculate target scaled dimensions
+			int targetW = int(recentScreens[imgIndex].width * scaleFactor);
+			int targetH = int(recentScreens[imgIndex].height * scaleFactor);
+
+			if (targetW > 0 && targetH > 0) {
+				// create a scaled copy
+				scaledScreens[i] = recentScreens[imgIndex].copy(); // work on a copy
+				scaledScreens[i].resize(targetW, targetH);       // resize it ONCE
+			} else {
+				scaledScreens[i] = null; // cannot resize to zero or negative
+			}
+
+		} else {
+			// no source image for this slot
+			scaledScreens[i] = null;
+		}
+	}
+}
+
+// display a set number from the images collected
+void displayRecentScreens() {
+    boolean mouseOverAnyImage = false;
+
+    // only check recentScreens for null now, scaledScreens checked inside loop
+    if (recentScreens != null && screensBounds != null && scaledScreens != null) {
+        if (screensBounds.length != numScreensToShow || scaledScreens.length != numScreensToShow) {
+            println("Warning: Array length mismatch!"); return;
+        }
+
+        int imgWidth = width / numScreensToShow; // still needed for positioning slots
+
+        for (int i = 0; i < numScreensToShow; i++) {
+            // get the pre-scaled image for this display slot
+            PImage displayImg = scaledScreens[i];
+
+            if (displayImg != null) {
+                // get pre-calculated size
+                float w = displayImg.width;
+                float h = displayImg.height;
+
+                // calculate position (same logic as before to place the slot)
+                // X relative to sketch edge + padding
+                float x = (i * imgWidth) + padding;
+                // Y relative to sketch edge + padding
+                float y = padding;
+
+                // store the actual bounds of the drawn (pre-scaled) image
+                screensBounds[i].setBounds((int)x, (int)y, (int)w, (int)h);
+
+                // drawing
+                pushStyle();
+					strokeWeight(borderWeight); stroke(0); noFill();
+					// draw border around the known w, h
+					rect(x - borderWeight / 2, y - borderWeight / 2, w + borderWeight, h + borderWeight);
+                popStyle();
+                // draw the pre-scaled image directly
+                image(displayImg, x, y);
+
+                // overlays (use the actual w, h)
+                boolean isOverThisImage = (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h && mouseOver);
+                if (isOverThisImage) { /* ... draw hover rect(x, y, w, h) ... */
+                    mouseOverAnyImage = true; noStroke(); fill(50, 255, 50, 40); rect(x, y, w, h);
+                }
+
+                // animation check still needs original index mapping
+                int imgIndex = recentScreens.length - 1 - i;
+                if (imgIndex >= 0 && imgIndex < recentScreens.length) { // check imgIndex validity
+                    if (savedAnimation > 0 && imgIndex == savedImageIndex) { // draw save animation rect(x,y,w,h) and text
+                        float alpha = map(savedAnimation, 0, 90, 0, 230); noStroke(); fill(0, 200, 0, alpha * 0.3); rect(x, y, w, h);
+                        fill(255, alpha); textAlign(CENTER, CENTER); textSize(min(w, h) * 0.2); text("SAVED", x + w/2, y + h/2);
+                    }
+                }
+
+            } else {
+                // no image for this slot
+                if (i < screensBounds.length) screensBounds[i].setBounds(0, 0, 0, 0);
+            }
+        }
+
+		// switch cursor once after everything else is drawn
+        if (mouseOverAnyImage) cursor(HAND); else cursor(ARROW);
+
+    }
+
+	// decrement animation timer
+    if (savedAnimation > 0) savedAnimation--;
+}
+
+// copy a chosen screenshot to another folder
+void saveScreenshot(File sourceFile) {
+	try {
+		// create destination file in saved directory
+		File destDir = new File(sketchPath(savedScreensDir));
+		if (!destDir.exists()) {
+			destDir.mkdirs();
+		}
+		
+		File destFile = new File(destDir, sourceFile.getName());
+		
+		// copy the file
+		Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		
+		// println("Saved screenshot: " + sourceFile.getName() + " to " + destFile.getAbsolutePath());
+		
+	} catch (Exception e) {
+		println("Error saving screenshot: " + e.getMessage());
+		e.printStackTrace();
+	}
+}
+
+// display function to show debug info in a table
+void displayDebugInfo() {
+    if (debugInfo == null || debugInfo.isEmpty()) return;
+
+    // calculate table position and size dynamically
+    float tableStartX = padding; // start padding pixels from left edge
+    // start padding pixels below the screenshot area (which occupies top 2/3)
+    float tableStartY = height * 0.45 + padding;
+    // calculate required height (consistent padding top/bottom)
+    ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet()); // get keys to count rows
+    float totalTableHeight = padding + rowHeight * (keys.size() + 1) + padding; // topPad + headerRow + dataRows + bottomPad
+    // calculate required width
+    float totalTableWidth = keyWidth + valueWidth + 3 * padding; // keyCol + valCol + padL + padMid + padR
+
+    // text and drawing setup
+    fill(0);
+    textAlign(LEFT, TOP);
+    textSize(20); // keep font size fixed for now
+
+ 	// sort keys alphabetically
+    java.util.Collections.sort(keys);
+
+    // draw table header text
+    float headerTextY = tableStartY + padding; // text starts padding down from table top
+    text("Key", tableStartX + padding, headerTextY); // key text pad left
+    text("Value", tableStartX + keyWidth + 2 * padding, headerTextY); // value text pad left
+
+    // draw header underline (position below header text)
+    stroke(0);
+    strokeWeight(1); // use consistent stroke weight
+    float headerLineY = headerTextY + rowHeight * 0.9; // place line below text (adjust 0.9 factor if needed)
+    line(tableStartX, headerLineY, tableStartX + totalTableWidth, headerLineY);
+
+    // draw vertical separator line (full height of calculated table area)
+    float separatorX = tableStartX + keyWidth + padding; // x pos of line
+    line(separatorX, tableStartY, separatorX, tableStartY + totalTableHeight);
+
+    // draw key/value rows
+    for (int i = 0; i < keys.size(); i++) {
+        String key = keys.get(i);
+        Object value = debugInfo.get(key);
+        String displayValue = formatDisplayValue(value); // use helper function for clarity
+
+        // calculate Y position for this row's text
+        float rowTextY = headerTextY + rowHeight * (i + 1); // header + (i+1) rows down
+        text(key, tableStartX + padding, rowTextY);
+        text(displayValue, tableStartX + keyWidth + 2 * padding, rowTextY);
+    }
+
+    // draw table border
+    noFill();
+    stroke(0);
+    strokeWeight(borderWeight); // use consistent border weight
+    rect(tableStartX, tableStartY, totalTableWidth, totalTableHeight);
+}
+
+// helper function to format debug values (keeps displayDebugInfo cleaner)
+String formatDisplayValue(Object value) {
+    if (value == null) return "null";
+    if (value instanceof Boolean) {
+        return (Boolean)value ? "TRUE" : "FALSE";
+    } else if (value instanceof Float) {
+        return nf((Float)value, 0, 2); // round floats
+    } else {
+        return value.toString();
+    }
+}
+
 // listen to key presses (fallback - stuff generally handled by control sketch)
 void keyPressed() {
-	// f - show debug / fps
-	if (keyCode == 70) {
+	// show debug / fps
+	if (key == 'f') {
 		showDebug = !showDebug;
 	}
 }

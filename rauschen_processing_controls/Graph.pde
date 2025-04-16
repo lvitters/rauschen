@@ -27,9 +27,10 @@ class Graph {
 		}
 	}
 
-	// display points from graph // CURRENTLY UNUSED BECAUSE VERTICES ONLY DISPLAY WHEN DONE IN GRAPHS DIRECTLY
+	// display points from graph
 	public void display() {
 		stroke(col);
+		strokeWeight(2);
 		beginShape(LINES);
 			for (int x = 0; x < points.size(); x++) {
 				// draw the points

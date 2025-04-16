@@ -179,10 +179,6 @@ public void draw() {
 
 	// take screenshot every 3 seconds
 	if (isTakingScreenshots && (frameCount % (60 * 3) == 0)) takeScreenshot();
-	else if (takeSingleScreenshot) {
-		takeScreenshot();
-		takeSingleScreenshot = false;
-	}
 
 	if (showDebug) showDebug();
 
@@ -435,24 +431,24 @@ void showDebug() {
 
 // listen to key presses (fallback - stuff generally handled by control sketch)
 void keyPressed() {
-	// f - show debug / fps
-	if (keyCode == 70) {
+	// show debug / fps
+	if (key == 'f') {
 		showDebug = !showDebug;
 	}
-	// p - print (more) debug info
-	if (keyCode == 80) {
+	// print (more) debug info
+	if (key == 'p') {
 		printDebug = !printDebug;
 	}
-	// a - use auto mode or not
-	if (keyCode == 65) {
+	// use auto mode or not
+	if (key == 'a') {
 		isAutoMode = !isAutoMode;
 	}
-	// s - switch now!
-	if (keyCode == 83) {
+	// switch to next mode now!
+	if (key == 's') {
 		chooseEvent(intRandom(0, 2));
 	}
-	// n - stop noise (audio)
-	if (keyCode == 78) {
+	// stop noise (audio)
+	if (key == 'n') {
 		if (!isGeneratingSound) toggleSound(true);
 		else toggleSound(false);
 	}

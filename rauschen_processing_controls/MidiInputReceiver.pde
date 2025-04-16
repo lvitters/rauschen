@@ -59,11 +59,11 @@ class MidiInputReceiver implements Receiver {
 							name = "/isTakingScreenshots";
 						break;
 						case 31:
-							if (value == 0) showDebug = false;
-							else showDebug = true;
+							name = "/showDebug";
 						break;
 						case 32:
-							name = "/showDebug";
+							if (value == 0) showDebug = false;
+							else showDebug = true;
 						break;
 					}
 					

@@ -55,4 +55,7 @@ void oscEvent(OscMessage msg) {
 		// store the value in our map
 		debugInfo.put(key, value);
 	}
+
+	// add control sketch's fps
+	debugInfo.put("thisFps", frameRate);
 }

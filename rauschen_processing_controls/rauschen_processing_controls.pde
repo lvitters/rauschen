@@ -13,10 +13,10 @@ import netP5.*;
 
 
 // sketch window
-int manualWidth = 800;
-int manualHeight = 500;
+int manualWidth = 1920;
+int manualHeight = 1080;
 Boolean showDebug = true;
-Boolean fullScreen = true;
+Boolean fullScreen = false;
 
 // main sketch communication
 OscP5 oscP5;
@@ -80,9 +80,15 @@ public boolean mouseOver = true;
 float padding = 5;
 float borderWeight = 1;
 // debug table
-float rowHeight = 20;
-float keyWidth = 250;
-float valueWidth = 100;
+float debugRowHeight = 20;
+float debugKeyWidth = 250;
+float debugValueWidth = 100;
+// bounds for the graph display area determined at runtime
+float graphAreaX;
+float graphAreaY;
+float graphAreaWidth;
+float graphAreaHeight;
+float graphInternalPadding = 10;
 
 // midi input
 MidiDevice inputDevice;
@@ -98,8 +104,8 @@ int xStep;
 int yStep;
 
 public void settings() {
-	if (!fullScreen) size(manualWidth, manualHeight);
-	else fullScreen(2);
+	if (!fullScreen) size(manualWidth, manualHeight, P2D);
+	else fullScreen(P2D, 2);
 }
 
 public void setup() {	
@@ -107,7 +113,7 @@ public void setup() {
 	windowTitle("controls");
 
 	// determine window location on screen
-	if (!fullScreen) surface.setLocation(1000, 40);
+	//if (!fullScreen) surface.setLocation(1000, 40);
 
 	// can't go in settings for some reason
 	frameRate(120);
@@ -132,24 +138,27 @@ public void setup() {
   	}
 	loadRecentScreens();
 	updateScaledScreens();
+
+	setupGraphsArea();
 }
 
 public void draw() {
 	background(201, 203, 201);
 
-	// update screenshot gallery once every second
+	// update screenshot gallery once every second and display
 	if (frameCount % 60 == 0) {
 		loadRecentScreens();
 		updateScaledScreens();
 	}
 	displayRecentScreens();
 
-	// display all graphs
+	// display the graphs
 	for (int i = 0; i < graphs.size(); i++) {
 		// get and display graph
 		Graph g = graphs.get(i);
 		g.display();
 	}
+	drawGraphsAreaBorder();
 
 	if (showDebug) displayDebugInfo();
 }
@@ -347,6 +356,25 @@ void saveScreenshot(File sourceFile) {
 	}
 }
 
+// setup area for graphs to be displayed in (limit for performance reasons)
+public void setupGraphsArea() {
+	graphAreaWidth = (width / 2.0f) - (2 * padding);
+	graphAreaX = width - graphAreaWidth - padding; 
+	graphAreaY = height/2 + padding; 
+	graphAreaHeight = height - graphAreaY - padding;
+}
+
+// draw a border around the graph's display area
+public void drawGraphsAreaBorder() {
+	pushStyle();
+		noFill();
+		stroke(0);
+		strokeWeight(borderWeight); // use same weight as debug border
+		rect(graphAreaX, graphAreaY, graphAreaWidth, graphAreaHeight); 
+    popStyle();
+}
+
+
 // display function to show debug info in a table
 void displayDebugInfo() {
     if (debugInfo == null || debugInfo.isEmpty()) return;
@@ -357,9 +385,9 @@ void displayDebugInfo() {
     float tableStartY = height * 0.45 + padding;
     // calculate required height (consistent padding top/bottom)
     ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet()); // get keys to count rows
-    float totalTableHeight = padding + rowHeight * (keys.size() + 1) + padding; // topPad + headerRow + dataRows + bottomPad
+    float totalTableHeight = padding + debugRowHeight * (keys.size() + 1) + padding; // topPad + headerRow + dataRows + bottomPad
     // calculate required width
-    float totalTableWidth = keyWidth + valueWidth + 3 * padding; // keyCol + valCol + padL + padMid + padR
+    float totalTableWidth = debugKeyWidth + debugValueWidth + 3 * padding; // keyCol + valCol + padL + padMid + padR
 
     // text and drawing setup
     fill(0);
@@ -372,16 +400,16 @@ void displayDebugInfo() {
     // draw table header text
     float headerTextY = tableStartY + padding; // text starts padding down from table top
     text("Key", tableStartX + padding, headerTextY); // key text pad left
-    text("Value", tableStartX + keyWidth + 2 * padding, headerTextY); // value text pad left
+    text("Value", tableStartX + debugKeyWidth + 2 * padding, headerTextY); // value text pad left
 
     // draw header underline (position below header text)
     stroke(0);
     strokeWeight(1); // use consistent stroke weight
-    float headerLineY = headerTextY + rowHeight * 0.9; // place line below text (adjust 0.9 factor if needed)
+    float headerLineY = headerTextY + debugRowHeight * 0.9; // place line below text (adjust 0.9 factor if needed)
     line(tableStartX, headerLineY, tableStartX + totalTableWidth, headerLineY);
 
     // draw vertical separator line (full height of calculated table area)
-    float separatorX = tableStartX + keyWidth + padding; // x pos of line
+    float separatorX = tableStartX + debugKeyWidth + padding; // x pos of line
     line(separatorX, tableStartY, separatorX, tableStartY + totalTableHeight);
 
     // draw key/value rows
@@ -391,9 +419,9 @@ void displayDebugInfo() {
         String displayValue = formatDisplayValue(value); // use helper function for clarity
 
         // calculate Y position for this row's text
-        float rowTextY = headerTextY + rowHeight * (i + 1); // header + (i+1) rows down
+        float rowTextY = headerTextY + debugRowHeight * (i + 1); // header + (i+1) rows down
         text(key, tableStartX + padding, rowTextY);
-        text(displayValue, tableStartX + keyWidth + 2 * padding, rowTextY);
+        text(displayValue, tableStartX + debugKeyWidth + 2 * padding, rowTextY);
     }
 
     // draw table border

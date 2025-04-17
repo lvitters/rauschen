@@ -27,30 +27,39 @@ class Graph {
 		}
 	}
 
-	// display points from graph
 	public void display() {
-		stroke(col);
-		strokeWeight(2);
-		
-		// precalculate map min max
-		float yMin = height - 20;
-		float yMax = height/2;
-		float yRange = yMin - yMax;
-		
-		// draw lines
-		beginShape(LINES);
-			for (int x = 1; x < points.size() - 1; x += 1) {
-				// draw the points
-				Float y = points.get(x);
-				Float yNext = points.get(x + 1);
-				if (y != null && yNext != null) {
-					// calculate individual mapped Y
-					float mappedY = yMin - (y * yRange);
-            		float mappedYNext = yMin - (yNext * yRange);
-					vertex(x, mappedY);
-					vertex(x, mappedYNext);
+        if (points.size() < 2) {
+            return; 
+        }
+
+		// isolate transformations
+        pushMatrix();
+			translate(graphAreaX, graphAreaY); // move origin to graph area's top-left
+			stroke(col);
+			strokeWeight(1f);
+
+			beginShape(LINES);
+			// loop through points
+			for (int i = 0; i < points.size() - 1; i += 1) {
+				Float y1Value = points.get(i);
+				Float y2Value = points.get(i + 1); 
+
+				if (y1Value != null && y2Value != null) {
+					// map index i to graph area's width
+					float x1 = map(i, 0, points.size() - 1, 0, graphAreaWidth - 1);
+					// map value to graph area's height (with internal padding)
+					float y1 = map(y1Value, 0, 1, graphAreaHeight - graphInternalPadding, graphInternalPadding);
+					// map index i+1 to graph area's width
+					float x2 = map(i + 1, 0, points.size() - 1, 0, graphAreaWidth - 1);
+					// map value to graph area's height (with internal padding)
+					float y2 = map(y2Value, 0, 1, graphAreaHeight - graphInternalPadding, graphInternalPadding);
+
+					// add the two vertices relative to the translated origin
+					vertex(x1, y1);
+					vertex(x2, y2);
 				}
 			}
-		endShape();
-	}
+			endShape();
+        popMatrix(); // restore original transformations
+    }
 }

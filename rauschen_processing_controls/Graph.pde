@@ -32,11 +32,13 @@ class Graph {
 		stroke(col);
 		strokeWeight(2);
 		beginShape(LINES);
-			for (int x = 0; x < points.size(); x++) {
+			for (int x = 1; x < points.size() - 1; x += 1) {
 				// draw the points
 				Float y = points.get(x);
-				if (y != null) {
+				Float yNext = points.get(x + 1);
+				if (y != null && yNext != null) {
 					vertex(x, map(y, 0, 1, height - 20, height/2));
+					vertex(x, map(yNext, 0, 1, height - 20, height/2));
 				}
 			}
 		endShape();

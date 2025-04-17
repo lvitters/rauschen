@@ -183,8 +183,10 @@ public void draw() {
 	if (showDebug) showDebug();
 
 	// send information to control sketch
-	sendNoisesOSC();
-	sendDebugOSC();
+	if (frameCount % 2 == 0) {
+		sendNoisesOSC();
+		sendDebugOSC();
+	}
 }
 
 // apply from setNewGridWithNoise() to the pixel array 

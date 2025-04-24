@@ -13,7 +13,7 @@ class Graph {
 	// add a point to the graph
 	public void addPoint(float point) {
 		// if the graph is wider than the window, remove the first point
-		if (points.size() > width) {
+		if (points.size() > graphLength) {
 			points.remove(0);
 		}
 		// add a new point
@@ -22,11 +22,12 @@ class Graph {
 
 	// add empty points to the graph on setup
 	public void init() {
-		for (int i = 0; i < width; i++) {
+		for (int i = 0; i < graphLength; i++) {
 			points.add(0.0);
 		}
 	}
 
+	// display the points in points
 	public void display() {
         if (points.size() < 2) {
             return; 

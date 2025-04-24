@@ -13,7 +13,7 @@ import netP5.*;
 
 // sketch window
 int manualWidth = 2560;
-int manualHeight = 1440 - 28;	// minus menu bar
+int manualHeight = 1440 - 28 - 24;	// minus menu bar minus window bar
 Boolean showDebug = true;
 
 // main sketch communication
@@ -58,6 +58,8 @@ color[] colors = new color[] {
 
 // init ArrayList of graphs
 ArrayList<Graph> graphs = new ArrayList<Graph>();
+// number of historical points to show in each graph
+int graphLength = 400;
 
 // HashMap to store debugInfo values
 HashMap<String, Object> debugInfo = new HashMap<String, Object>();
@@ -152,7 +154,7 @@ public void draw() {
 
 	// update screenshot gallery once every second and display
 	if (frameCount % 60 == 0) {
-		loadRecentScreens();
+		//loadRecentScreens();
 		updateScaledScreens();
 	}
 	displayRecentScreens();
@@ -363,7 +365,7 @@ void saveScreenshot(File sourceFile) {
 
 // setup area for graphs to be displayed in (limit for performance reasons)
 public void setupGraphsArea() {
-	graphAreaWidth = (width / 2.0f) - (2 * padding);
+	graphAreaWidth = (width * 3/4 ) - (2 * padding);
 	graphAreaX = width - graphAreaWidth - padding; 
 	graphAreaY = height/2 + padding; 
 	graphAreaHeight = height - graphAreaY - padding;

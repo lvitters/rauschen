@@ -59,15 +59,17 @@ color[] colors = new color[] {
 // init ArrayList of graphs
 ArrayList<Graph> graphs = new ArrayList<Graph>();
 // number of historical points to show in each graph
-int graphLength = 400;
+int graphLength = 600;
 
 // HashMap to store debugInfo values
 HashMap<String, Object> debugInfo = new HashMap<String, Object>();
 
 // screenshot gallery
 PImage[] recentScreens;
+PImage[] tempRecentScreens;	// for background loading
 PImage[] scaledScreens; // store pre-scaled screens for better performance
 File[] files;
+File[] tempFiles; // for background loading
 Rectangle[] screensBounds;
 int numScreensToShow = 4;
 String screensDir = "../rauschen_screens/temp/";
@@ -75,6 +77,10 @@ String savedScreensDir = "../rauschen_screens/saved/";
 int savedAnimation = 0;
 int savedImageIndex = -1;  // which image was saved (-1: none)
 public boolean mouseOver = true;
+
+// background screen loading
+volatile boolean newScreensReady = false; // flag to signal completion (volatile for thread visibility)
+volatile boolean isLoadingScreens = false; // flag to prevent starting multiple loads
 
 // UI
 float padding = 5;
@@ -138,8 +144,6 @@ public void setup() {
 	for (int i = 0; i < screensBounds.length; i++) {
     	screensBounds[i] = new Rectangle(); // init
   	}
-	loadRecentScreens();
-	updateScaledScreens();
 
 	// prepare area for graphs to be displayed in
 	setupGraphsArea();
@@ -152,11 +156,13 @@ public void setup() {
 public void draw() {
 	background(201, 203, 201);
 
-	// update screenshot gallery once every second and display
-	if (frameCount % 60 == 0) {
-		//loadRecentScreens();
-		updateScaledScreens();
+	checkForRecentScreens();
+	// load new screens once every X frames in background thread
+	if (frameCount % 10 == 0 && !isLoadingScreens && !newScreensReady) {
+		isLoadingScreens = true; // set flag to indicate loading has started
+		thread("loadScreensInBackground");
 	}
+
 	displayRecentScreens();
 
 	// display the graphs
@@ -170,61 +176,104 @@ public void draw() {
 	if (showDebug) displayDebugInfo();
 }
 
-// load only a set number of recent screenshots from the folder for display
-void loadRecentScreens() {
-	// create the directory if it doesn't exist
-	File dir = new File(sketchPath(screensDir));
-	if (!dir.exists()) {
-		dir.mkdirs();
-		return;
-	}
-	
-	// use a priority queue to keep track of only the N most recent files
-	PriorityQueue<File> mostRecentFiles = new PriorityQueue<File>(
-		numScreensToShow + 1, 
-		new Comparator<File>() {
-			public int compare(File f1, File f2) {
-				// sort by modified time (oldest first to allow easy removal of oldest items)
-				return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+// check if there are new screens to update scaledScreens array
+public void checkForRecentScreens() {
+	if (newScreensReady) {
+		// safely update the main arrays with the loaded data
+		recentScreens = tempRecentScreens;
+		files = tempFiles;
+		// ensure arrays needed by updateScaledScreens are consistent
+		if (scaledScreens == null || scaledScreens.length != numScreensToShow) {
+			scaledScreens = new PImage[numScreensToShow];
+		}
+		if (screensBounds == null || screensBounds.length != numScreensToShow) {
+			screensBounds = new Rectangle[numScreensToShow];
+			for (int i = 0; i < screensBounds.length; i++) {
+				screensBounds[i] = new Rectangle();
 			}
 		}
-	);
-	
-	// custom filenameFilter to only get png files
-	FilenameFilter imageFilter = new FilenameFilter() {
-		public boolean accept(File dir, String name) {
-			name = name.toLowerCase();
-			return name.endsWith(".png");
-		}
-	};
-	
-	// process files one by one, keeping only the most recent
-	for (File f : dir.listFiles(imageFilter)) {
-		mostRecentFiles.add(f);
-		
-		// if there are more than needed, remove the oldest
-		if (mostRecentFiles.size() > numScreensToShow) {
-			mostRecentFiles.poll();
+		updateScaledScreens(); // now update the scaled versions
+		newScreensReady = false; // reset the flag
+		isLoadingScreens = false; // mark loading as complete
+	}
+}
+
+// load recent screenshots from file folder in background thread
+public void loadScreensInBackground() {
+	File dir = new File(sketchPath(screensDir));
+	PImage[] loadedImages = null; // use local variables within the thread
+	File[] foundFiles = null;
+
+	if (!dir.exists()) {
+		println("Screenshots directory does not exist: " + screensDir);
+		loadedImages = new PImage[0]; // empty arrays
+		foundFiles = new File[0];
+	} else {
+		PriorityQueue<File> mostRecentFiles = new PriorityQueue<File>(
+			numScreensToShow + 1,
+			new Comparator<File>() {
+				public int compare(File f1, File f2) {
+					return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+				}
+			}
+		);
+
+		FilenameFilter imageFilter = new FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				name = name.toLowerCase();
+				return name.endsWith(".png");
+			}
+		};
+
+		File[] allImageFiles = dir.listFiles(imageFilter);
+		if (allImageFiles == null) {
+			println("Warning: listFiles returned null for " + screensDir);
+			loadedImages = new PImage[0];
+			foundFiles = new File[0];
+		} else {
+			for (File f : allImageFiles) {
+				mostRecentFiles.add(f);
+				if (mostRecentFiles.size() > numScreensToShow) {
+					mostRecentFiles.poll();
+				}
+			}
+
+			ArrayList<File> imageFilesList = new ArrayList<File>(mostRecentFiles);
+			Collections.sort(imageFilesList, new Comparator<File>() {
+				public int compare(File f1, File f2) {
+					return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified());
+				}
+			});
+
+			int count = Math.min(imageFilesList.size(), numScreensToShow);
+			loadedImages = new PImage[count]; // local temporary array
+			foundFiles = new File[count];     // local temporary array
+
+			for (int i = 0; i < count; i++) {
+				foundFiles[i] = imageFilesList.get(i);
+				// load image within the background thread
+				try {
+					loadedImages[i] = loadImage(foundFiles[i].getAbsolutePath());
+					if (loadedImages[i] == null) {
+						println("Warning (background): loadImage returned null for " + foundFiles[i].getName());
+					}
+				} catch (Exception e) {
+					println("Error loading image in background " + foundFiles[i].getName() + ": " + e.getMessage());
+					loadedImages[i] = null; // handle error by setting to null
+				}
+			}
+			//println("Background load complete. Processed " + count + " images.");
 		}
 	}
+
+	// store results in the temporary global variables accessed by the main thread later
+	tempRecentScreens = loadedImages;
+	tempFiles = foundFiles;
+
+	// signal that the new data is ready
+	newScreensReady = true; // set flag AFTER data is ready
 	
-	// convert to array and reverse to get most recent first
-	ArrayList<File> imageFiles = new ArrayList<File>(mostRecentFiles);
-	Collections.sort(imageFiles, new Comparator<File>() {
-		public int compare(File f1, File f2) {
-			return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified());
-		}
-	});
-	
-	// load the images
-	int count = imageFiles.size();
-	recentScreens = new PImage[count];
-	files = new File[count];
-	
-	for (int i = 0; i < count; i++) {
-		files[i] = imageFiles.get(i);
-		recentScreens[i] = loadImage(files[i].getAbsolutePath());
-	}
+	// note: isLoadingScreens is reset in draw() AFTER data is processed
 }
 
 // fill scaledScreens[] with screenshots scaled according to width and height
@@ -243,7 +292,6 @@ void updateScaledScreens() {
 		for (int i = 0; i < numScreensToShow; i++) scaledScreens[i] = null;
 		return;
 	}
-
 
 	for (int i = 0; i < numScreensToShow; i++) {
 		int imgIndex = recentScreens.length - 1 - i;

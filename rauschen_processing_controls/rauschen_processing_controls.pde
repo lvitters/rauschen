@@ -395,27 +395,36 @@ void displayRecentScreens() {
                 // store the actual bounds of the drawn (pre-scaled) image
                 screensBounds[i].setBounds((int)x, (int)y, (int)w, (int)h);
 
-                // drawing
-                pushStyle();
-					strokeWeight(borderWeight); stroke(0); noFill();
-					// draw border around the known w, h
-					rect(x - borderWeight / 2, y - borderWeight / 2, w + borderWeight, h + borderWeight);
-                popStyle();
+                // draw borders around images
+				strokeWeight(borderWeight); stroke(0); noFill();
+				// draw border around the known w, h
+				rect(x - borderWeight / 2, y - borderWeight / 2, w + borderWeight, h + borderWeight);
+
                 // draw the pre-scaled image directly
                 image(displayImg, x, y);
 
                 // overlays (use the actual w, h)
                 boolean isOverThisImage = (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h && mouseOver);
                 if (isOverThisImage) { /* ... draw hover rect(x, y, w, h) ... */
-                    mouseOverAnyImage = true; noStroke(); fill(50, 255, 50, 40); rect(x, y, w, h);
+                    mouseOverAnyImage = true; 
+					noStroke(); 
+					fill(50, 255, 50, 40); 
+					rect(x, y, w, h);
                 }
 
                 // animation check still needs original index mapping
                 int imgIndex = recentScreens.length - 1 - i;
                 if (imgIndex >= 0 && imgIndex < recentScreens.length) { // check imgIndex validity
                     if (savedAnimation > 0 && imgIndex == savedImageIndex) { // draw save animation rect(x,y,w,h) and text
-                        float alpha = map(savedAnimation, 0, 90, 0, 230); noStroke(); fill(0, 200, 0, alpha * 0.3); rect(x, y, w, h);
-                        fill(255, alpha); textAlign(CENTER, CENTER); textSize(min(w, h) * 0.2); text("SAVED", x + w/2, y + h/2);
+						float alpha = map(savedAnimation, 0, 90, 0, 230); 
+						noStroke();
+						textMode(SHAPE);
+						fill(0, 200, 0, alpha * 0.3);
+						rect(x, y, w, h);
+						fill(255, alpha); 
+						textAlign(CENTER, CENTER); 
+						textSize(min(w, h) * 0.2); text("SAVED", x + w/2, y + h/2);
+						textMode(MODEL);
                     }
                 }
 
@@ -466,12 +475,10 @@ public void setupGraphsArea() {
 
 // draw a border around the graph's display area
 public void drawGraphsAreaBorder() {
-	pushStyle();
-		noFill();
-		stroke(0);
-		strokeWeight(borderWeight); // use same weight as debug border
-		rect(graphAreaX, graphAreaY, graphAreaWidth, graphAreaHeight); 
-    popStyle();
+	noFill();
+	stroke(0);
+	strokeWeight(borderWeight); // use same weight as debug border
+	rect(graphAreaX, graphAreaY, graphAreaWidth, graphAreaHeight); 
 }
 
 
@@ -490,45 +497,45 @@ void displayDebugInfo() {
     float totalTableWidth = debugKeyWidth + debugValueWidth + 3 * padding; // keyCol + valCol + padL + padMid + padR
 
     // text and drawing setup
-    fill(0);
-    textAlign(LEFT, TOP);
-    textSize(20); // keep font size fixed for now
+	fill(0);
+	textAlign(LEFT, TOP);
+	textSize(20); // keep font size fixed for now
 
- 	// sort keys alphabetically
-    java.util.Collections.sort(keys);
+	// sort keys alphabetically
+	java.util.Collections.sort(keys);
 
-    // draw table header text
-    float headerTextY = tableStartY + padding; // text starts padding down from table top
-    text("Key", tableStartX + padding, headerTextY); // key text pad left
-    text("Value", tableStartX + debugKeyWidth + 2 * padding, headerTextY); // value text pad left
+	// draw table header text
+	float headerTextY = tableStartY + padding; // text starts padding down from table top
+	text("Key", tableStartX + padding, headerTextY); // key text pad left
+	text("Value", tableStartX + debugKeyWidth + 2 * padding, headerTextY); // value text pad left
 
-    // draw header underline (position below header text)
-    stroke(0);
-    strokeWeight(1); // use consistent stroke weight
-    float headerLineY = headerTextY + debugRowHeight * 0.9; // place line below text (adjust 0.9 factor if needed)
-    line(tableStartX, headerLineY, tableStartX + totalTableWidth, headerLineY);
+	// draw header underline (position below header text)
+	stroke(0);
+	strokeWeight(1); // use consistent stroke weight
+	float headerLineY = headerTextY + debugRowHeight * 0.9; // place line below text (adjust 0.9 factor if needed)
+	line(tableStartX, headerLineY, tableStartX + totalTableWidth, headerLineY);
 
-    // draw vertical separator line (full height of calculated table area)
-    float separatorX = tableStartX + debugKeyWidth + padding; // x pos of line
-    line(separatorX, tableStartY, separatorX, tableStartY + totalTableHeight);
+	// draw vertical separator line (full height of calculated table area)
+	float separatorX = tableStartX + debugKeyWidth + padding; // x pos of line
+	line(separatorX, tableStartY, separatorX, tableStartY + totalTableHeight);
 
-    // draw key/value rows
-    for (int i = 0; i < keys.size(); i++) {
-        String key = keys.get(i);
-        Object value = debugInfo.get(key);
-        String displayValue = formatDisplayValue(value); // use helper function for clarity
+	// draw key/value rows
+	for (int i = 0; i < keys.size(); i++) {
+		String key = keys.get(i);
+		Object value = debugInfo.get(key);
+		String displayValue = formatDisplayValue(value); // use helper function for clarity
 
-        // calculate Y position for this row's text
-        float rowTextY = headerTextY + debugRowHeight * (i + 1); // header + (i+1) rows down
-        text(key, tableStartX + padding, rowTextY);
-        text(displayValue, tableStartX + debugKeyWidth + 2 * padding, rowTextY);
-    }
+		// calculate Y position for this row's text
+		float rowTextY = headerTextY + debugRowHeight * (i + 1); // header + (i+1) rows down
+		text(key, tableStartX + padding, rowTextY);
+		text(displayValue, tableStartX + debugKeyWidth + 2 * padding, rowTextY);
+	}
 
-    // draw table border
-    noFill();
-    stroke(0);
-    strokeWeight(borderWeight); // use consistent border weight
-    rect(tableStartX, tableStartY, totalTableWidth, totalTableHeight);
+	// draw table border
+	noFill();
+	stroke(0);
+	strokeWeight(borderWeight); // use consistent border weight
+	rect(tableStartX, tableStartY, totalTableWidth, totalTableHeight);
 }
 
 // helper function to format debug values (keeps displayDebugInfo cleaner)

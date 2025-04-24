@@ -7,16 +7,14 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.awt.Rectangle;
 import javax.sound.midi.*;
-
 import oscP5.*;
 import netP5.*;
 
 
 // sketch window
-int manualWidth = 1920;
-int manualHeight = 1080;
+int manualWidth = 2560;
+int manualHeight = 1440 - 28;	// minus menu bar
 Boolean showDebug = true;
-Boolean fullScreen = false;
 
 // main sketch communication
 OscP5 oscP5;
@@ -107,8 +105,7 @@ int xStep;
 int yStep;
 
 public void settings() {
-	if (!fullScreen) size(manualWidth, manualHeight, P2D);
-	else fullScreen(P2D, 2);
+	size(manualWidth, manualHeight, P2D);
 }
 
 public void setup() {	
@@ -116,7 +113,7 @@ public void setup() {
 	windowTitle("controls");
 
 	// determine window location on screen
-	//if (!fullScreen) surface.setLocation(1000, 40);
+	//surface.setLocation(1000, 40);
 
 	// can't go in settings for some reason
 	frameRate(120);
@@ -142,8 +139,10 @@ public void setup() {
 	loadRecentScreens();
 	updateScaledScreens();
 
+	// prepare area for graphs to be displayed in
 	setupGraphsArea();
 
+	// load default macOS cursor PNGs
 	defaultCursor = loadImage("cursors/default.png");
 	handCursor = loadImage("cursors/pointer.png");
 }

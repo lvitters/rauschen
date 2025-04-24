@@ -90,6 +90,9 @@ float graphAreaWidth;
 float graphAreaHeight;
 float graphInternalPadding = 10;
 
+// macOS cursors (P2D renderer's look awful)
+PImage defaultCursor, handCursor;
+
 // midi input
 MidiDevice inputDevice;
 MidiDevice outputDevice;
@@ -140,6 +143,9 @@ public void setup() {
 	updateScaledScreens();
 
 	setupGraphsArea();
+
+	defaultCursor = loadImage("cursors/default.png");
+	handCursor = loadImage("cursors/pointer.png");
 }
 
 public void draw() {
@@ -326,7 +332,7 @@ void displayRecentScreens() {
         }
 
 		// switch cursor once after everything else is drawn
-        if (mouseOverAnyImage) cursor(HAND); else cursor(ARROW);
+        if (mouseOverAnyImage) cursor(handCursor); else cursor(defaultCursor);
 
     }
 
@@ -465,7 +471,7 @@ void mousePressed() {
                 // ensure imgIndex is valid before accessing files/recentScreens
                 if (imgIndex >= 0 && imgIndex < files.length && recentScreens[imgIndex] != null ) {
 
-                    // get the file using the CORRECT reversed index
+                    // get the file using the reversed index
                     saveScreenshot(files[imgIndex]);
 
                     // reset animation variables
@@ -482,7 +488,7 @@ void mousePressed() {
 // when the mouse exits the window
 public void mouseExited() {
 	mouseOver = false;
-	cursor(ARROW);
+	cursor(defaultCursor);
 }
 
 // when the mouse enters the window

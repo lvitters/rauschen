@@ -77,6 +77,8 @@ String savedScreensDir = "../rauschen_screens/saved/";
 int savedAnimation = 0;
 int savedImageIndex = -1;  // which image was saved (-1: none)
 public boolean mouseOver = true;
+float screenshotAreaBottomY;
+float scaledImageWidth;
 
 // background screen loading
 volatile boolean newScreensReady = false; // flag to signal completion (volatile for thread visibility)
@@ -95,8 +97,6 @@ float graphAreaY;
 float graphAreaWidth;
 float graphAreaHeight;
 float graphInternalPadding = 10;
-float screenshotAreaBottomY;
-float scaledImageWidth;
 
 // macOS cursors (P2D renderer's look awful)
 PImage defaultCursor, handCursor;
@@ -116,6 +116,7 @@ int yStep;
 
 public void settings() {
 	size(manualWidth, manualHeight, P2D);
+	smooth(16);	// AA
 }
 
 public void setup() {	

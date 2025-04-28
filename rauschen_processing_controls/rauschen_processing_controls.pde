@@ -83,7 +83,7 @@ volatile boolean newScreensReady = false; // flag to signal completion (volatile
 volatile boolean isLoadingScreens = false; // flag to prevent starting multiple loads
 
 // UI
-float padding = 5;
+float padding = 10;
 float borderWeight = 1;
 // debug table
 float debugRowHeight = 20;
@@ -95,6 +95,8 @@ float graphAreaY;
 float graphAreaWidth;
 float graphAreaHeight;
 float graphInternalPadding = 10;
+float screenshotAreaBottomY;
+float scaledImageWidth;
 
 // macOS cursors (P2D renderer's look awful)
 PImage defaultCursor, handCursor;
@@ -118,7 +120,7 @@ public void settings() {
 
 public void setup() {	
 	// set this window title
-	windowTitle("controls");
+	windowTitle("RAUSCHEN controls");
 
 	// determine window location on screen
 	//surface.setLocation(1000, 40);
@@ -136,17 +138,8 @@ public void setup() {
 	setupMidiOutput();
 	setupMidiInput();
 
-	// screenshot gallery
-	// store the screenshots' bounds for mouse pressing
-	screensBounds = new Rectangle[numScreensToShow];
-	// store scaled screenshots for better performance
-	scaledScreens = new PImage[numScreensToShow];
-	for (int i = 0; i < screensBounds.length; i++) {
-    	screensBounds[i] = new Rectangle(); // init
-  	}
-
-	// prepare area for graphs to be displayed in
-	setupGraphsArea();
+	// prepare the UI for the given resolution
+	setupUI();
 
 	// load default macOS cursor PNGs
 	defaultCursor = loadImage("cursors/default.png");
@@ -164,16 +157,45 @@ public void draw() {
 	}
 
 	displayRecentScreens();
-
-	// display the graphs
-	for (int i = 0; i < graphs.size(); i++) {
-		// get and display graph
-		Graph g = graphs.get(i);
-		g.display();
-	}
-	drawGraphsAreaBorder();
+	drawGraphsArea();
 
 	if (showDebug) displayDebugInfo();
+}
+
+// setup areas and dimensions for screenshots, debugInfo and graphsArea
+public void setupUI() {
+
+	// screenshot gallery
+	// store the screenshots' bounds for mouse pressing
+	screensBounds = new Rectangle[numScreensToShow];
+	// store scaled screenshots for better performance
+	scaledScreens = new PImage[numScreensToShow];
+	for (int i = 0; i < screensBounds.length; i++) {
+    	screensBounds[i] = new Rectangle(); // init
+  	}
+
+	// assumes square images fitting numScreensToShow across the width
+	float totalHorizontalPadding = (numScreensToShow + 1) * padding;
+    float availableWidthForImages = width - totalHorizontalPadding;
+    if (numScreensToShow > 0) { // avoid division by zero
+        scaledImageWidth = availableWidthForImages / numScreensToShow;
+    } else {
+        scaledImageWidth = 0;
+    }
+
+	// top padding + image height
+	screenshotAreaBottomY = padding + scaledImageWidth; 
+	// calculate the x-coordinate of the 2nd screenshot's image (index i=1)
+    graphAreaX = padding + 1 * (scaledImageWidth + padding); // Use index 1
+
+    // calculate width from new graphAreaX to right edge minus padding
+    graphAreaWidth = width - padding - graphAreaX;
+
+    // y position and height  based on screenshotAreaBottomY
+    graphAreaY = screenshotAreaBottomY + padding;
+
+	// height is from y to bottom padding
+    graphAreaHeight = height - graphAreaY - padding; 
 }
 
 // check if there are new screens to update scaledScreens array
@@ -326,10 +348,9 @@ void updateScaledScreens() {
 	if (recentScreens == null || scaledScreens == null || screensBounds == null) return;
 	if (numScreensToShow <= 0) return; // avoid division by zero
 
-	int imgWidth = width / numScreensToShow;
-	float screenshotAreaHeight = height * (2.0 / 3.0);
-	float availableWidthForScaling = imgWidth - 2 * padding;
-	float availableHeightForScaling = screenshotAreaHeight - 2 * padding;
+	// use pre-calculated scaledImageWidth for target dimensions
+	float availableWidthForScaling = scaledImageWidth;
+    float availableHeightForScaling = scaledImageWidth; // keep images square
 
 	if (availableWidthForScaling <= 0 || availableHeightForScaling <= 0) {
 		println("Cannot scale images, available area too small.");
@@ -375,7 +396,7 @@ void displayRecentScreens() {
             println("Warning: Array length mismatch!"); return;
         }
 
-        int imgWidth = width / numScreensToShow; // still needed for positioning slots
+		float screenshotContainerWidth = width / (float)numScreensToShow;
 
         for (int i = 0; i < numScreensToShow; i++) {
             // get the pre-scaled image for this display slot
@@ -386,11 +407,10 @@ void displayRecentScreens() {
                 float w = displayImg.width;
                 float h = displayImg.height;
 
-                // calculate position (same logic as before to place the slot)
-                // X relative to sketch edge + padding
-                float x = (i * imgWidth) + padding;
-                // Y relative to sketch edge + padding
-                float y = padding;
+                // calculate position sequentially with single padding
+                // first image starts at padding, others start padding after the previous one
+                float x = padding + i * (scaledImageWidth + padding);
+                float y = padding; // Y position remains simple top padding
 
                 // store the actual bounds of the drawn (pre-scaled) image
                 screensBounds[i].setBounds((int)x, (int)y, (int)w, (int)h);
@@ -465,16 +485,16 @@ void saveScreenshot(File sourceFile) {
 	}
 }
 
-// setup area for graphs to be displayed in (limit for performance reasons)
-public void setupGraphsArea() {
-	graphAreaWidth = (width * 3/4 ) - (2 * padding);
-	graphAreaX = width - graphAreaWidth - padding; 
-	graphAreaY = height/2 + padding; 
-	graphAreaHeight = height - graphAreaY - padding;
-}
+// display all the graph and the border around their area
+public void drawGraphsArea() {
+	// display the graphs
+	for (int i = 0; i < graphs.size(); i++) {
+		// get and display graph
+		Graph g = graphs.get(i);
+		g.display();
+	}
 
-// draw a border around the graph's display area
-public void drawGraphsAreaBorder() {
+	// draw the border
 	noFill();
 	stroke(0);
 	strokeWeight(borderWeight); // use same weight as debug border
@@ -483,59 +503,77 @@ public void drawGraphsAreaBorder() {
 
 
 // display function to show debug info in a table
-void displayDebugInfo() {
+public void displayDebugInfo() {
     if (debugInfo == null || debugInfo.isEmpty()) return;
 
     // calculate table position and size dynamically
-    float tableStartX = padding; // start padding pixels from left edge
-    // start padding pixels below the screenshot area (which occupies top 2/3)
-    float tableStartY = height * 0.45 + padding;
-    // calculate required height (consistent padding top/bottom)
-    ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet()); // get keys to count rows
-    float totalTableHeight = padding + debugRowHeight * (keys.size() + 1) + padding; // topPad + headerRow + dataRows + bottomPad
-    // calculate required width
-    float totalTableWidth = debugKeyWidth + debugValueWidth + 3 * padding; // keyCol + valCol + padL + padMid + padR
+    float tableStartX = padding - 1; // start padding pixels from left edge, add pixel 
+    // start padding below the screenshot area
+    float tableStartY = screenshotAreaBottomY + padding;
+    // calculate width dynamically to stretch to graph area start (minus padding)
+    float totalTableWidth = graphAreaX - 2 * padding + 1; // add pixel
+    if (totalTableWidth < 0) totalTableWidth = 0; // prevent negative width
+    // use the available vertical space for the table's height
+    float availableTableHeight = height - tableStartY - padding;
+
+    // calculate dynamic internal column sizes
+    float internalPadding = padding; // use same padding inside table
+    float usableWidth = totalTableWidth - 3 * internalPadding; // width available for key/value text
+    float dynamicKeyWidth = usableWidth * 0.6f; // key column gets 60% of usable width
+    float dynamicValueX = tableStartX + internalPadding + dynamicKeyWidth + internalPadding; // x position where value column starts
+    if (usableWidth <= 0) { // handle case where table is too narrow
+        dynamicKeyWidth = 0;
+        dynamicValueX = tableStartX + internalPadding;
+    }
 
     // text and drawing setup
-	fill(0);
-	textAlign(LEFT, TOP);
-	textSize(20); // keep font size fixed for now
+    fill(0);
+    textAlign(LEFT, TOP);
+    textSize(20); // keep font size fixed for now
 
-	// sort keys alphabetically
-	java.util.Collections.sort(keys);
+    // get keys for display and sort them alphabetically
+    ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet());
+    java.util.Collections.sort(keys);
 
-	// draw table header text
-	float headerTextY = tableStartY + padding; // text starts padding down from table top
-	text("Key", tableStartX + padding, headerTextY); // key text pad left
-	text("Value", tableStartX + debugKeyWidth + 2 * padding, headerTextY); // value text pad left
+    // draw table header text
+    float headerTextY = tableStartY + internalPadding; // text starts padding down from table top
+    text("Key", round(tableStartX) + internalPadding, headerTextY); // key text position
+    text("Value", round(dynamicValueX), headerTextY); // value text position (dynamic)
 
-	// draw header underline (position below header text)
-	stroke(0);
-	strokeWeight(1); // use consistent stroke weight
-	float headerLineY = headerTextY + debugRowHeight * 0.9; // place line below text (adjust 0.9 factor if needed)
-	line(tableStartX, headerLineY, tableStartX + totalTableWidth, headerLineY);
+    // draw header underline (position below header text)
+    stroke(0);
+    strokeWeight(1); // use consistent stroke weight
+	float headerLineY = headerTextY + 20 + 5; // place line below text with padding
+    line(tableStartX, headerLineY, tableStartX + totalTableWidth, headerLineY); // draw the line
 
-	// draw vertical separator line (full height of calculated table area)
-	float separatorX = tableStartX + debugKeyWidth + padding; // x pos of line
-	line(separatorX, tableStartY, separatorX, tableStartY + totalTableHeight);
+    // draw vertical separator line based on dynamic key width
+    float separatorX = tableStartX + internalPadding + dynamicKeyWidth; // dynamic x pos of line
+    // use available height for the line's extent
+    line(separatorX, tableStartY, separatorX, tableStartY + availableTableHeight);
 
-	// draw key/value rows
-	for (int i = 0; i < keys.size(); i++) {
-		String key = keys.get(i);
-		Object value = debugInfo.get(key);
-		String displayValue = formatDisplayValue(value); // use helper function for clarity
+    // draw key/value rows
+    for (int i = 0; i < keys.size(); i++) {
+        String key = keys.get(i);
+        Object value = debugInfo.get(key);
+        String displayValue = formatDisplayValue(value); // use helper function for clarity
 
-		// calculate Y position for this row's text
-		float rowTextY = headerTextY + debugRowHeight * (i + 1); // header + (i+1) rows down
-		text(key, tableStartX + padding, rowTextY);
-		text(displayValue, tableStartX + debugKeyWidth + 2 * padding, rowTextY);
-	}
+        // calculate Y position for this row's text
+        // Start rows below the header line plus some padding
+		float rowTextY = headerLineY + internalPadding + (i * debugRowHeight);
+        // only draw if row fits within available height
+        if (rowTextY + debugRowHeight < tableStartY + availableTableHeight - internalPadding) {
+            text(key, round(tableStartX) + internalPadding, rowTextY); // key text position
+            text(displayValue, round(dynamicValueX), rowTextY); // value text position (dynamic)
+        } else {
+            break; // stop drawing if rows exceed available height
+        }
+    }
 
-	// draw table border
-	noFill();
-	stroke(0);
-	strokeWeight(borderWeight); // use consistent border weight
-	rect(tableStartX, tableStartY, totalTableWidth, totalTableHeight);
+    // draw table border using dynamic width and available height
+    noFill();
+    stroke(0);
+    strokeWeight(borderWeight); // use consistent border weight
+    rect(round(tableStartX), tableStartY, totalTableWidth, availableTableHeight);
 }
 
 // helper function to format debug values (keeps displayDebugInfo cleaner)
@@ -560,7 +598,7 @@ void keyPressed() {
 
 // fire if mouse was pressed
 void mousePressed() {
-    if (screensBounds != null) {
+    if (screensBounds != null && recentScreens != null && files != null) {
         // iterate through the stored bounds (which match display order)
         for (int i = 0; i < screensBounds.length; i++) {
             // check if click is within the bounds stored for display slot 'i'

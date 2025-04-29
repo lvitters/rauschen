@@ -23,39 +23,41 @@
 
 </script>
 
-<div class="p-4 min-h-screen flex flex-col items-center justify-center">
+<div class="bg-gray-100">
+	<div class="p-4 min-h-screen flex flex-col items-center justify-center mx-4">
 
-  <h1 class="text-8xl text-left w-[90vmin] font-bold mb-2">
-    RAUSCHEN
-  </h1>
+	<h1 class="text-8xl text-left w-[90.5vmin] font-bold mb-2">
+		RAUSCHEN
+	</h1>
 
-  <div class="w-[90vmin] h-[90vmin] print:w-full print:h-auto print:aspect-square">
-      <div class="grid grid-cols-15 w-full h-full">
-          {#each displayImages as filename (filename)}
-              <div class="aspect-square overflow-hidden bg-gray-50">
-                  <img
-                      src="/saved/{filename}"
-                      alt="screenshot {filename}"
-                      loading="lazy"
-                      class=""
-                  />
-              </div>
-          {/each}
-          </div>
-  </div>
+	<div class="w-[90vmin] h-[90vmin]">
+		<div class="grid grid-cols-15 w-full h-full">
+			{#each displayImages as filename (filename)}
+				<div class="aspect-square overflow-hidden">
+					<img
+						src="/saved/{filename}"
+						alt="screenshot {filename}"
+						loading="lazy"
+						class=""
+					/>
+				</div>
+			{/each}
+			</div>
+	</div>
 
-  <h1 class="text-6xl text-right w-[90vmin] font-bold mt-2">
-    19 + 20 JUNI 16 - 21 Uhr
-  </h1>
+	<h1 class="text-6xl text-right w-[90vmin] font-bold mt-2">
+		19 + 20 JUNI 16 - 21 Uhr
+	</h1>
 
-  <div class="text-xl text-right w-[90vmin] font-bold mt-2">
-	Speicher XI A
-	<br>
-    HfK Bremen
-	<br>
-	Überseetor 11
-	<br>
-	28217 Bremen
-  </div>
+	<div class="text-xl text-right w-[90vmin] font-bold mt-2">
+		Speicher XI A
+		<br>
+		HfK Bremen
+		<br>
+		Überseetor 11
+		<br>
+		28217 Bremen
+	</div>
 
+	</div>
 </div>

@@ -1,1 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Coral+Pixels&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
 @import 'tailwindcss';
+
+@theme {
+	--font-pixels: "Coral Pixels", sans-serif; 
+	--font-cascadia: "Cascadia Code", sans-serif;
+	--font-tiny5: "Tiny5", sans-serif;
+}

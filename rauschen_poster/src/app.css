@@ -8,8 +8,8 @@
 	--font-cascadia: "Cascadia Code", sans-serif;
 	--font-tiny5: "Tiny5", sans-serif;
 	--font-interference: "KH Interference", sans-serif;
-	--font-interference-light: "KH Interference Light", sans-serif;
 	--font-interference-bold: "KH Interference Bold", sans-serif;
+	--font-terminal: "Terminal Grotesque", sans-serif;
 }
 
 @font-face {
@@ -17,15 +17,7 @@
 	font-style: normal;
 	font-weight: 400;
 	font-display: swap;
-	src: url("/fonts/KH Interference/WOFF2/KHInterferenceTRIAL-Regular.woff2") format("woff2");
-}
-
-@font-face {
-	font-family: "KH Interference Light";
-	font-style: normal;
-	font-weight: 400;
-	font-display: swap;
-	src: url("/fonts/KH Interference/WOFF2/KHInterferenceTRIAL-Light.woff2") format("woff2");
+	src: url("/fonts/KHInterferenceTRIAL-Regular.woff2") format("woff2");
 }
 
 @font-face {
@@ -33,5 +25,13 @@
 	font-style: normal;
 	font-weight: 400;
 	font-display: swap;
-	src: url("/fonts/KH Interference/WOFF2/KHInterferenceTRIAL-Bold.woff2") format("woff2");
+	src: url("/fonts/KHInterferenceTRIAL-Bold.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Terminal Grotesque";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("/fonts/terminal-grotesque-webfont.woff2") format("woff2");
 }

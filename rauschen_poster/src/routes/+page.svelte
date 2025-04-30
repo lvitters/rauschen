@@ -52,7 +52,7 @@
 <div class="bg-zinc-200">
     <div class="p-4 min-h-screen flex flex-col items-center justify-center mx-4">
 
-    <h1 class="text-9xl text-left w-[90.5vmin] font-terminal font-bold mb-0">
+    <h1 class="text-8xl text-left w-[90.5vmin] font-terminal font-bold mb-0">
         RAUSCHEN
     </h1>
 
@@ -74,11 +74,11 @@
             </div>
     </div>
 
-    <h1 class="text-6xl font-terminal text-right w-[90vmin] font-bold mt-2">
+    <h1 class="text-5xl font-terminal text-right w-[90vmin] font-bold mt-2">
         19 + 20 JUNI 16 - 21 Uhr
     </h1>
 
-    <div class="text-4xl font-terminal text-right w-[90vmin] font-bold mt-2">
+    <div class="text-3xl font-terminal text-right w-[90vmin] font-bold mt-2">
         Speicher XI A
         <br>
         HfK Bremen

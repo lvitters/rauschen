@@ -109,12 +109,14 @@ public void setup() {
 	tempBuffer = createGraphics((int)width, (int)height, P2D);
 
 	// set up shaders
-	// shaders.add(loadShader("shaders/250314_1DNoise.glsl"));
-  	shaders.add(loadShader("shaders/250325_GameOfLife.glsl"));
-  	shaders.add(loadShader("shaders/250403_FlowField.glsl"));
-  	shaders.add(loadShader("shaders/250408_1DNoise.glsl"));
+	shaders.add(loadShader("shaders/250314_1DNoise.glsl"));
+  	// shaders.add(loadShader("shaders/250325_GameOfLife.glsl"));
+  	// shaders.add(loadShader("shaders/250403_FlowField.glsl"));
+  	// shaders.add(loadShader("shaders/250408_1DNoise.glsl"));
   	// shaders.add(loadShader("shaders/250408_ReactionDiffusion.glsl"));
-  	shaders.add(loadShader("shaders/250408_RectangularCells.glsl"));
+  	// shaders.add(loadShader("shaders/250408_RectangularCells.glsl"));
+  	// shaders.add(loadShader("shaders/250430_GameOfLife.glsl"));
+  	// shaders.add(loadShader("shaders/250501_ReactionDiffusion.glsl"));
   
 	// set uniform variables for all shaders
 	for (int i = 0; i < shaders.size(); i++) {
@@ -315,14 +317,14 @@ void applyShader(int shader) {
 
     // copy the result drawn into buffer into tempBuffer
     // so 'tempBuffer' is ready as the input for the next frame's call to applyShader
-    // if (buffer != null && tempBuffer != null) {
-    //     tempBuffer.beginDraw();
-	// 		// use image() to copy buffer's content onto tempBuffer
-	// 		tempBuffer.image(buffer, 0, 0); 
-    //     tempBuffer.endDraw();
-    // } else {
-    //      println("applyShader: cannot copy buffer to tempBuffer - one of them is null.");
-    // }
+    if (buffer != null && tempBuffer != null) {
+        tempBuffer.beginDraw();
+			// use image() to copy buffer's content onto tempBuffer
+			tempBuffer.image(buffer, 0, 0); 
+        tempBuffer.endDraw();
+    } else {
+         println("applyShader: cannot copy buffer to tempBuffer - one of them is null.");
+    }
 }
 
 // rsize buffer for "zooming into" shader

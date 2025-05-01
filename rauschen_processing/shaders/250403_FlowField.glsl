@@ -2,8 +2,6 @@
 precision mediump float;
 #endif
 
-// claude.ai vibe coding
-
 uniform vec2 u_resolution;
 uniform sampler2D u_texture;
 uniform float u_time;
@@ -114,7 +112,8 @@ void main() {
     );
     
     // mix the original texture with the flowed texture
-    vec3 finalColor = mix(texColor.rgb, flowColor.rgb * tint, 0.85);
+    // vec3 finalColor = mix(texColor.rgb, flowColor.rgb * tint, 0.85);
     
-    gl_FragColor = vec4(finalColor, 1.0);
+	// since "buffer ping pong" has been implemented, mixing isn't needed anymore
+    gl_FragColor = vec4(flowColor.rgb * tint, 1.0);
 }

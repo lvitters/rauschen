@@ -109,14 +109,14 @@ public void setup() {
 	tempBuffer = createGraphics((int)width, (int)height, P2D);
 
 	// set up shaders
-	shaders.add(loadShader("shaders/250314_1DNoise.glsl"));
+	// shaders.add(loadShader("shaders/250314_1DNoise.glsl"));
   	// shaders.add(loadShader("shaders/250325_GameOfLife.glsl"));
-  	// shaders.add(loadShader("shaders/250403_FlowField.glsl"));
-  	// shaders.add(loadShader("shaders/250408_1DNoise.glsl"));
+  	shaders.add(loadShader("shaders/250403_FlowField.glsl"));
+  	shaders.add(loadShader("shaders/250408_1DNoise.glsl"));
   	// shaders.add(loadShader("shaders/250408_ReactionDiffusion.glsl"));
-  	// shaders.add(loadShader("shaders/250408_RectangularCells.glsl"));
-  	// shaders.add(loadShader("shaders/250430_GameOfLife.glsl"));
-  	// shaders.add(loadShader("shaders/250501_ReactionDiffusion.glsl"));
+  	shaders.add(loadShader("shaders/250408_RectangularCells.glsl"));
+  	shaders.add(loadShader("shaders/250430_GameOfLife.glsl"));
+  	shaders.add(loadShader("shaders/250501_ReactionDiffusion.glsl"));
   
 	// set uniform variables for all shaders
 	for (int i = 0; i < shaders.size(); i++) {
@@ -295,7 +295,7 @@ void applyShader(int shader) {
     shaderTime += shaderTimeNoise.getNoiseRange(.05, .3); 
     shaders.get(shader).set("u_time", shaderTime);
     // set resolution uniform just in case it wasn't set universally or needs update
-    shaders.get(shader).set("u_resolution", (float)width, (float)height); 
+    shaders.get(shader).set("u_resolution", (float)buffer.width, (float)buffer.height); 
     
     // set the input texture for the shader to read from tempBuffer with result from last frame's copy
     shaders.get(shader).set("u_texture", tempBuffer); 
@@ -323,15 +323,108 @@ void applyShader(int shader) {
 			tempBuffer.image(buffer, 0, 0); 
         tempBuffer.endDraw();
     } else {
-         println("applyShader: cannot copy buffer to tempBuffer - one of them is null.");
+        println("applyShader: cannot copy buffer to tempBuffer - one of them is null.");
     }
 }
 
-// rsize buffer for "zooming into" shader
-void resizeBuffer(float w, float h) {
-	buffer.dispose();
-	buffer = createGraphics((int)w, (int)h, P2D);
-	if (printDebug) println("buffer resized to: x:" + (int)w + " y: " + (int)h);
+// resize buffer for "zooming into" shader, similar to grid step being higher in manipulatePixelArray()
+public void resizeBuffer(float w, float h) {
+    int newW = (int)w;
+    int newH = (int)h;
+
+    // exit if size hasn't actually changed
+    if (buffer != null && buffer.width == newW && buffer.height == newH) {
+        return;
+    }
+    
+    if (printDebug) println("Resizing buffers to: " + newW + "x" + newH + " with content preservation.");
+
+    // store references to the current buffers
+    PGraphics oldBuffer = buffer; 
+    PGraphics oldTempBuffer = tempBuffer;
+
+    // create NEW buffers
+    PGraphics newBuffer = createGraphics(newW, newH, P2D);
+    PGraphics newTempBuffer = createGraphics(newW, newH, P2D);
+
+    // copy content based on resize type
+
+	// determine if zooming in or out (or same size)
+	boolean zoomIn = (newW < oldBuffer.width || newH < oldBuffer.height);
+	boolean zoomOut = (newW > oldBuffer.width || newH > oldBuffer.height) && !zoomIn; 
+	
+	// also copy state for tempBuffer if it's valid
+	boolean copyTemp = (oldTempBuffer != null && oldTempBuffer.width > 0 && oldTempBuffer.height > 0);
+	if (!copyTemp) println("Warning: oldTempBuffer invalid, cannot preserve its state for resize.");
+
+	// zoom in: crop central region from old buffers
+	if (zoomIn) {
+		if (printDebug) println("Zooming IN (Cropping Center)");
+		
+		int sWidth = newW; 
+		int sHeight = newH;
+		int sx = (oldBuffer.width - sWidth) / 2;
+		int sy = (oldBuffer.height - sHeight) / 2;
+		sx = max(0, sx);
+		sy = max(0, sy);
+		sWidth = min(sWidth, oldBuffer.width - sx); 
+		sHeight = min(sHeight, oldBuffer.height - sy);
+
+		newBuffer.beginDraw();
+			newBuffer.copy(oldBuffer, sx, sy, sWidth, sHeight, 0, 0, newW, newH);
+		newBuffer.endDraw();
+		
+		if (copyTemp) {
+			newTempBuffer.beginDraw();
+				newTempBuffer.copy(oldTempBuffer, sx, sy, sWidth, sHeight, 0, 0, newW, newH);
+			newTempBuffer.endDraw();
+		}
+
+	// zoom out: stretch old image to fit new, larger buffer
+	} else if (zoomOut) {
+		if (printDebug) println("Zooming OUT (Stretching)"); 
+
+		// draw old content stretched onto the entire new buffer
+		newBuffer.beginDraw();
+			// tell image() to draw oldBuffer onto the destination rect (0,0) to (newW, newH)
+			newBuffer.image(oldBuffer, 0, 0, newW, newH); // stretches oldBuffer
+		newBuffer.endDraw();
+		
+		if (copyTemp) {
+			newTempBuffer.beginDraw();
+				// also stretch old temp buffer content
+				newTempBuffer.image(oldTempBuffer, 0, 0, newW, newH); // tretches oldTempBuffer
+			newTempBuffer.endDraw();
+		}
+		
+	} else {
+		// same size: direct copy
+		println("Copying content (same size)");
+		newBuffer.beginDraw();
+			newBuffer.image(oldBuffer, 0, 0, newW, newH); // use image or copy
+		newBuffer.endDraw();
+		
+		if (copyTemp) {
+			newTempBuffer.beginDraw();
+				newTempBuffer.image(oldTempBuffer, 0, 0, newW, newH); // use image or copy
+			newTempBuffer.endDraw();
+		}
+	}
+
+
+    // replace main references with the newly created and filled buffers
+    buffer = newBuffer;
+    tempBuffer = newTempBuffer;
+
+    // dispose the old buffers after content is copied
+    if (oldBuffer != null) {
+        oldBuffer.dispose();
+    }
+    if (oldTempBuffer != null) {
+        oldTempBuffer.dispose();
+    }
+
+    if (printDebug) println("Buffers resized successfully with content preservation (crop/stretch).");
 }
 
 // choose a random event after a random interval, or set the time until the next event to switchTime
@@ -339,7 +432,7 @@ void timedEvents() {
 	eventCounter++;
 	if (!isRandomSwitchTime) nextEvent = switchTime + (switchTime * switchTimeMultiplier);
 	if (eventCounter > (nextEvent * 60)) {
-		chooseEvent(intRandom(0, 3));
+		chooseEvent(intRandom(0, 4));
 		if (maxSwitchTime > minSwitchTime) nextEvent = floatRandom(minSwitchTime + (minSwitchTime * switchTimeMultiplier), maxSwitchTime + (maxSwitchTime * switchTimeMultiplier));
 		else nextEvent = 0;
 		eventCounter = 0;
@@ -370,7 +463,8 @@ void chooseEvent(int event) {
 			isNoiseColor = toggleNoiseColorNoise.getNoiseBool(-1, 1);
 		break;
 		case 3:
-			isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);
+			// isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);
+			isRandomShaderEachFrame = !isRandomShaderEachFrame;
 			if (!isRandomShaderEachFrame) shaderChoice = intRandom(0, shaders.size() - 1);
 		break;
 	}

@@ -63,9 +63,12 @@ void audioblock(float[] pSamples) {
 			
 			// calculate the average
 			float average = (red + green + blue) / 3.0;
-			
+
 			// map to audio sample range, at half volume
 			pSamples[i] = map(average, 0, 255, -0.5, 0.5);
+
+			// apply audio filter
+			pSamples[i] = audioFilter.process(pSamples[i]);
 		}
 	} else {
 		// fill with silence if no pixels

@@ -42,6 +42,8 @@ CopyOnWriteArrayList<PVector> audioDebugPixels = new CopyOnWriteArrayList<PVecto
 int audioSamplingMode = 0;
 // thread-safe pixel array copy for audio to access
 int[] audioPixels;
+// filter for making noise more "bearable"
+FilterBandPass audioFilter = new FilterBandPass();
 
 // shader stuff
 ArrayList<PShader> shaders = new ArrayList<PShader>();
@@ -129,6 +131,9 @@ public void setup() {
 	// start wellen's digital signal processing but pause for now
 	DSP.start(this);
 	DSP.pause(true);
+
+	// set mode for audio filter (low pass / high pass / band pass)
+	// audioFilter.set_mode(2);
 	
 	// fill audioDebugPixels with empty pixels to ensure correct size
 	while (audioDebugPixels.size() < 1024) {
@@ -141,7 +146,7 @@ public void setup() {
 	yStepNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(yStepNoise);
 	toggleSameStepDimsNoise = new Noise(intRandom(0, 100), 1);
-	noises.add(toggleSameStepDimsNoise);		// TODO: do I want Booleans to show their actual number on the graph or do I want it as 1 and 0?
+	noises.add(toggleSameStepDimsNoise);
 	toggleNoiseColorNoise = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleNoiseColorNoise);
 	redNoise = new Noise(intRandom(0, 100), .001);
@@ -174,6 +179,13 @@ public void draw() {
 	}
 
 	makeBufferCopyForAudio();
+
+	audioFilter.set_frequency(map(mouseX, 0, width, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 1.0f));
+	audioFilter.set_bandwidth(map(mouseY, 0, height, 1.0f, Wellen.DEFAULT_AUDIOBLOCK_SIZE * 1.0f));
+	println("frequency: " + audioFilter.get_frequency() + "\n" + "bandwidth: " + audioFilter.get_bandwidth());
+	
+	// println(Wellen.DEFAULT_SAMPLING_RATE);
+	// println(Wellen.DEFAULT_AUDIOBLOCK_SIZE);
 
 	// display buffer
 	image(buffer, 0, 0, width, height);
@@ -314,8 +326,7 @@ void applyShader(int shader) {
         }
     }
 
-    // copy the result drawn into buffer into tempBuffer
-    // so 'tempBuffer' is ready as the input for the next frame's call to applyShader
+    // copy the result drawn into buffer into tempBuffer so 'tempBuffer' is ready as the input for the next frame's call to applyShader
     if (buffer != null && tempBuffer != null) {
         tempBuffer.beginDraw();
 			// use image() to copy buffer's content onto tempBuffer
@@ -336,7 +347,7 @@ public void resizeBuffer(float w, float h) {
         return;
     }
     
-    if (printDebug) println("Resizing buffers to: " + newW + "x" + newH + " with content preservation.");
+    if (printDebug) println("resizing buffers to: " + newW + "x" + newH + " with content preservation.");
 
     // store references to the current buffers
     PGraphics oldBuffer = buffer; 
@@ -347,18 +358,17 @@ public void resizeBuffer(float w, float h) {
     PGraphics newTempBuffer = createGraphics(newW, newH, P2D);
 
     // copy content based on resize type
-
 	// determine if zooming in or out (or same size)
 	boolean zoomIn = (newW < oldBuffer.width || newH < oldBuffer.height);
 	boolean zoomOut = (newW > oldBuffer.width || newH > oldBuffer.height) && !zoomIn; 
 	
 	// also copy state for tempBuffer if it's valid
 	boolean copyTemp = (oldTempBuffer != null && oldTempBuffer.width > 0 && oldTempBuffer.height > 0);
-	if (!copyTemp) println("Warning: oldTempBuffer invalid, cannot preserve its state for resize.");
+	if (!copyTemp) println("warning: oldTempBuffer invalid, cannot preserve its state for resize.");
 
 	// zoom in: crop central region from old buffers
 	if (zoomIn) {
-		if (printDebug) println("Zooming IN (Cropping Center)");
+		if (printDebug) println("zooming IN (cropping center)");
 		
 		int sWidth = newW; 
 		int sHeight = newH;
@@ -381,7 +391,7 @@ public void resizeBuffer(float w, float h) {
 
 	// zoom out: stretch old image to fit new, larger buffer
 	} else if (zoomOut) {
-		if (printDebug) println("Zooming OUT (Stretching)"); 
+		if (printDebug) println("zooming OUT (stretching)"); 
 
 		// draw old content stretched onto the entire new buffer
 		newBuffer.beginDraw();
@@ -398,7 +408,7 @@ public void resizeBuffer(float w, float h) {
 		
 	} else {
 		// same size: direct copy
-		println("Copying content (same size)");
+		println("copying content (same size)");
 		newBuffer.beginDraw();
 			newBuffer.image(oldBuffer, 0, 0, newW, newH); // use image or copy
 		newBuffer.endDraw();
@@ -423,7 +433,7 @@ public void resizeBuffer(float w, float h) {
         oldTempBuffer.dispose();
     }
 
-    if (printDebug) println("Buffers resized successfully with content preservation (crop/stretch).");
+    if (printDebug) println("buffers resized successfully with content preservation (crop/stretch).");
 }
 
 // choose a random event after a random interval, or set the time until the next event to switchTime
@@ -494,7 +504,7 @@ void cleanupImageFolder() {
 		// delete oldest files until we're back to the maximum
 		int numToDelete = files.length - maxFiles;
 		for (int i = 0; i < numToDelete; i++) {
-			if (printDebug) println("Deleting old file: " + files[i].getName());
+			if (printDebug) println("deleting old file: " + files[i].getName());
 			files[i].delete();
 		}
 	}

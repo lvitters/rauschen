@@ -114,7 +114,6 @@ public void setup() {
   	shaders.add(loadShader("shaders/250430_GameOfLife.glsl"));
   	shaders.add(loadShader("shaders/250501_1DNoise.glsl"));
   	shaders.add(loadShader("shaders/250501_1DNoiseGrid.glsl"));
-  	shaders.add(loadShader("shaders/250501_ReactionDiffusion.glsl"));
   	shaders.add(loadShader("shaders/250501_FlowFieldAdvection.glsl"));
   	shaders.add(loadShader("shaders/250501_SmoothLife.glsl"));
   

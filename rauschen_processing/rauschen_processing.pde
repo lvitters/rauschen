@@ -43,8 +43,7 @@ int audioSamplingMode = 0;
 // thread-safe pixel array copy for audio to access
 int[] audioPixels;
 // filter for making noise more "bearable"
-FilterHighPass hiPassFilter = new FilterHighPass();
-FilterLowPass loPassFilter = new FilterLowPass();
+FilterBandPass bandPassFilter = new FilterBandPass();
 
 // shader stuff
 ArrayList<PShader> shaders = new ArrayList<PShader>();
@@ -67,6 +66,8 @@ Noise blueNoise;
 Noise toggleShader;
 Noise shaderTimeNoise;
 Noise toggleRandomShaderEachFrameNoise;
+Noise frequencyNoise;
+Noise bandwidthNoise;
 
 // toggles
 Boolean showDebug = false;
@@ -77,7 +78,8 @@ Boolean isNoiseColor = false;
 Boolean isApplyingShader = false;
 Boolean isRandomShaderEachFrame = false;
 Boolean isGeneratingSound = false;
-Boolean isTakingScreenshots = false;
+Boolean isApplyingAudioFilter = false;
+Boolean isTakingScreenshots = true;
 Boolean isEvenOffset = false;
 
 // timed events
@@ -162,6 +164,10 @@ public void setup() {
 	noises.add(shaderTimeNoise);
 	toggleRandomShaderEachFrameNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(toggleRandomShaderEachFrameNoise);
+	frequencyNoise = new Noise(intRandom(0, 100), .005);
+	noises.add(frequencyNoise);
+	bandwidthNoise = new Noise(intRandom(0, 100), .005);
+	noises.add(bandwidthNoise);
 }
 
 public void draw() {
@@ -181,17 +187,7 @@ public void draw() {
 
 	makeBufferCopyForAudio();
 
-	float targetFreq = map(mouseX, 0, width, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 1.0f);
-	float bandwidth = map(mouseY, 0, height, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 1.0f);
-	float loEnd = targetFreq - bandwidth/2;
-	float hiEnd = targetFreq + bandwidth/2;
-
-	hiPassFilter.set_frequency(loEnd);
-	loPassFilter.set_frequency(hiEnd);
-	println("hiPass freq: " + hiPassFilter.get_frequency() + "\n" + "loPass freq: " + loPassFilter.get_frequency() + "\n" + "bandwidth: " + bandwidth);
-	
-	// println(Wellen.DEFAULT_SAMPLING_RATE);
-	// println(Wellen.DEFAULT_AUDIOBLOCK_SIZE);
+	if (isApplyingAudioFilter) applyAudioFilter();
 
 	// display buffer
 	image(buffer, 0, 0, width, height);
@@ -483,6 +479,16 @@ void chooseEvent(int event) {
 			if (!isRandomShaderEachFrame) shaderChoice = intRandom(0, shaders.size() - 1);
 		break;
 	}
+}
+
+// apply audio filter with noise
+void applyAudioFilter() {
+	bandPassFilter.set_frequency(frequencyNoise.getVariableNoiseRange(0, 100, Wellen.DEFAULT_SAMPLING_RATE - 18000, Wellen.DEFAULT_SAMPLING_RATE - 8000));
+	bandPassFilter.set_bandwidth(bandwidthNoise.getVariableNoiseRange(0, 100, Wellen.DEFAULT_SAMPLING_RATE - 18000, Wellen.DEFAULT_SAMPLING_RATE - 8000) * 0.5f);
+	// manually
+	// float targetFreq = map(mouseX, 0, width, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 1.0f);
+	// float bandwidth = map(mouseY, 0, height, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 0.5f);
+	if (printDebug) println("freq: " + bandPassFilter.get_frequency() + "\n" + "bandwidth: " + bandPassFilter.get_bandwidth());
 }
 
 // take a screenshot with date and time to special path (change for exhibition)

@@ -31,6 +31,7 @@ void sendDebugOSC() {
 	oscP5.send(new OscMessage("/info/isEvenOffset").add(isEvenOffset ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isTakingScreenshots").add(isTakingScreenshots ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isGeneratingSound").add(isGeneratingSound ? 1 : 0), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/isApplyingAudioFilter").add(isApplyingAudioFilter ? 1 : 0), controlSketchLocation);
 
 }
 
@@ -106,11 +107,11 @@ void oscEvent(OscMessage message) {
 		if (value == 0) toggleSound(false);						// turn DSP on
 		if (value == 1) toggleSound(true);						// or off
 	}
-	else if (message.checkAddrPattern("/isTakingScreenshots")) {
+	else if (message.checkAddrPattern("/isApplyingAudioFilter")) {
 		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isTakingScreenshots = false;
-		if (value == 1) isTakingScreenshots = true;
+		if (value == 0) isApplyingAudioFilter = false;
+		if (value == 1) isApplyingAudioFilter = true;
 	}
 	else if (message.checkAddrPattern("/showDebug")) {
 		float value = message.get(0).floatValue();

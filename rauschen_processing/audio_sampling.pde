@@ -68,8 +68,7 @@ void audioblock(float[] pSamples) {
 			pSamples[i] = map(average, 0, 255, -0.5, 0.5);
 
 			// apply audio filter
-			pSamples[i] = hiPassFilter.process(pSamples[i]);
-			pSamples[i] = loPassFilter.process(pSamples[i]);
+			if (isApplyingAudioFilter) pSamples[i] = bandPassFilter.process(pSamples[i]);
 		}
 	} else {
 		// fill with silence if no pixels

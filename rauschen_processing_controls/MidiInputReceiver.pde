@@ -56,7 +56,7 @@ class MidiInputReceiver implements Receiver {
 							name = "/isGeneratingSound";
 						break;
 						case 16:
-							name = "/isTakingScreenshots";
+							name = "/isApplyingAudioFilter";
 						break;
 						case 31:
 							name = "/showDebug";

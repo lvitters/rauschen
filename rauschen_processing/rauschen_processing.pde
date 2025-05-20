@@ -43,7 +43,8 @@ int audioSamplingMode = 0;
 // thread-safe pixel array copy for audio to access
 int[] audioPixels;
 // filter for making noise more "bearable"
-FilterBandPass audioFilter = new FilterBandPass();
+FilterHighPass hiPassFilter = new FilterHighPass();
+FilterLowPass loPassFilter = new FilterLowPass();
 
 // shader stuff
 ArrayList<PShader> shaders = new ArrayList<PShader>();
@@ -180,9 +181,14 @@ public void draw() {
 
 	makeBufferCopyForAudio();
 
-	audioFilter.set_frequency(map(mouseX, 0, width, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 1.0f));
-	audioFilter.set_bandwidth(map(mouseY, 0, height, 1.0f, Wellen.DEFAULT_AUDIOBLOCK_SIZE * 1.0f));
-	println("frequency: " + audioFilter.get_frequency() + "\n" + "bandwidth: " + audioFilter.get_bandwidth());
+	float targetFreq = map(mouseX, 0, width, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 1.0f);
+	float bandwidth = map(mouseY, 0, height, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 1.0f);
+	float loEnd = targetFreq - bandwidth/2;
+	float hiEnd = targetFreq + bandwidth/2;
+
+	hiPassFilter.set_frequency(loEnd);
+	loPassFilter.set_frequency(hiEnd);
+	println("hiPass freq: " + hiPassFilter.get_frequency() + "\n" + "loPass freq: " + loPassFilter.get_frequency() + "\n" + "bandwidth: " + bandwidth);
 	
 	// println(Wellen.DEFAULT_SAMPLING_RATE);
 	// println(Wellen.DEFAULT_AUDIOBLOCK_SIZE);

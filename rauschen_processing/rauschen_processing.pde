@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;						
 import wellen.*;									// audio stuff
 import wellen.dsp.*;								// should be included in the above, but for some reason isn't
+import javax.sound.midi.*;
 import oscP5.*;
 import netP5.*;
 
@@ -94,6 +95,10 @@ float eventCounter = 0;
 OscP5 oscP5;
 NetAddress controlSketchLocation;
 
+// midi input
+MidiDevice outputDevice;
+Receiver midiReceiver;
+
 public void settings() {
 	size(width, height, P2D);
 }
@@ -108,6 +113,10 @@ public void setup() {
 	// can't go in settings for some reason
 	frameRate(120);
 	colorMode(RGB, 255, 255, 255);
+
+	// midi controls
+	//listMidiControllers();
+	setupMidiOutput();
 
 	// create buffers
 	buffer = createGraphics((int)width, (int)height, P2D);

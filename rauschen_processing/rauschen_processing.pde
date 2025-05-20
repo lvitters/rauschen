@@ -73,13 +73,13 @@ Noise bandwidthNoise;
 // toggles
 Boolean showDebug = false;
 Boolean printDebug = false;
-Boolean isAutoMode = false;
+Boolean isAutoMode = true;
 Boolean isRandomSwitchTime = false;
 Boolean isNoiseColor = false;
 Boolean isApplyingShader = false;
 Boolean isRandomShaderEachFrame = false;
 Boolean isGeneratingSound = false;
-Boolean isApplyingAudioFilter = false;
+Boolean isApplyingAudioFilter = true;
 Boolean isTakingScreenshots = true;
 Boolean isEvenOffset = false;
 

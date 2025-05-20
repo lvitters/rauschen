@@ -48,7 +48,7 @@ void setupMidiOutput() {
 			println("could not find Grid with output capability");
 		} else {
 			// reset all controller LEDs
-			resetControllerLEDs();
+			//resetControllerLEDs();
 		}
 	} catch (Exception e) {
 		println("error setting up MIDI output: " + e.getMessage());

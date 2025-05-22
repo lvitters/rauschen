@@ -58,14 +58,9 @@ class MidiInputReceiver implements Receiver {
 						case 15:
 							name = "/isApplyingAudioFilter";
 						break;
-						case 30:
+						case 27:
 							// rauschen
 							name = "/showDebug";
-						break;
-						case 31:
-							// rauschen_controls
-							if (value == 0) showDebug = false;
-							else showDebug = true;
 						break;
 						case 32:
 							name = "/setControllerLEDs";

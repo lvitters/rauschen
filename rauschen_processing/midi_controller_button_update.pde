@@ -69,10 +69,10 @@ void setControllerLEDs() {
 			// reset
 			value = 0;			
 			
-			// LEDs values 25 to 32
-			for (int control = 24; control <= 31; control++) {
+			// LEDs values 25 to 31 (32 is debug in controls)
+			for (int control = 24; control < 31; control++) {
 				switch (control) {
-					case 32:
+					case 27:
 						value = showDebug ? 127 : 0;
 					break;
 				}

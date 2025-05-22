@@ -13,57 +13,62 @@ class MidiInputReceiver implements Receiver {
 				//println("Knob/Controller: CC#" + number + " Value: " + value + " Channel: " + channel);
 				
 				// map the control element number to the correct parameter
-				if (number >= 1) {
+				if (number >= 0) {
 					String name = "";
 					switch(number) {
-						case 1:
+						case 0:
 							name = "/switchTime";
 						break;
-						case 5:
+						case 4:
 							name = "/switchTimeMultiplier";
 						break;
-						case 2:
+						case 1:
 							name = "/sameStep";
 						break;
-						case 6:
+						case 5:
 							name = "/sameStepMultiplier";
 						break;
-						case 3:
+						case 2:
 							name = "/xStep";
 						break;
-						case 7:
+						case 6:
 							name = "/xStepMultiplier";
 						break;
-						case 4:
+						case 3:
 							name = "/yStep";
 						break;
-						case 8:
+						case 7:
 							name = "/yStepMultiplier";
 						break;
-						case 9:
+						case 8:
 							name = "/isAutoMode";
 						break;
-						case 10:
+						case 12:
 							name = "/isRandomSwitchTime";
 						break;
-						case 11:
-							name = "/isEvenOffset";
-						break;
-						case 13:
+						case 9:
 							name = "/isNoiseColor";
 						break;
-						case 15:
+						case 10:
+							name = "/isEvenOffset";
+						break;
+						case 11:
 							name = "/isGeneratingSound";
 						break;
-						case 16:
+						case 15:
 							name = "/isApplyingAudioFilter";
 						break;
-						case 31:
+						case 30:
+							// rauschen
 							name = "/showDebug";
 						break;
-						case 32:
+						case 31:
+							// rauschen_controls
 							if (value == 0) showDebug = false;
 							else showDebug = true;
+						break;
+						case 32:
+							name = "/setControllerLEDs";
 						break;
 					}
 					

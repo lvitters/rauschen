@@ -21,8 +21,8 @@ void setupMidiOutput() {
 			println("could not find Grid with output capability");
 		} else {
 			// set all controller LEDs
-			resetControllerLEDs();
-			//setControllerLEDs();
+			//resetControllerLEDs();
+			setControllerLEDs();
 		}
 	} catch (Exception e) {
 		println("error setting up MIDI output: " + e.getMessage());
@@ -37,26 +37,43 @@ void setControllerLEDs() {
 			// default off
 			int value = 0;
 
-			// LEDs values are numbered 9 to 16 and 25 to 32
-			for (int control = 9; control <= 16; control++) {
+
+			for (int control = 8; control < 16; control++) {
 				switch (control) {
-					case 9: 
+					case 8: 
 						value = isAutoMode ? 127 : 0;
 					break;
-					case 10:
+					case 12:
 						value = isRandomSwitchTime ? 127 : 0;
 					break;
-					case 11:
-						value = isEvenOffset ? 127 : 0;
-					break;
-					case 13:
+					case 9:
 						value = isNoiseColor ? 127 : 0;
 					break;
-					case 15:
+					case 10:
+						value = isEvenOffset ? 127 : 0;
+					break;
+					case 11:
 						value = isGeneratingSound ? 127 : 0;
 					break;
-					case 16:
+					case 15:
 						value = isApplyingAudioFilter ? 127 : 0;
+					break;
+				}
+
+				ShortMessage message = new ShortMessage();
+				// channel, CC number, value (127 = on / 0 = off)
+				message.setMessage(ShortMessage.CONTROL_CHANGE, 0, control, value);
+				midiReceiver.send(message, -1);
+			}
+			
+			// reset
+			value = 0;			
+			
+			// LEDs values 25 to 32
+			for (int control = 24; control <= 31; control++) {
+				switch (control) {
+					case 32:
+						value = showDebug ? 127 : 0;
 					break;
 				}
 

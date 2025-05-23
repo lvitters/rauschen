@@ -73,7 +73,7 @@ Noise bandwidthNoise;
 // toggles
 Boolean showDebug = false;
 Boolean printDebug = false;
-Boolean isAutoMode = true;
+Boolean isAutoMode = false;
 Boolean isRandomSwitchTime = false;
 Boolean isNoiseColor = false;
 Boolean isApplyingShader = false;
@@ -183,8 +183,8 @@ public void draw() {
 	// handle any timed events first because it may affect the pixel array manipulation
 	if (isAutoMode) timedEvents();
 
-	// to avoid bad performance
-	if (xStep < 10 || yStep < 10) isNoiseColor = false;
+	// limit for performance
+	// if (xStep < 10 || yStep < 10) isNoiseColor = false;
 
 	// manipulate buffer's pixels
 	if (!isApplyingShader) {
@@ -223,6 +223,19 @@ void manipulatePixelArray() {
 		if (isEvenOffset) determineEvenOffset(xStep, yStep);
 		else determineRandomOffset(xStep, yStep);
 	}
+	// get color in PVector (it stores three floats) for pixels or steps
+	PVector leadingColor = new PVector(0, 0, 0);
+	// generate global color with noise
+	if (isNoiseColor) {
+		// increment noise
+		redNoise.changeInc(floatRandom(.001, .01));
+		greenNoise.changeInc(floatRandom(.001, .01));
+		blueNoise.changeInc(floatRandom(.001, .01));
+		// increment rgb values
+		leadingColor.x = redNoise.getNoiseRange(0, 255);
+		leadingColor.y = greenNoise.getNoiseRange(0, 255); 
+		leadingColor.z = blueNoise.getNoiseRange(0, 255);
+	}
 	buffer.loadPixels();
 		// iterate through pixel array with step and apply offset
 		for (int x = 0; x < buffer.width; x += xStep - xOffset) {
@@ -233,19 +246,23 @@ void manipulatePixelArray() {
 				// offset only applies to first iteration
 				if (y > 0) yOffset = 0;
 				else yOffset = yOffsetRecord;
-				// get color in PVector (it stores three floats) for pixels or steps
-				PVector col;
+				// color for each pixel or cell so the color offset won't be added continuously
+				PVector finalCellColor;
+				// apply global noise color with slight random offset for each pixel
 				if (isNoiseColor) {
-					// with noise
-					redNoise.changeInc(floatRandom(.01, .1));
-					greenNoise.changeInc(floatRandom(.01, .1));
-					blueNoise.changeInc(floatRandom(.01, .1));
-					col = new PVector(	redNoise.getNoiseRange(0, 255), 
-										greenNoise.getNoiseRange(0, 255), 
-										blueNoise.getNoiseRange(0, 255));
+					finalCellColor = leadingColor.copy();
+					// change only one value per pixel
+					float rand = intRandom(1, 3);
+					if (rand == 1) 	finalCellColor.x += floatRandom(-255, 255);
+					else if (rand == 2) finalCellColor.y += floatRandom(-255, 255);
+					else finalCellColor.z += floatRandom(-255, 255);
+					// constrain to rgb range
+					finalCellColor.x = constrain(finalCellColor.x, 0, 255);
+					finalCellColor.y = constrain(finalCellColor.y, 0, 255);
+					finalCellColor.y = constrain(finalCellColor.z, 0, 255);
+				// or apply random color
 				} else {
-					// or at random
-					col = new PVector(intRandom(0, 255), intRandom(0, 255), intRandom(0, 255));
+					finalCellColor = new PVector(intRandom(0, 255), intRandom(0, 255), intRandom(0, 255));
 				}
 				// determine indices for pixels array from coordinates and step
 				for (int dx = 0; dx < xStep; dx++) {
@@ -259,7 +276,7 @@ void manipulatePixelArray() {
 							int index = py * width + px;
 							// apply respective color to pixels array, handle out of bounds
 							if (index >= 0 && index < buffer.pixels.length) {
-								buffer.pixels[index] = 0xFF000000 | ((int)col.x << 16) | ((int)col.y << 8) | (int)col.z;
+								buffer.pixels[index] = 0xFF000000 | ((int)finalCellColor.x << 16) | ((int)finalCellColor.y << 8) | (int)finalCellColor.z;
 							}
 						}
 					}

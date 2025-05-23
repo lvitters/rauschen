@@ -272,7 +272,7 @@ void manipulatePixelArray() {
 						if (finalCellG < 0) finalCellG = 0; else if (finalCellG > 255) finalCellG = 255;
 					} else {
 						finalCellB += colorOffset;
-						if (finalCellG < 0) finalCellB = 0; else if (finalCellB > 255) finalCellB = 255;
+						if (finalCellB < 0) finalCellB = 0; else if (finalCellB > 255) finalCellB = 255;
 					}
 				// or apply random color
 				} else {

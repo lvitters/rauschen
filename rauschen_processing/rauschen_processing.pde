@@ -500,13 +500,26 @@ void applyAudioFilter() {
 	if (printDebug) println("freq: " + bandPassFilter.get_frequency() + "\n" + "bandwidth: " + bandPassFilter.get_bandwidth());
 }
 
-// take a screenshot with date and time to special path (change for exhibition)
+// take a screenshot with date and time to special path
 void takeScreenshot() {
-	String timeStamp = year() + nf(month(), 2) + nf(day(), 2) + "-" + nf(hour(), 2) + nf(minute(), 2) + nf(second(), 2) + "-" + nf(millis() % 1000, 3);
-	saveFrame("../rauschen_screens/temp/rauschen-" + timeStamp + ".png");
+    // enerate the timestamp and filename
+    final String timeStamp = year() + nf(month(), 2) + nf(day(), 2) + "-" + nf(hour(), 2) + nf(minute(), 2) + nf(second(), 2) + "-" + nf(millis() % 1000, 3);
+    final String filename = "../rauschen_screens/temp/rauschen-" + timeStamp + ".png";
 
-	// cleanup after every new screenshot
-	cleanupImageFolder();
+    // capture current frame to save
+    final PImage frameToSave = get();
+    // final PImage frameToSave = myBuffer.get(); // maybe get the buffer instead?
+
+    // create and start new thread to actually save for performance
+    new Thread(new Runnable() {
+        public void run() {
+            frameToSave.save(filename);
+            if (printDebug) println("screenshot saved: " + filename);
+        }
+    }).start();
+
+	// keep image folder x files larges
+    cleanupImageFolder();
 }
 
 // check if there are more than maxFiles files in the screenshot folder, delete oldest

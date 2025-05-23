@@ -64,14 +64,21 @@ Noise toggleNoiseColorNoise;
 Noise redNoise;
 Noise greenNoise;
 Noise blueNoise;
+Noise noiseColorOffsetNoise;
 Noise toggleShader;
 Noise shaderTimeNoise;
 Noise toggleRandomShaderEachFrameNoise;
 Noise frequencyNoise;
 Noise bandwidthNoise;
 
+// colors
+PVector finalCellColor;
+float finalCellR, finalCellG, finalCellB;
+PVector leadingColor;
+float noiseColorOffset;
+
 // toggles
-Boolean showDebug = false;
+Boolean showDebug = true;
 Boolean printDebug = false;
 Boolean isAutoMode = false;
 Boolean isRandomSwitchTime = false;
@@ -143,9 +150,6 @@ public void setup() {
 	// start wellen's digital signal processing but pause for now
 	DSP.start(this);
 	DSP.pause(true);
-
-	// set mode for audio filter (low pass / high pass / band pass)
-	// audioFilter.set_mode(2);
 	
 	// fill audioDebugPixels with empty pixels to ensure correct size
 	while (audioDebugPixels.size() < 1024) {
@@ -167,6 +171,8 @@ public void setup() {
 	noises.add(greenNoise);
 	blueNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(blueNoise);
+	noiseColorOffsetNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(noiseColorOffsetNoise);
 	toggleShader = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleShader);
 	shaderTimeNoise = new Noise(intRandom(0, 100), .01);
@@ -184,7 +190,7 @@ public void draw() {
 	if (isAutoMode) timedEvents();
 
 	// limit for performance
-	// if (xStep < 10 || yStep < 10) isNoiseColor = false;
+	// if (xStep < 2 || yStep < 2) isNoiseColor = false;
 
 	// manipulate buffer's pixels
 	if (!isApplyingShader) {
@@ -224,9 +230,12 @@ void manipulatePixelArray() {
 		else determineRandomOffset(xStep, yStep);
 	}
 	// get color in PVector (it stores three floats) for pixels or steps
-	PVector leadingColor = new PVector(0, 0, 0);
+	leadingColor = new PVector(0, 0, 0);
 	// generate global color with noise
 	if (isNoiseColor) {
+		// get noiseColorOffset
+		noiseColorOffsetNoise.changeInc(floatRandom(.001, .01));
+		noiseColorOffset = noiseColorOffsetNoise.getNoiseRange(0, 255);
 		// increment noise
 		redNoise.changeInc(floatRandom(.001, .01));
 		greenNoise.changeInc(floatRandom(.001, .01));
@@ -246,23 +255,30 @@ void manipulatePixelArray() {
 				// offset only applies to first iteration
 				if (y > 0) yOffset = 0;
 				else yOffset = yOffsetRecord;
-				// color for each pixel or cell so the color offset won't be added continuously
-				PVector finalCellColor;
 				// apply global noise color with slight random offset for each pixel
 				if (isNoiseColor) {
-					finalCellColor = leadingColor.copy();
-					// change only one value per pixel
-					float rand = intRandom(1, 3);
-					if (rand == 1) 	finalCellColor.x += floatRandom(-255, 255);
-					else if (rand == 2) finalCellColor.y += floatRandom(-255, 255);
-					else finalCellColor.z += floatRandom(-255, 255);
-					// constrain to rgb range
-					finalCellColor.x = constrain(finalCellColor.x, 0, 255);
-					finalCellColor.y = constrain(finalCellColor.y, 0, 255);
-					finalCellColor.y = constrain(finalCellColor.z, 0, 255);
+					// color for each pixel or cell so the color offset won't be added continuously
+					finalCellR = leadingColor.x;
+					finalCellG = leadingColor.y;
+					finalCellB = leadingColor.z;
+					// change only one value per pixel and constrain to rgb
+					int rand = intRandom(1, 3);
+					float colorOffset = floatRandom(-noiseColorOffset, noiseColorOffset + 1);
+					if (rand == 1) 	{
+						finalCellR += colorOffset;
+						if (finalCellR < 0) finalCellR = 0; else if (finalCellR > 255) finalCellR = 255;
+					} else if (rand == 2) {
+						finalCellG += colorOffset;
+						if (finalCellG < 0) finalCellG = 0; else if (finalCellG > 255) finalCellG = 255;
+					} else {
+						finalCellB += colorOffset;
+						if (finalCellG < 0) finalCellB = 0; else if (finalCellB > 255) finalCellB = 255;
+					}
 				// or apply random color
 				} else {
-					finalCellColor = new PVector(intRandom(0, 255), intRandom(0, 255), intRandom(0, 255));
+					finalCellR = intRandom(0, 255);
+					finalCellG = intRandom(0, 255);
+					finalCellB = intRandom(0, 255);
 				}
 				// determine indices for pixels array from coordinates and step
 				for (int dx = 0; dx < xStep; dx++) {
@@ -276,7 +292,7 @@ void manipulatePixelArray() {
 							int index = py * width + px;
 							// apply respective color to pixels array, handle out of bounds
 							if (index >= 0 && index < buffer.pixels.length) {
-								buffer.pixels[index] = 0xFF000000 | ((int)finalCellColor.x << 16) | ((int)finalCellColor.y << 8) | (int)finalCellColor.z;
+								buffer.pixels[index] = 0xFF000000 | ((int)finalCellR << 16) | ((int)finalCellG << 8) | (int)finalCellB;
 							}
 						}
 					}
@@ -564,20 +580,20 @@ void cleanupImageFolder() {
 // render rudimentary debug info to the main window (rest is handled in control sketch)
 void showDebug() {
 		// audio pixels debug line (only show when sound is actually playing)
-		if (isGeneratingSound && audioDebugPixels != null) {
-			for (int i = 0; i < audioDebugPixels.size(); i++) {
-				PVector p = audioDebugPixels.get(i);
-				if (i == 0 || i == audioDebugPixels.size() - 1) {
-					stroke(0, 255, 0);
-					strokeWeight(10);
-				} else {
-					stroke(255, 0, 0);
-					strokeWeight(5);
-				}
-				if (p != null) point(p.x, p.y);
-				noStroke();
-			}
-		}
+		// if (isGeneratingSound && audioDebugPixels != null) {
+		// 	for (int i = 0; i < audioDebugPixels.size(); i++) {
+		// 		PVector p = audioDebugPixels.get(i);
+		// 		if (i == 0 || i == audioDebugPixels.size() - 1) {
+		// 			stroke(0, 255, 0);
+		// 			strokeWeight(10);
+		// 		} else {
+		// 			stroke(255, 0, 0);
+		// 			strokeWeight(5);
+		// 		}
+		// 		if (p != null) point(p.x, p.y);
+		// 		noStroke();
+		// 	}
+		// }
 		// rudimentary debug info
 		fill(0, 0, 0);
 		rect(0, 0, 210, 65);

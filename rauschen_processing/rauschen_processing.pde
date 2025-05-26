@@ -78,7 +78,7 @@ PVector leadingColor;
 float noiseColorOffset;
 
 // toggles
-Boolean showDebug = true;
+Boolean showDebug = false;
 Boolean printDebug = false;
 Boolean isAutoMode = false;
 Boolean isRandomSwitchTime = false;

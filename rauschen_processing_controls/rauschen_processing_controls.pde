@@ -65,17 +65,23 @@ int graphLength = 600;
 HashMap<String, Object> debugInfo = new HashMap<String, Object>();
 
 // screenshot gallery
-PImage[] recentScreens;
-PImage[] tempRecentScreens;	// for background loading
-PImage[] scaledScreens; // store pre-scaled screens for better performance
-File[] files;
-File[] tempFiles; // for background loading
-Rectangle[] screensBounds;
-int numScreensToShow = 4;
+int numDisplaySlots = 4; 			// number of fixed display slots
+PImage[] slotImages_Original;    	// original, unscaled PImage for each display slot
+PImage[] slotImages_Scaled;      	// PImage scaled for display for each slot
+File[] slotImageFiles;         		// File object for image in each slot
+long[] slotTimestamps;           	// millis of when the image in a slot was last updated
+Rectangle[] slotBounds;          	// display bounds for each slot
+
+File lastSuccessfullyPlacedCandidateFile = null; // newest candidate file last successfully placed
+
+// background loading for loadScreensInBackground 
+PImage[] tempRecentScreens; 
+File[] tempFiles; 
+
 String screensDir = "../rauschen_screens/temp/";
 String savedScreensDir = "../rauschen_screens/saved/";
 int savedAnimation = 0;
-int savedImageIndex = -1;  // which image was saved (-1: none)
+int animatingSaveForSlot = -1; 
 public boolean mouseOver = true;
 float screenshotAreaBottomY;
 float scaledImageWidth;
@@ -167,19 +173,21 @@ public void draw() {
 public void setupUI() {
 
 	// screenshot gallery
-	// store the screenshots' bounds for mouse pressing
-	screensBounds = new Rectangle[numScreensToShow];
-	// store scaled screenshots for better performance
-	scaledScreens = new PImage[numScreensToShow];
-	for (int i = 0; i < screensBounds.length; i++) {
-    	screensBounds[i] = new Rectangle(); // init
-  	}
+	slotImages_Original = new PImage[numDisplaySlots];
+    slotImages_Scaled = new PImage[numDisplaySlots];
+    slotImageFiles = new File[numDisplaySlots];
+    slotTimestamps = new long[numDisplaySlots]; 	// default values will be 0
+    slotBounds = new Rectangle[numDisplaySlots];
+	// init Rectangle objects
+    for (int i = 0; i < numDisplaySlots; i++) {
+        slotBounds[i] = new Rectangle();
+    }
 
 	// assumes square images fitting numScreensToShow across the width
-	float totalHorizontalPadding = (numScreensToShow + 1) * padding;
+	float totalHorizontalPadding = (numDisplaySlots + 1) * padding;
     float availableWidthForImages = width - totalHorizontalPadding;
-    if (numScreensToShow > 0) { // avoid division by zero
-        scaledImageWidth = availableWidthForImages / numScreensToShow;
+    if (numDisplaySlots > 0) { // avoid division by zero
+        scaledImageWidth = availableWidthForImages / numDisplaySlots;
     } else {
         scaledImageWidth = 0;
     }
@@ -199,26 +207,78 @@ public void setupUI() {
     graphAreaHeight = height - graphAreaY - padding; 
 }
 
-// check if there are new screens to update scaledScreens array
+// check "temp" folder for new screenshot
 public void checkForRecentScreens() {
-	if (newScreensReady) {
-		// safely update the main arrays with the loaded data
-		recentScreens = tempRecentScreens;
-		files = tempFiles;
-		// ensure arrays needed by updateScaledScreens are consistent
-		if (scaledScreens == null || scaledScreens.length != numScreensToShow) {
-			scaledScreens = new PImage[numScreensToShow];
-		}
-		if (screensBounds == null || screensBounds.length != numScreensToShow) {
-			screensBounds = new Rectangle[numScreensToShow];
-			for (int i = 0; i < screensBounds.length; i++) {
-				screensBounds[i] = new Rectangle();
+    if (newScreensReady) {
+        isLoadingScreens = false; 
+
+        // focus only on the top candidate from the background thread's list.
+        // tempFiles[0] is the newest among the candidates selected by loadScreensInBackground.
+        File currentTopCandidateFile = tempFiles[0];
+        PImage currentTopCandidateImage = tempRecentScreens[0];
+        
+        // check if newest file is different from last newest file
+        if (currentTopCandidateFile.equals(lastSuccessfullyPlacedCandidateFile)) {
+            newScreensReady = false;
+            return;
+        }
+
+        // is the file already displayed in the sketch
+        boolean alreadyDisplayed = false;
+        int displayedInSlot = -1; 
+        for (int j = 0; j < numDisplaySlots; j++) {
+            if (slotImageFiles[j] != null && slotImageFiles[j].equals(currentTopCandidateFile)) {
+                alreadyDisplayed = true;
+                displayedInSlot = j;
+                break;
+            }
+        }
+
+        if (alreadyDisplayed) {
+            lastSuccessfullyPlacedCandidateFile = currentTopCandidateFile; 
+            newScreensReady = false; 
+            return;
+        }
+        
+        // find slot for placement (oldest display time, or first empty).
+		int targetSlotIndex = -1;
+        long oldestSlotTimestamp = Long.MAX_VALUE; // using a more descriptive name for clarity
+
+		// prioritize empty slots: check from right to left
+		for(int i = numDisplaySlots - 1; i >= 0; --i) {
+			if(slotImageFiles[i] == null) { // if slot is currently empty
+				targetSlotIndex = i;
+				oldestSlotTimestamp = Long.MIN_VALUE; // mark this as "oldest"
+				break;
 			}
 		}
-		updateScaledScreens(); // now update the scaled versions
-		newScreensReady = false; // reset the flag
-		isLoadingScreens = false; // mark loading as complete
-	}
+
+		// if no empty slot was found (targetSlotIndex is still -1, or oldestSlotTimestamp not Long.MIN_VALUE),
+		// find the slot with the truly oldest content.
+		if (targetSlotIndex == -1 || oldestSlotTimestamp != Long.MIN_VALUE) { 
+				// initialize with right slot's values as a starting point for finding "oldest"
+				targetSlotIndex = numDisplaySlots - 1; 
+				oldestSlotTimestamp = slotTimestamps[numDisplaySlots - 1]; 
+				
+				// iterate through the rest of the slots from right-to-left
+				for (int i = numDisplaySlots - 2; i >= 0; --i) { 
+					if (slotTimestamps[i] < oldestSlotTimestamp) {
+						oldestSlotTimestamp = slotTimestamps[i];
+						targetSlotIndex = i;
+					}
+				}
+		}
+
+        // place the new image into the identified target slot
+        slotImages_Original[targetSlotIndex] = currentTopCandidateImage;
+        slotImageFiles[targetSlotIndex] = currentTopCandidateFile;
+        slotTimestamps[targetSlotIndex] = millis(); 
+        updateSpecificScaledScreen(targetSlotIndex); 
+
+        lastSuccessfullyPlacedCandidateFile = currentTopCandidateFile;
+
+        newScreensReady = false; // reset flag: batch fully processed
+    }
 }
 
 // load recent screenshots from file folder in background thread
@@ -283,7 +343,7 @@ public void loadScreensInBackground() {
 		// use a PriorityQueue to efficiently find the N most recent files among the *remaining* files (after removing the newest).
 		// the queue keeps the oldest items at the head for easy removal.
 		PriorityQueue<File> mostRecentFiles = new PriorityQueue<File>(
-			numScreensToShow + 1, // capacity slightly larger than needed
+			numDisplaySlots + 1, // capacity slightly larger than needed
 			new Comparator<File>() {
 				public int compare(File f1, File f2) {
 					// sort oldest first to allow easy polling of the oldest
@@ -296,7 +356,7 @@ public void loadScreensInBackground() {
 		for (File f : sortedFiles) {
 			mostRecentFiles.add(f);
 			// if the queue size exceeds the desired number, remove the oldest file
-			if (mostRecentFiles.size() > numScreensToShow) {
+			if (mostRecentFiles.size() > numDisplaySlots) {
 				mostRecentFiles.poll(); // Removes the head (oldest)
 			}
 		}
@@ -344,124 +404,93 @@ public void loadScreensInBackground() {
 	newScreensReady = true;
 }
 
-// fill scaledScreens[] with screenshots scaled according to width and height
-void updateScaledScreens() {
-	if (recentScreens == null || scaledScreens == null || screensBounds == null) return;
-	if (numScreensToShow <= 0) return; // avoid division by zero
+// scale image for a specific slot
+void updateSpecificScaledScreen(int slotIndex) {
+    PImage sourceImg = slotImages_Original[slotIndex];
 
-	// use pre-calculated scaledImageWidth for target dimensions
-	float availableWidthForScaling = scaledImageWidth;
-    float availableHeightForScaling = scaledImageWidth; // keep images square
+    if (sourceImg == null) {
+        slotImages_Scaled[slotIndex] = null; // no source image, so no scaled image for this slot
+        return;
+    }
 
-	if (availableWidthForScaling <= 0 || availableHeightForScaling <= 0) {
-		println("Cannot scale images, available area too small.");
-		// clear scaled images maybe?
-		for (int i = 0; i < numScreensToShow; i++) scaledScreens[i] = null;
-		return;
-	}
+    // target dimensions for the slot (assuming square slots based on scaledImageWidth)
+    float targetSlotWidth = scaledImageWidth;
+    float targetSlotHeight = scaledImageWidth;
 
-	for (int i = 0; i < numScreensToShow; i++) {
-		int imgIndex = recentScreens.length - 1 - i;
+    // calculate scale factor to fit the image within the slot while maintaining aspect ratio
+    float scaleFactor = min(targetSlotWidth / sourceImg.width, targetSlotHeight / sourceImg.height);
 
-		if (imgIndex >= 0 && imgIndex < recentScreens.length && recentScreens[imgIndex] != null && recentScreens[imgIndex].width > 0 && recentScreens[imgIndex].height > 0) {
-			// calculate scale factor based on available area
-			float scaleFactor = min(availableWidthForScaling / recentScreens[imgIndex].width,
-									availableHeightForScaling / recentScreens[imgIndex].height);
+    int newWidth = int(sourceImg.width * scaleFactor);
+    int newHeight = int(sourceImg.height * scaleFactor);
 
-			// calculate target scaled dimensions
-			int targetW = int(recentScreens[imgIndex].width * scaleFactor);
-			int targetH = int(recentScreens[imgIndex].height * scaleFactor);
-
-			if (targetW > 0 && targetH > 0) {
-				// create a scaled copy
-				scaledScreens[i] = recentScreens[imgIndex].copy(); // work on a copy
-				scaledScreens[i].resize(targetW, targetH);       // resize it ONCE
-			} else {
-				scaledScreens[i] = null; // cannot resize to zero or negative
-			}
-
-		} else {
-			// no source image for this slot
-			scaledScreens[i] = null;
-		}
-	}
+    slotImages_Scaled[slotIndex] = sourceImg.copy(); // work on a copy
+    slotImages_Scaled[slotIndex].resize(newWidth, newHeight); // resize it
+    
 }
 
 // display a set number from the images collected
 void displayRecentScreens() {
     boolean mouseOverAnyImage = false;
 
-    // only check recentScreens for null now, scaledScreens checked inside loop
-    if (recentScreens != null && screensBounds != null && scaledScreens != null) {
-        if (screensBounds.length != numScreensToShow || scaledScreens.length != numScreensToShow) {
-            println("Warning: Array length mismatch!"); return;
-        }
+	// iterate through fixed display slots
+    for (int i = 0; i < numDisplaySlots; i++) {
+		// get pre-scaled image for this slot
+        PImage displayImg = slotImages_Scaled[i];
 
-		float screenshotContainerWidth = width / (float)numScreensToShow;
+        // calculate position for this slot. scaledImageWidth is from setupUI().
+        float x = padding + i * (scaledImageWidth + padding);
+        float y = padding; 
 
-        for (int i = 0; i < numScreensToShow; i++) {
-            // get the pre-scaled image for this display slot
-            PImage displayImg = scaledScreens[i];
 
-            if (displayImg != null) {
-                // get pre-calculated size
-                float w = displayImg.width;
-                float h = displayImg.height;
+        if (displayImg != null && displayImg.width > 0 && displayImg.height > 0) {
+            float w = displayImg.width;
+            float h = displayImg.height;
 
-                // calculate position sequentially with single padding
-                // first image starts at padding, others start padding after the previous one
-                float x = padding + i * (scaledImageWidth + padding);
-                float y = padding; // Y position remains simple top padding
+            slotBounds[i].setBounds((int)x, (int)y, (int)w, (int)h);
 
-                // store the actual bounds of the drawn (pre-scaled) image
-                screensBounds[i].setBounds((int)x, (int)y, (int)w, (int)h);
+            strokeWeight(borderWeight); stroke(0); noFill();
+            rect(x - borderWeight / 2, y - borderWeight / 2, w + borderWeight, h + borderWeight);
+            image(displayImg, x, y);
 
-                // draw borders around images
-				strokeWeight(borderWeight); stroke(0); noFill();
-				// draw border around the known w, h
-				rect(x - borderWeight / 2, y - borderWeight / 2, w + borderWeight, h + borderWeight);
-
-                // draw the pre-scaled image directly
-                image(displayImg, x, y);
-
-                // overlays (use the actual w, h)
-                boolean isOverThisImage = (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h && mouseOver);
-                if (isOverThisImage) { /* ... draw hover rect(x, y, w, h) ... */
-                    mouseOverAnyImage = true; 
-					noStroke(); 
-					fill(50, 255, 50, 40); 
-					rect(x, y, w, h);
-                }
-
-                // animation check still needs original index mapping
-                int imgIndex = recentScreens.length - 1 - i;
-                if (imgIndex >= 0 && imgIndex < recentScreens.length) { // check imgIndex validity
-                    if (savedAnimation > 0 && imgIndex == savedImageIndex) { // draw save animation rect(x,y,w,h) and text
-						float alpha = map(savedAnimation, 0, 90, 0, 230); 
-						noStroke();
-						textMode(SHAPE);
-						fill(0, 200, 0, alpha * 0.3);
-						rect(x, y, w, h);
-						fill(255, alpha); 
-						textAlign(CENTER, CENTER); 
-						textSize(min(w, h) * 0.2); text("SAVED", x + w/2, y + h/2);
-						textMode(MODEL);
-                    }
-                }
-
-            } else {
-                // no image for this slot
-                if (i < screensBounds.length) screensBounds[i].setBounds(0, 0, 0, 0);
+            boolean isOverThisImage = (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h && mouseOver);
+            if (isOverThisImage) {
+                mouseOverAnyImage = true; 
+                noStroke(); 
+                fill(50, 255, 50, 40); 
+                rect(x, y, w, h);
             }
+
+            // animation check for saving: use animatingSaveForSlot
+            if (savedAnimation > 0 && i == animatingSaveForSlot) { 
+                float alpha = map(savedAnimation, 0, 90, 0, 230); 
+                noStroke();
+                textMode(SHAPE);
+                fill(0, 200, 0, alpha * 0.3);
+                rect(x, y, w, h);
+                fill(255, alpha); 
+                textAlign(CENTER, CENTER); 
+                textSize(min(w, h) * 0.2f); 
+                text("SAVED", x + w/2, y + h/2);
+                textMode(MODEL);
+            }
+        } else {
+            // no image for this slot, or image has invalid dimensions.
+            // ensure bounds are cleared so it's not accidentally interactive
+            if (i < slotBounds.length) { // should always be true here
+                 slotBounds[i].setBounds(0, 0, 0, 0);
+            }
+            // draw placeholder for empty/failed slots
+            rect(x, y, scaledImageWidth, scaledImageWidth);
         }
-
-		// switch cursor once after everything else is drawn
-        if (mouseOverAnyImage) cursor(handCursor); else cursor(defaultCursor);
-
     }
 
-	// decrement animation timer
-    if (savedAnimation > 0) savedAnimation--;
+    if (mouseOverAnyImage) cursor(handCursor); else cursor(defaultCursor);
+    
+    if (savedAnimation > 0) {
+        savedAnimation--;
+    } else {
+        animatingSaveForSlot = -1; // reset when animation is done
+    }
 }
 
 // copy a chosen screenshot to another folder
@@ -599,31 +628,26 @@ void keyPressed() {
 
 // fire if mouse was pressed
 void mousePressed() {
-    if (screensBounds != null && recentScreens != null && files != null) {
-        // iterate through the stored bounds (which match display order)
-        for (int i = 0; i < screensBounds.length; i++) {
-            // check if click is within the bounds stored for display slot 'i'
-            if (screensBounds[i] != null && screensBounds[i].width > 0 && screensBounds[i].contains(mouseX, mouseY)) {
+    if (slotBounds != null && slotImageFiles != null) {
+		// iterate through slots
+        for (int i = 0; i < numDisplaySlots; i++) {
+            if (slotBounds[i] != null && slotBounds[i].width > 0 && slotBounds[i].contains(mouseX, mouseY)) {
+				// get file from clicked slot
+                File fileToSave = slotImageFiles[i];
 
-                // calculate the original file index based on display slot 'i'
-                int imgIndex = recentScreens.length - 1 - i; // *** Still need this mapping ***
-
-                // ensure imgIndex is valid before accessing files/recentScreens
-                if (imgIndex >= 0 && imgIndex < files.length && recentScreens[imgIndex] != null ) {
-
-                    // get the file using the reversed index
-                    saveScreenshot(files[imgIndex]);
-
-                    // reset animation variables
-                    savedAnimation = 90;
-                    savedImageIndex = imgIndex; // store the correct original index
-
-                    return; // exit after handling click
+				// save screenshot to 'saved' folder, play animation
+                if (fileToSave != null) {
+                    saveScreenshot(fileToSave);
+                    savedAnimation = 90;        // duration
+                    animatingSaveForSlot = i;   // set slot to animate
                 }
+				// exit after handling click for one image
+                return;
             }
         }
     }
 }
+
     
 // when the mouse exits the window
 public void mouseExited() {

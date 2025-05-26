@@ -32,7 +32,9 @@ void main() {
     int actual_cells_y = min(u_cells_y, MAX_CELLS_PER_DIMENSION);
 
     float min_dist_sq = 10000.0;
+    float second_min_dist_sq = 10000.0; // Second closest for anti-aliasing
     vec3 final_cell_color = vec3(0.0);
+    vec3 second_cell_color = vec3(0.0); // Second closest cell color
 
     float num_cells_x_float = max(1.0, float(actual_cells_x));
     float num_cells_y_float = max(1.0, float(actual_cells_y));
@@ -105,13 +107,37 @@ void main() {
                 float dist_sq = dot(diff_to_feature, diff_to_feature);
 
                 if (dist_sq < min_dist_sq) {
+                    // New closest found - previous closest becomes second closest
+                    second_min_dist_sq = min_dist_sq;
+                    second_cell_color = final_cell_color;
+                    
                     min_dist_sq = dist_sq;
                     final_cell_color = cell_color_seed;
+                } else if (dist_sq < second_min_dist_sq) {
+                    second_min_dist_sq = dist_sq;
+                    second_cell_color = cell_color_seed;
                 }
                 // --- End of original cell logic ---
             }
         }
     }
 
-    gl_FragColor = vec4(final_cell_color, 1.0);
+    // Simple anti-aliasing: blend between closest and second closest near boundaries
+    float min_dist = sqrt(min_dist_sq);
+    float second_min_dist = sqrt(second_min_dist_sq);
+    
+    // Calculate how close we are to the boundary between cells
+    float boundary_distance = second_min_dist - min_dist;
+    
+    // Use pixel derivatives to determine appropriate smoothing width
+    float pixel_size = length(vec2(dFdx(min_dist), dFdy(min_dist)));
+    float smooth_width = pixel_size * 1.5;
+    
+    // Only apply anti-aliasing very close to boundaries
+    float blend_factor = smoothstep(0.0, smooth_width, boundary_distance);
+    
+    // Blend between the two closest colors for anti-aliasing
+    vec3 aa_color = mix(mix(final_cell_color, second_cell_color, 0.5), final_cell_color, blend_factor);
+
+    gl_FragColor = vec4(aa_color, 1.0);
 }

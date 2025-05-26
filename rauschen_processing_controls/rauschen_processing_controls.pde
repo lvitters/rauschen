@@ -66,18 +66,14 @@ HashMap<String, Object> debugInfo = new HashMap<String, Object>();
 
 // screenshot gallery
 int numDisplaySlots = 4; 			// number of fixed display slots
+int nextSlotIndexToUpdate;			// next slot to update
 PImage[] slotImages_Original;    	// original, unscaled PImage for each display slot
 PImage[] slotImages_Scaled;      	// PImage scaled for display for each slot
 File[] slotImageFiles;         		// File object for image in each slot
-long[] slotTimestamps;           	// millis of when the image in a slot was last updated
 Rectangle[] slotBounds;          	// display bounds for each slot
-
 File lastSuccessfullyPlacedCandidateFile = null; // newest candidate file last successfully placed
-
-// background loading for loadScreensInBackground 
-PImage[] tempRecentScreens; 
+PImage[] tempRecentScreens; 		// background loading for loadScreensInBackground 
 File[] tempFiles; 
-
 String screensDir = "../rauschen_screens/temp/";
 String savedScreensDir = "../rauschen_screens/saved/";
 int savedAnimation = 0;
@@ -176,12 +172,14 @@ public void setupUI() {
 	slotImages_Original = new PImage[numDisplaySlots];
     slotImages_Scaled = new PImage[numDisplaySlots];
     slotImageFiles = new File[numDisplaySlots];
-    slotTimestamps = new long[numDisplaySlots]; 	// default values will be 0
     slotBounds = new Rectangle[numDisplaySlots];
 	// init Rectangle objects
     for (int i = 0; i < numDisplaySlots; i++) {
         slotBounds[i] = new Rectangle();
     }
+
+	// init next slot index for right-to-left rotation
+    nextSlotIndexToUpdate = numDisplaySlots - 1;
 
 	// assumes square images fitting numScreensToShow across the width
 	float totalHorizontalPadding = (numDisplaySlots + 1) * padding;
@@ -212,72 +210,43 @@ public void checkForRecentScreens() {
     if (newScreensReady) {
         isLoadingScreens = false; 
 
-        // focus only on the top candidate from the background thread's list.
-        // tempFiles[0] is the newest among the candidates selected by loadScreensInBackground.
         File currentTopCandidateFile = tempFiles[0];
         PImage currentTopCandidateImage = tempRecentScreens[0];
         
-        // check if newest file is different from last newest file
+        // is file different from file that last successfully triggered an update?
         if (currentTopCandidateFile.equals(lastSuccessfullyPlacedCandidateFile)) {
-            newScreensReady = false;
+            newScreensReady = false; 
             return;
         }
 
-        // is the file already displayed in the sketch
+        // is it not already displayed in another slot?
         boolean alreadyDisplayed = false;
-        int displayedInSlot = -1; 
         for (int j = 0; j < numDisplaySlots; j++) {
             if (slotImageFiles[j] != null && slotImageFiles[j].equals(currentTopCandidateFile)) {
                 alreadyDisplayed = true;
-                displayedInSlot = j;
                 break;
             }
         }
 
         if (alreadyDisplayed) {
-            lastSuccessfullyPlacedCandidateFile = currentTopCandidateFile; 
+            lastSuccessfullyPlacedCandidateFile = currentTopCandidateFile; // acknowledge it's current top, even if displayed
             newScreensReady = false; 
             return;
         }
-        
-        // find slot for placement (oldest display time, or first empty).
-		int targetSlotIndex = -1;
-        long oldestSlotTimestamp = Long.MAX_VALUE; // using a more descriptive name for clarity
 
-		// prioritize empty slots: check from right to left
-		for(int i = numDisplaySlots - 1; i >= 0; --i) {
-			if(slotImageFiles[i] == null) { // if slot is currently empty
-				targetSlotIndex = i;
-				oldestSlotTimestamp = Long.MIN_VALUE; // mark this as "oldest"
-				break;
-			}
-		}
+		// set target to rotating index
+        int targetSlotIndex = nextSlotIndexToUpdate;
 
-		// if no empty slot was found (targetSlotIndex is still -1, or oldestSlotTimestamp not Long.MIN_VALUE),
-		// find the slot with the truly oldest content.
-		if (targetSlotIndex == -1 || oldestSlotTimestamp != Long.MIN_VALUE) { 
-				// initialize with right slot's values as a starting point for finding "oldest"
-				targetSlotIndex = numDisplaySlots - 1; 
-				oldestSlotTimestamp = slotTimestamps[numDisplaySlots - 1]; 
-				
-				// iterate through the rest of the slots from right-to-left
-				for (int i = numDisplaySlots - 2; i >= 0; --i) { 
-					if (slotTimestamps[i] < oldestSlotTimestamp) {
-						oldestSlotTimestamp = slotTimestamps[i];
-						targetSlotIndex = i;
-					}
-				}
-		}
-
-        // place the new image into the identified target slot
+        // place the new image into the determined target slot
         slotImages_Original[targetSlotIndex] = currentTopCandidateImage;
         slotImageFiles[targetSlotIndex] = currentTopCandidateFile;
-        slotTimestamps[targetSlotIndex] = millis(); 
         updateSpecificScaledScreen(targetSlotIndex); 
-
         lastSuccessfullyPlacedCandidateFile = currentTopCandidateFile;
 
-        newScreensReady = false; // reset flag: batch fully processed
+        // update nextSlotIndexToUpdate for the next cycle (right to left rotation)
+        nextSlotIndexToUpdate = (nextSlotIndexToUpdate - 1 + numDisplaySlots) % numDisplaySlots;
+
+        newScreensReady = false; 
     }
 }
 

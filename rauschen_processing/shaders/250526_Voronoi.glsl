@@ -3,77 +3,95 @@ precision mediump float;
 #endif
 
 uniform sampler2D u_texture;    // Input texture (previous frame's output)
-uniform vec2 u_resolution;   // Resolution of the canvas (must be accurate)
-uniform float u_time;         // Time for animation
+uniform vec2 u_resolution;      // Resolution of the canvas (must be accurate)
+uniform float u_time;           // Time for animation
+uniform int u_cells_x;          // Desired number of cells in X (will be capped at 100)
+uniform int u_cells_y;          // Desired number of cells in Y (will be capped at 100)
 
-// NOTE: No 'varying vec2 vTexCoord;' declaration.
-// We will use gl_FragCoord.xy / u_resolution.xy for UVs.
+// --- Base Configuration (can still be adjusted) ---
+const float ORBIT_RADIUS_FACTOR = 0.4;
+const float TIME_ANIMATION_SPEED = 0.25;
 
-// --- Configuration ---
-// Drastically reduced cell count to simplify observation of behavior
-const int NUM_CELLS_X = 4; // e.g., 4x4 = 16 cells total
-const int NUM_CELLS_Y = 4;
+// PI constants for readability
+const float PI = 3.14159265359;
+const float TWO_PI = 6.28318530718;
 
-// ORBIT_RADIUS_FACTOR: Max orbital distance from base point, as factor of cell size.
-// With fewer cells, each cell's base area is larger. 0.4 allows significant, visible movement.
-const float ORBIT_RADIUS_FACTOR = 0.4; 
+// Max cells cap
+const int MAX_CELLS_PER_DIMENSION = 20;
 
-// TIME_ANIMATION_SPEED: Controls the speed of the orbital animations.
-const float TIME_ANIMATION_SPEED = 0.25; 
+// --- Pseudo-Random Function ---
+float rand(vec2 seed) {
+    return fract(sin(dot(seed.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+}
 
 void main() {
-    // Calculate UV coordinates using gl_FragCoord (pixel coordinate) and u_resolution.
-    // This makes UVs independent of any specific vertex shader varying output name.
     vec2 uv = gl_FragCoord.xy / u_resolution.xy;
 
-    float min_dist_sq = 10000.0;        // Initialize with a large distance
-    vec3 final_cell_color = vec3(0.0);  // Default to black
+    // --- Apply Cell Count Cap ---
+    // Use the user-provided cell count, but cap it at MAX_CELLS_PER_DIMENSION
+    int actual_cells_x = min(u_cells_x, MAX_CELLS_PER_DIMENSION);
+    int actual_cells_y = min(u_cells_y, MAX_CELLS_PER_DIMENSION);
 
-    // Calculate base cell dimensions (each cell is larger now)
-    float base_cell_width = 1.0 / float(NUM_CELLS_X);
-    float base_cell_height = 1.0 / float(NUM_CELLS_Y);
+    float min_dist_sq = 10000.0;
+    vec3 final_cell_color = vec3(0.0);
 
-    for (int i = 0; i < NUM_CELLS_X; i++) {
-        for (int j = 0; j < NUM_CELLS_Y; j++) {
+    // Ensure cell counts are at least 1 for float calculations.
+    float num_cells_x_float = max(1.0, float(actual_cells_x));
+    float num_cells_y_float = max(1.0, float(actual_cells_y));
 
-            // 1. Define the BASE UV coordinate for this cell's color sampling AND as the center of its orbit.
+    float base_cell_width = 1.0 / num_cells_x_float;
+    float base_cell_height = 1.0 / num_cells_y_float;
+
+    // Loop through the capped number of cells
+    for (int i = 0; i < actual_cells_x; i++) {
+        for (int j = 0; j < actual_cells_y; j++) {
+
             vec2 uv_base_grid_point = vec2( (float(i) + 0.5) * base_cell_width,
                                             (float(j) + 0.5) * base_cell_height );
 
-            // 2. SEED COLOR for the cell: Sampled from u_texture at the fixed base grid point.
             vec3 cell_color_seed = texture2D(u_texture, uv_base_grid_point).rgb;
 
-            // 3. DYNAMIC FEATURE POINT LOCATION via predetermined orbital paths:
-            //    Movement is based on time and unique cell ID, NOT u_texture content.
+            float norm_i = (num_cells_x_float == 1.0) ? 0.0 : float(i) / (num_cells_x_float - 1.0);
+            float norm_j = (num_cells_y_float == 1.0) ? 0.0 : float(j) / (num_cells_y_float - 1.0);
+
+            vec2 random_seed = vec2(float(i), float(j));
+            float rand_val1 = rand(random_seed);
+            float rand_val2 = rand(random_seed + vec2(10.3, -5.7));
+            float rand_val3 = rand(random_seed - vec2(3.1, 12.9));
+            float rand_val4 = rand(random_seed + vec2(1.73, 4.56));
+            float rand_val5 = rand(random_seed - vec2(2.14, 3.71));
+
+            float cell_specific_time_speed_factor = 0.75 + rand_val1 * 0.5;
+            float time_factor = u_time * TIME_ANIMATION_SPEED * cell_specific_time_speed_factor;
+
+            float base_freq_x_contrib = 1.0 + norm_i * 1.5;
+            float base_freq_y_contrib = 1.0 + norm_j * 1.5;
             
-            // Normalized grid indices [0,1] for unique animation parameters per point.
-            float norm_i = float(i) / max(1.0, float(NUM_CELLS_X - 1)); 
-            float norm_j = float(j) / max(1.0, float(NUM_CELLS_Y - 1));
+            float base_phase_offset_x = norm_i * TWO_PI;
+            float base_phase_offset_y = norm_j * TWO_PI * 1.3;
 
-            float time_factor = u_time * TIME_ANIMATION_SPEED;
+            float time_freq_mod_x = 0.1 + (rand_val2 - 0.5) * 0.08;
+            float time_freq_mod_y = 0.15 + (rand_val3 - 0.5) * 0.1;
 
-            // Define unique frequencies and phases for each point's orbit.
-            // These create diverse Lissajous-like paths.
-            float freq_x = 1.0 + norm_i * 1.5 + sin(norm_j * 3.14159 + time_factor * 0.1) * 0.5; 
-            float freq_y = 1.0 + norm_j * 1.5 + cos(norm_i * 3.14159 + time_factor * 0.15) * 0.5; 
+            float amp_mod_x = 0.5 + (rand_val2 - 0.5) * 0.3;
+            float amp_mod_y = 0.5 + (rand_val3 - 0.5) * 0.3;
+
+            float freq_x = base_freq_x_contrib + sin(norm_j * PI + time_factor * time_freq_mod_x) * amp_mod_x;
+            float freq_y = base_freq_y_contrib + cos(norm_i * PI + time_factor * time_freq_mod_y) * amp_mod_y;
             
-            float phase_offset_x = norm_i * 6.2831853; // ~2*PI * norm_i
-            float phase_offset_y = norm_j * 6.2831853 * 1.3; // ~2*PI * norm_j * 1.3 for more variation
+            float phase_offset_x = base_phase_offset_x + (rand_val4 - 0.5) * (PI / 2.0);
+            float phase_offset_y = base_phase_offset_y + (rand_val5 - 0.5) * (PI / 2.0) * 1.3;
 
-            // Define the orbit radius for this point
             float radius_x = base_cell_width * ORBIT_RADIUS_FACTOR;
             float radius_y = base_cell_height * ORBIT_RADIUS_FACTOR;
 
             vec2 offset_from_base;
             offset_from_base.x = radius_x * sin(freq_x * time_factor + phase_offset_x);
-            offset_from_base.y = radius_y * cos(freq_y * time_factor + phase_offset_y + norm_i * 1.57079); // Extra phase variation
+            offset_from_base.y = radius_y * cos(freq_y * time_factor + phase_offset_y + norm_i * (PI / 2.0));
 
             vec2 uv_dynamic_feature_point = uv_base_grid_point + offset_from_base;
+            uv_dynamic_feature_point = clamp(uv_dynamic_feature_point, 0.001, 0.999);
             
-            // Clamp to ensure points stay definitively within bounds [0,1].
-            uv_dynamic_feature_point = clamp(uv_dynamic_feature_point, 0.001, 0.999); // Tiny margin from true edge
-            
-            // 4. Calculate squared distance from current fragment (uv) to this dynamic feature point
             vec2 diff_to_feature = uv - uv_dynamic_feature_point;
             float dist_sq = dot(diff_to_feature, diff_to_feature);
 

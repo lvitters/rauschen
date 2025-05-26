@@ -130,14 +130,15 @@ public void setup() {
 	tempBuffer = createGraphics((int)width, (int)height, P2D);
 
 	// set up shaders
-  	// shaders.add(loadShader("shaders/250403_FlowField.glsl"));
-  	// shaders.add(loadShader("shaders/250408_RectangularCells.glsl"));
-  	// shaders.add(loadShader("shaders/250430_GameOfLife.glsl"));
-  	// shaders.add(loadShader("shaders/250501_1DNoise.glsl"));
-  	// shaders.add(loadShader("shaders/250501_1DNoiseGrid.glsl"));
-  	// shaders.add(loadShader("shaders/250501_FlowFieldAdvection.glsl"));
-  	// shaders.add(loadShader("shaders/250501_SmoothLife.glsl"));
-  	shaders.add(loadShader("shaders/250526_Voronoi.glsl"));
+  	shaders.add(loadShader("shaders/250403_FlowField.glsl"));
+  	shaders.add(loadShader("shaders/250408_RectangularCells.glsl"));
+  	shaders.add(loadShader("shaders/250430_GameOfLife.glsl"));
+  	shaders.add(loadShader("shaders/250501_1DNoise.glsl"));
+  	shaders.add(loadShader("shaders/250501_1DNoiseGrid.glsl"));
+  	shaders.add(loadShader("shaders/250501_FlowFieldAdvection.glsl"));
+  	shaders.add(loadShader("shaders/250501_SmoothLife.glsl"));
+  	// shaders.add(loadShader("shaders/250526_Voronoi.glsl"));
+  	shaders.add(loadShader("shaders/250526_Voronoi_Dimensions_Input.glsl"));
   
 	// set uniform variables for all shaders
 	for (int i = 0; i < shaders.size(); i++) {
@@ -350,8 +351,13 @@ void applyShader(int shader) {
 	// apply shader time (like T in noise)
     shaderTime += shaderTimeNoise.getNoiseRange(.05, .3); 
     shaders.get(shader).set("u_time", shaderTime);
+
     // set resolution uniform just in case it wasn't set universally or needs update
     shaders.get(shader).set("u_resolution", (float)buffer.width, (float)buffer.height); 
+
+	// set grid dimensions in case shader needs it
+	shaders.get(shader).set("u_cells_x", (int)buffer.width/xStep);
+	shaders.get(shader).set("u_cells_y", (int)buffer.height/yStep);
     
     // set the input texture for the shader to read from tempBuffer with result from last frame's copy
     shaders.get(shader).set("u_texture", tempBuffer); 

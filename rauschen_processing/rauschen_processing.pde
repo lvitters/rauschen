@@ -137,7 +137,7 @@ public void setup() {
   	shaders.add(loadShader("shaders/250501_1DNoiseGrid.glsl"));
   	shaders.add(loadShader("shaders/250501_FlowFieldAdvection.glsl"));
   	shaders.add(loadShader("shaders/250501_SmoothLife.glsl"));
-  	// shaders.add(loadShader("shaders/250526_Voronoi.glsl"));
+  	shaders.add(loadShader("shaders/250526_Voronoi_Simple.glsl"));
   	shaders.add(loadShader("shaders/250526_Voronoi_Dimensions_Input.glsl"));
   
 	// set uniform variables for all shaders

@@ -36,7 +36,7 @@ void sendDebugOSC() {
 // send shader names and choice over OSC
 void sendShaderInfoOSC() {
     // create OSC message with shader filenames
-    OscMessage shaderNamesMsg = new OscMessage("/shaders/names");
+    OscMessage shaderNamesMsg = new OscMessage("/shaderNames");
 	// extract filename
     for (String name : shaderNames) {
         shaderNamesMsg.add(name);

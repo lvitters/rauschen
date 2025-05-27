@@ -58,13 +58,14 @@ void oscEvent(OscMessage msg) {
 	}
 
 	// handler for shader info messages
-	else if (msg.checkAddrPattern("/shaders/names")) {
+	else if (msg.checkAddrPattern("/shaderNames")) {
         shaderNames.clear();
         String typetag = msg.typetag();
         int numShaders = typetag.length() - 1; // subtract 1 for the comma
         
         for (int i = 0; i < numShaders; i++) {
             shaderNames.add(msg.get(i).stringValue());
+			println(msg.get(i).stringValue());
         }
         
         // println("received " + numShaders + " shader names");

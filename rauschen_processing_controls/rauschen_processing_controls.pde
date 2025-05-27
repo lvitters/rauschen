@@ -14,7 +14,6 @@ import netP5.*;
 // sketch window
 int manualWidth = 2560;
 int manualHeight = 1440 - 28 - 24;	// minus menu bar minus window bar
-Boolean showDebug = true;
 
 // main sketch communication
 OscP5 oscP5;
@@ -64,6 +63,10 @@ int graphLength = 600;
 // HashMap to store debugInfo values
 HashMap<String, Object> debugInfo = new HashMap<String, Object>();
 
+// store the shaders names for display
+ArrayList<String> shaderNames = new ArrayList<String>();
+int currentShaderChoice = -1;
+
 // screenshot gallery
 int numDisplaySlots = 4; 			// number of fixed display slots
 int nextSlotIndexToUpdate;			// next slot to update
@@ -91,8 +94,7 @@ float padding = 10;
 float borderWeight = 1;
 // debug table
 float debugRowHeight = 20;
-float debugKeyWidth = 250;
-float debugValueWidth = 100;
+
 // bounds for the graph display area determined at runtime
 float graphAreaX;
 float graphAreaY;
@@ -161,8 +163,7 @@ public void draw() {
 
 	displayRecentScreens();
 	drawGraphsArea();
-
-	if (showDebug) displayDebugInfo();
+	displayInfoTables();
 }
 
 // setup areas and dimensions for screenshots, debugInfo and graphsArea
@@ -502,80 +503,169 @@ public void drawGraphsArea() {
 
 
 // display function to show debug info in a table
-public void displayDebugInfo() {
-    if (debugInfo == null || debugInfo.isEmpty()) return;
+public void displayInfoTables() {
 
-    // calculate table position and size dynamically
-    float tableStartX = padding - 1; // start padding pixels from left edge, add pixel 
-    // start padding below the screenshot area
-    float tableStartY = screenshotAreaBottomY + padding;
-    // calculate width dynamically to stretch to graph area start (minus padding)
-    float totalTableWidth = graphAreaX - 2 * padding + 1; // add pixel
-    if (totalTableWidth < 0) totalTableWidth = 0; // prevent negative width
-    // use the available vertical space for the table's height
-    float availableTableHeight = height - tableStartY - padding;
+    float tableStartX = padding - 1;
+    float currentTopY = screenshotAreaBottomY + padding; // initial Y position for the first table
+    float totalTableWidth = graphAreaX - 2 * padding + 1;
+    if (totalTableWidth < 0) totalTableWidth = 0;
+    float internalPadding = padding; // use consistent padding
 
-    // calculate dynamic internal column sizes
-    float internalPadding = padding; // use same padding inside table
-    float usableWidth = totalTableWidth - 3 * internalPadding; // width available for key/value text
-    float dynamicKeyWidth = usableWidth * 0.6f; // key column gets 60% of usable width
-    float dynamicValueX = tableStartX + internalPadding + dynamicKeyWidth + internalPadding; // x position where value column starts
-    if (usableWidth <= 0) { // handle case where table is too narrow
-        dynamicKeyWidth = 0;
-        dynamicValueX = tableStartX + internalPadding;
+    // debug info table
+    if (debugInfo != null && !debugInfo.isEmpty()) {
+        // calculate dynamic internal column sizes for Debug Table
+        float usableWidth = totalTableWidth - 3 * internalPadding; // width available for key/value text
+        float dynamicKeyWidth = usableWidth * 0.6f; // key column gets 60% of usable width
+        float dynamicValueX = tableStartX + internalPadding + dynamicKeyWidth + internalPadding; // x position where value column starts
+        if (usableWidth <= 0) { // handle case where table is too narrow
+            dynamicKeyWidth = 0;
+            dynamicValueX = tableStartX + internalPadding;
+        }
+
+        fill(0);
+        textAlign(LEFT, TOP);
+        textSize(16); // adjust text size for better fit
+
+        ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet());
+        java.util.Collections.sort(keys);
+
+        // calculate debug table height
+        float headerTextY_debug = currentTopY + internalPadding;
+        float headerHeight_debug = (headerTextY_debug - currentTopY) + 20 + 5; // height of header text area + line spacing
+
+        float rowsHeight_debug = 0;
+        if (!keys.isEmpty()) {
+            rowsHeight_debug = internalPadding + (keys.size() * debugRowHeight); // padding above rows + all rows
+        }
+
+        // total internal content height + bottom padding
+        float requiredDebugContentHeight = headerHeight_debug + rowsHeight_debug + internalPadding;
+
+        // if no keys, adjust required height to be just header + bottom padding
+        if (keys.isEmpty()) {
+            requiredDebugContentHeight = headerHeight_debug + internalPadding;
+        }
+        
+        float maxPossibleHeightForDebug = height - currentTopY - padding; // max space it *could* take from currentTopY
+        float actualDebugTableHeight = min(requiredDebugContentHeight, maxPossibleHeightForDebug);
+        if (actualDebugTableHeight < 0) actualDebugTableHeight = 0;
+
+        // draw debug table header
+        text("Key", round(tableStartX) + internalPadding, headerTextY_debug);
+        text("Value", round(dynamicValueX), headerTextY_debug);
+
+        stroke(0);
+        strokeWeight(1);
+        float headerLineY_debug = headerTextY_debug + 20 + 5; // Y position of the underline
+        line(tableStartX, headerLineY_debug, tableStartX + totalTableWidth, headerLineY_debug);
+
+        // draw vertical separator line for debug table
+        float separatorX = tableStartX + internalPadding + dynamicKeyWidth;
+        if (actualDebugTableHeight > 0) { // only draw if table has height
+            line(separatorX, currentTopY, separatorX, currentTopY + actualDebugTableHeight);
+        }
+
+        // draw debug table key/value rows ---
+        for (int i = 0; i < keys.size(); i++) {
+            String key = keys.get(i);
+            Object value = debugInfo.get(key);
+            String displayValue = formatDisplayValue(value);
+
+            float rowTextY = headerLineY_debug + internalPadding + (i * debugRowHeight);
+            // check if the row fits within the calculated actual height of the debug table (inside its border)
+            if (rowTextY + debugRowHeight <= currentTopY + actualDebugTableHeight - internalPadding) {
+                text(key, round(tableStartX) + internalPadding, rowTextY);
+                text(displayValue, round(dynamicValueX), rowTextY);
+            } else {
+                break; // stop drawing if rows exceed allocated height
+            }
+        }
+
+        // draw debug table border
+        if (actualDebugTableHeight > 0) {
+            noFill();
+            stroke(0);
+            strokeWeight(borderWeight);
+            rect(round(tableStartX), currentTopY, totalTableWidth, actualDebugTableHeight);
+        }
+        
+        // update currentTopY for the next table, adding padding if the debug table was drawn
+        if (actualDebugTableHeight > 0) {
+            currentTopY += actualDebugTableHeight + padding;
+        } else {
+            // if debug table had no height (e.g., no keys and error in calc)
+            // still ensure shader table starts correctly
+            // this case should ideally not happen with correct height calculation
+        }
+
     }
 
-    // text and drawing setup
+    // shader names table at `currentTopY` variable
+    drawShaderNamesList(tableStartX, currentTopY, totalTableWidth, internalPadding);
+}
+
+
+// drawn shader names table below debug table, or where the debug table would have started
+public void drawShaderNamesList(float tableX, float tableY, float tableWidth, float internalPadding) {
+    if (shaderNames == null || shaderNames.isEmpty()) {
+        // return if there's nothing to show.
+        return;
+    }
+
+    // calculate height available for shader names table (remaining space on screen)
+    float availableHeightForShaders = height - tableY - padding;
+    if (availableHeightForShaders <= internalPadding * 2 + 20 + 5) { // not enough space for header and minimal content
+         return; // no space to draw meaningfully
+    }
+
+
     fill(0);
     textAlign(LEFT, TOP);
-    textSize(20); // keep font size fixed for now
+    textSize(16); // consistent text size
 
-    // get keys for display and sort them alphabetically
-    ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet());
-    java.util.Collections.sort(keys);
+    // draw shader names table header
+    float headerTextY_shaders = tableY + internalPadding;
+    String shaderTableHeader = "Shader Program List";
+    if (currentShaderChoice >= 0 && currentShaderChoice < shaderNames.size()) {
+        shaderTableHeader += " (Current: " + (currentShaderChoice + 1) + ")";
+    }
+    text(shaderTableHeader, tableX + internalPadding, headerTextY_shaders);
 
-    // draw table header text
-    float headerTextY = tableStartY + internalPadding; // text starts padding down from table top
-    text("Key", round(tableStartX) + internalPadding, headerTextY); // key text position
-    text("Value", round(dynamicValueX), headerTextY); // value text position (dynamic)
-
-    // draw header underline (position below header text)
     stroke(0);
-    strokeWeight(1); // use consistent stroke weight
-	float headerLineY = headerTextY + 20 + 5; // place line below text with padding
-    line(tableStartX, headerLineY, tableStartX + totalTableWidth, headerLineY); // draw the line
+    strokeWeight(1);
+    float headerLineY_shaders = headerTextY_shaders + 20 + 5; // Y position of the underline
+    line(tableX, headerLineY_shaders, tableX + tableWidth, headerLineY_shaders);
 
-    // draw vertical separator line based on dynamic key width
-    float separatorX = tableStartX + internalPadding + dynamicKeyWidth; // dynamic x pos of line
-    // use available height for the line's extent
-    line(separatorX, tableStartY, separatorX, tableStartY + availableTableHeight);
+    // draw shader names rows
+    for (int i = 0; i < shaderNames.size(); i++) {
+        String name = shaderNames.get(i);
+        String displayName = (i + 1) + ". " + name; // prefix with 1-based index
 
-    // draw key/value rows
-    for (int i = 0; i < keys.size(); i++) {
-        String key = keys.get(i);
-        Object value = debugInfo.get(key);
-        String displayValue = formatDisplayValue(value); // use helper function for clarity
-
-        // calculate Y position for this row's text
-        // Start rows below the header line plus some padding
-		float rowTextY = headerLineY + internalPadding + (i * debugRowHeight);
-        // only draw if row fits within available height
-        if (rowTextY + debugRowHeight < tableStartY + availableTableHeight - internalPadding) {
-            text(key, round(tableStartX) + internalPadding, rowTextY); // key text position
-            text(displayValue, round(dynamicValueX), rowTextY); // value text position (dynamic)
+        float rowTextY = headerLineY_shaders + internalPadding + (i * debugRowHeight);
+        
+        // check if the row fits within the available height for the shader table (inside its border)
+        if (rowTextY + debugRowHeight <= tableY + availableHeightForShaders - internalPadding) {
+            if (i == currentShaderChoice) {
+                // highlight the current shader choice with different text color
+                fill(20, 150, 20); // A distinct green color
+                text("> " + displayName + " <", tableX + internalPadding + 5, rowTextY); // add arrows and indent
+                fill(0); // reset fill color for subsequent items or tables
+            } else {
+                text(displayName, tableX + internalPadding, rowTextY);
+            }
         } else {
             break; // stop drawing if rows exceed available height
         }
     }
 
-    // draw table border using dynamic width and available height
+    // draw shader names table border
     noFill();
     stroke(0);
-    strokeWeight(borderWeight); // use consistent border weight
-    rect(round(tableStartX), tableStartY, totalTableWidth, availableTableHeight);
+    strokeWeight(borderWeight);
+    rect(tableX, tableY, tableWidth, availableHeightForShaders);
 }
 
-// helper function to format debug values (keeps displayDebugInfo cleaner)
+// helper function to format debug values (keeps displayInfoTables cleaner)
 String formatDisplayValue(Object value) {
     if (value == null) return "null";
     if (value instanceof Boolean) {
@@ -585,14 +675,6 @@ String formatDisplayValue(Object value) {
     } else {
         return value.toString();
     }
-}
-
-// listen to key presses (fallback - stuff generally handled by control sketch)
-void keyPressed() {
-	// show debug / fps
-	if (key == 'f') {
-		showDebug = !showDebug;
-	}
 }
 
 // fire if mouse was pressed

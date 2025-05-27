@@ -50,6 +50,17 @@ FilterBandPass bandPassFilter = new FilterBandPass();
 ArrayList<PShader> shaders = new ArrayList<PShader>();
 float shaderTime = 0;
 int shaderChoice = 0;
+String[] shaderNames = {
+		"250403_FlowField.glsl",
+		"250408_RectangularCells.glsl", 
+		"250430_GameOfLife.glsl",
+		"250501_1DNoise.glsl",
+		"250501_1DNoiseGrid.glsl",
+		"250501_FlowFieldAdvection.glsl",
+		"250501_SmoothLife.glsl",
+		"250526_Voronoi_Simple.glsl",
+		"250526_Voronoi_Dimensions_Input.glsl"
+};
 
 // color
 color c;
@@ -129,25 +140,19 @@ public void setup() {
 	buffer = createGraphics((int)width, (int)height, P2D);
 	tempBuffer = createGraphics((int)width, (int)height, P2D);
 
+	// init OSC
+	oscP5 = new OscP5(this, 9000); // local port for this sketch
+	controlSketchLocation = new NetAddress("127.0.0.1", 12000); // receiver IP and port
+
 	// set up shaders
-  	shaders.add(loadShader("shaders/250403_FlowField.glsl"));
-  	shaders.add(loadShader("shaders/250408_RectangularCells.glsl"));
-  	shaders.add(loadShader("shaders/250430_GameOfLife.glsl"));
-  	shaders.add(loadShader("shaders/250501_1DNoise.glsl"));
-  	shaders.add(loadShader("shaders/250501_1DNoiseGrid.glsl"));
-  	shaders.add(loadShader("shaders/250501_FlowFieldAdvection.glsl"));
-  	shaders.add(loadShader("shaders/250501_SmoothLife.glsl"));
-  	shaders.add(loadShader("shaders/250526_Voronoi_Simple.glsl"));
-  	shaders.add(loadShader("shaders/250526_Voronoi_Dimensions_Input.glsl"));
+	for (String name : shaderNames) {
+		shaders.add(loadShader("shaders/" + name));
+	}
   
 	// set uniform variables for all shaders
 	for (int i = 0; i < shaders.size(); i++) {
 		shaders.get(i).set("u_resolution", (float)width, (float)height);
 	}
-
-	// init OSC
-	oscP5 = new OscP5(this, 9000); // local port for this sketch
-	controlSketchLocation = new NetAddress("127.0.0.1", 12000); // receiver IP and port
 
 	// start wellen's digital signal processing but pause for now
 	DSP.start(this);
@@ -218,6 +223,7 @@ public void draw() {
 	if (frameCount % 2 == 0) {
 		sendNoisesOSC();
 		sendDebugOSC();
+		sendShaderInfoOSC();
 	}
 }
 

@@ -27,12 +27,25 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/isApplyingShader").add(isApplyingShader ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isRandomShaderEachFrame").add(isRandomShaderEachFrame ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/shaderTime").add(shaderTime), controlSketchLocation);
-    oscP5.send(new OscMessage("/info/shaderChoice").add(shaderChoice), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isEvenOffset").add(isEvenOffset ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isTakingScreenshots").add(isTakingScreenshots ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isGeneratingSound").add(isGeneratingSound ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isApplyingAudioFilter").add(isApplyingAudioFilter ? 1 : 0), controlSketchLocation);
+}
 
+// send shader names and choice over OSC
+void sendShaderInfoOSC() {
+    // create OSC message with shader filenames
+    OscMessage shaderNamesMsg = new OscMessage("/shaders/names");
+	// extract filename
+    for (String name : shaderNames) {
+        shaderNamesMsg.add(name);
+    }
+	// send message
+    oscP5.send(shaderNamesMsg, controlSketchLocation);
+
+	// create OSC message with shader choice
+    oscP5.send(new OscMessage("/info/shaderChoice").add(shaderChoice), controlSketchLocation);
 }
 
 // handle incoming OSC messages from control sketch

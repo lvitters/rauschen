@@ -24,6 +24,7 @@ void oscEvent(OscMessage msg) {
 			graphs.get(i).addPoint(value);
 		}
 	}
+
 	// general handler for debug info messages
 	else if (msg.addrPattern().startsWith("/info/")) {
 		String key = msg.addrPattern().substring(6); // remove "/info/" prefix to get the key
@@ -55,6 +56,26 @@ void oscEvent(OscMessage msg) {
 		// store the value in our map
 		debugInfo.put(key, value);
 	}
+
+	// handler for shader info messages
+	else if (msg.checkAddrPattern("/shaders/names")) {
+        shaderNames.clear();
+        String typetag = msg.typetag();
+        int numShaders = typetag.length() - 1; // subtract 1 for the comma
+        
+        for (int i = 0; i < numShaders; i++) {
+            shaderNames.add(msg.get(i).stringValue());
+        }
+        
+        // println("received " + numShaders + " shader names");
+    }
+    
+    // update current shader choice when received
+    else if (msg.addrPattern().equals("/info/shaderChoice")) {
+        currentShaderChoice = msg.get(0).intValue();
+        // store in debugInfo as before
+        debugInfo.put("shaderChoice", currentShaderChoice);
+    }
 
 	// add control sketch's fps
 	debugInfo.put("thisFps", frameRate);

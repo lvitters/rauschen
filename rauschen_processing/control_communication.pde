@@ -9,7 +9,7 @@ void sendNoisesOSC() {
 	for (Noise n : noises) {
 		msg.add(n.value);
 	}
-	
+
 	// send the message
 	oscP5.send(msg, controlSketchLocation);
 }
@@ -36,16 +36,17 @@ void sendDebugOSC() {
 // send shader names and choice over OSC
 void sendShaderInfoOSC() {
     // create OSC message with shader filenames
-    OscMessage shaderNamesMsg = new OscMessage("/shaderNames");
-	// extract filename
+    OscMessage msg = new OscMessage("/shaderNames");
+	// extract filename and add to message
     for (String name : shaderNames) {
-        shaderNamesMsg.add(name);
+        msg.add(name.toString());
     }
+
 	// send message
-    oscP5.send(shaderNamesMsg, controlSketchLocation);
+    oscP5.send(msg, controlSketchLocation);
 
 	// create OSC message with shader choice
-    oscP5.send(new OscMessage("/info/shaderChoice").add(shaderChoice), controlSketchLocation);
+    oscP5.send(new OscMessage("/shaderChoice").add(shaderChoice), controlSketchLocation);
 }
 
 // handle incoming OSC messages from control sketch

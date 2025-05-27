@@ -4,9 +4,8 @@
 void oscEvent(OscMessage msg) {
 	// check if it's the message with noises
 	if (msg.checkAddrPattern("/noises")) {
-		// get the typetag to know how many values were sent
-		String typetag = msg.typetag();
-		int numValues = typetag.length() - 1; // subtract 1 for the comma at the beginning
+		// get how many arguments where send
+		int numValues = msg.arguments().length;
 
 		// ensure there is the right number of graphs
 		while (graphs.size() < numValues) {
@@ -60,22 +59,18 @@ void oscEvent(OscMessage msg) {
 	// handler for shader info messages
 	else if (msg.checkAddrPattern("/shaderNames")) {
         shaderNames.clear();
-        String typetag = msg.typetag();
-        int numShaders = typetag.length() - 1; // subtract 1 for the comma
+		// get how many arguments where send
+        int numShaders = msg.arguments().length;
         
         for (int i = 0; i < numShaders; i++) {
             shaderNames.add(msg.get(i).stringValue());
-			println(msg.get(i).stringValue());
         }
-        
-        // println("received " + numShaders + " shader names");
     }
     
     // update current shader choice when received
-    else if (msg.addrPattern().equals("/info/shaderChoice")) {
+    else if (msg.addrPattern().equals("/shaderChoice")) {
+		// set to currentShaderChoice
         currentShaderChoice = msg.get(0).intValue();
-        // store in debugInfo as before
-        debugInfo.put("shaderChoice", currentShaderChoice);
     }
 
 	// add control sketch's fps

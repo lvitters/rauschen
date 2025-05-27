@@ -162,7 +162,7 @@ public void draw() {
 	}
 
 	displayRecentScreens();
-	drawGraphsArea();
+	displayGraphsArea();
 	displayInfoTables();
 }
 
@@ -486,7 +486,7 @@ void saveScreenshot(File sourceFile) {
 }
 
 // display all the graph and the border around their area
-public void drawGraphsArea() {
+public void displayGraphsArea() {
 	// display the graphs
 	for (int i = 0; i < graphs.size(); i++) {
 		// get and display graph
@@ -551,8 +551,8 @@ public void displayInfoTables() {
         if (actualDebugTableHeight < 0) actualDebugTableHeight = 0;
 
         // draw debug table header
-        text("Key", round(tableStartX) + internalPadding, headerTextY_debug);
-        text("Value", round(dynamicValueX), headerTextY_debug);
+        text("key", round(tableStartX) + internalPadding, headerTextY_debug);
+        text("value", round(dynamicValueX), headerTextY_debug);
 
         stroke(0);
         strokeWeight(1);
@@ -601,12 +601,12 @@ public void displayInfoTables() {
     }
 
     // shader names table at `currentTopY` variable
-    drawShaderNamesList(tableStartX, currentTopY, totalTableWidth, internalPadding);
+    displayShaderNamesList(tableStartX, currentTopY, totalTableWidth, internalPadding);
 }
 
 
 // drawn shader names table below debug table, or where the debug table would have started
-public void drawShaderNamesList(float tableX, float tableY, float tableWidth, float internalPadding) {
+public void displayShaderNamesList(float tableX, float tableY, float tableWidth, float internalPadding) {
     if (shaderNames == null || shaderNames.isEmpty()) {
         // return if there's nothing to show.
         return;
@@ -625,10 +625,7 @@ public void drawShaderNamesList(float tableX, float tableY, float tableWidth, fl
 
     // draw shader names table header
     float headerTextY_shaders = tableY + internalPadding;
-    String shaderTableHeader = "Shader Program List";
-    if (currentShaderChoice >= 0 && currentShaderChoice < shaderNames.size()) {
-        shaderTableHeader += " (Current: " + (currentShaderChoice + 1) + ")";
-    }
+    String shaderTableHeader = "current shaders";
     text(shaderTableHeader, tableX + internalPadding, headerTextY_shaders);
 
     stroke(0);
@@ -638,8 +635,7 @@ public void drawShaderNamesList(float tableX, float tableY, float tableWidth, fl
 
     // draw shader names rows
     for (int i = 0; i < shaderNames.size(); i++) {
-        String name = shaderNames.get(i);
-        String displayName = (i + 1) + ". " + name; // prefix with 1-based index
+        String displayName = shaderNames.get(i);
 
         float rowTextY = headerLineY_shaders + internalPadding + (i * debugRowHeight);
         

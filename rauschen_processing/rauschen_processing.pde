@@ -49,7 +49,8 @@ FilterBandPass bandPassFilter = new FilterBandPass();
 // shader stuff
 ArrayList<PShader> shaders = new ArrayList<PShader>();
 float shaderTime = 0;
-int shaderChoice = 0;
+int shaderChoice = -1;
+int lastShaderChoice;
 String[] shaderNames = {
 		"250403_FlowField.glsl",
 		"250408_RectangularCells.glsl", 
@@ -202,9 +203,20 @@ public void draw() {
 	// manipulate buffer's pixels
 	if (!isApplyingShader) {
 		manipulatePixelArray();
+		// set to -1 for displaying no shader is used
+		if (shaderChoice != -1) lastShaderChoice = shaderChoice;
+		shaderChoice = -1;
 	} else {
-		if (isRandomShaderEachFrame) applyShader(intRandom(0, shaders.size() - 1));
-		else applyShader(shaderChoice);
+		if (isRandomShaderEachFrame) {
+			int rand = intRandom(0, shaders.size() - 1);
+			applyShader(rand);
+			// set to shaderChoice for display
+			shaderChoice = rand;
+		} else {
+			// use last choice to apply in case currently no shader is set
+			if (shaderChoice == -1) shaderChoice = lastShaderChoice;
+			applyShader(shaderChoice);
+		}
 	}
 
 	makeBufferCopyForAudio();
@@ -355,7 +367,7 @@ void determineEvenOffset(int x, int y) {
 // for resource intensive calculations on individual pixels, use a shader
 void applyShader(int shader) {
 	// apply shader time (like T in noise)
-    shaderTime += shaderTimeNoise.getNoiseRange(.05, .3); 
+    shaderTime += shaderTimeNoise.getNoiseRange(.05, .3);
     shaders.get(shader).set("u_time", shaderTime);
 
     // set resolution uniform just in case it wasn't set universally or needs update

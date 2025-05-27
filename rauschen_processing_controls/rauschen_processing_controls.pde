@@ -55,6 +55,9 @@ color[] colors = new color[] {
 	#7FFF00   // Chartreuse
 };
 
+// init font
+PFont font;
+
 // init ArrayList of graphs
 ArrayList<Graph> graphs = new ArrayList<Graph>();
 // number of historical points to show in each graph
@@ -133,6 +136,8 @@ public void setup() {
 	// can't go in settings for some reason
 	frameRate(120);
 	colorMode(RGB, 255, 255, 255);
+	font = createFont("assets/CommitMono-400-Regular.otf", 128);
+	textFont(font);
 
 	// init OSC
 	oscP5 = new OscP5(this, 12000); // local port for this sketch
@@ -147,12 +152,12 @@ public void setup() {
 	setupUI();
 
 	// load default macOS cursor PNGs
-	defaultCursor = loadImage("cursors/default.png");
-	handCursor = loadImage("cursors/pointer.png");
+	defaultCursor = loadImage("assets/default.png");
+	handCursor = loadImage("assets/pointer.png");
 }
 
 public void draw() {
-	background(201, 203, 201);
+	background(170, 170, 170);
 
 	checkForRecentScreens();
 	// load new screens once every X frames in background thread

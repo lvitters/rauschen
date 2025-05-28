@@ -93,4 +93,6 @@ void sendActiveShaderList() {
     }
     
     oscP5.send(shaderListMessage, mainSketchLocation);
+
+	println(shaderListMessage);
 }

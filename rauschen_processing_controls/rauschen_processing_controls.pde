@@ -93,17 +93,26 @@ volatile boolean newScreensReady = false; // flag to signal completion (volatile
 volatile boolean isLoadingScreens = false; // flag to prevent starting multiple loads
 
 // UI
+final int GLOBAL_MOUSE_OFFSET_X = 6;
+final int GLOBAL_MOUSE_OFFSET_Y = 9;
 float padding = 10;
 float borderWeight = 1;
 // debug table
 float debugRowHeight = 20;
-
 // bounds for the graph display area determined at runtime
 float graphAreaX;
 float graphAreaY;
 float graphAreaWidth;
 float graphAreaHeight;
 float graphInternalPadding = 10;
+// solo/mute buttons
+boolean[] soloStates; // tracks solo state for each shader
+boolean[] muteStates; // tracks mute state for each shader
+// store bounds for clickable solo/mute buttons
+ArrayList<Rectangle> soloButtonBounds = new ArrayList<Rectangle>();
+ArrayList<Rectangle> muteButtonBounds = new ArrayList<Rectangle>();
+float shaderButtonWidth = 28;
+float shaderButtonSpacing = 8; 	// spacing around buttons
 
 // macOS cursors (P2D renderer's look awful)
 PImage defaultCursor, handCursor;
@@ -154,10 +163,18 @@ public void setup() {
 	// load default macOS cursor PNGs
 	defaultCursor = loadImage("assets/default.png");
 	handCursor = loadImage("assets/pointer.png");
+
+	// init shader controls
+	if (shaderNames.isEmpty()) {
+        shaderNames.add("placeholder");		// if other sketch isn't running
+    }
+    initializeShaderControls();
 }
 
 public void draw() {
 	background(170, 170, 170);
+
+	println(mouseX +  " " + mouseY);
 
 	checkForRecentScreens();
 	// load new screens once every X frames in background thread
@@ -442,7 +459,6 @@ void displayRecentScreens() {
                 textMode(SHAPE);
                 fill(0, 200, 0, alpha * 0.3);
                 rect(x, y, w, h);
-                fill(255, alpha); 
                 textAlign(CENTER, CENTER); 
                 textSize(min(w, h) * 0.2f); 
                 text("SAVED", x + w/2, y + h/2);
@@ -609,61 +625,221 @@ public void displayInfoTables() {
     displayShaderNamesList(tableStartX, currentTopY, totalTableWidth, internalPadding);
 }
 
-
 // drawn shader names table below debug table, or where the debug table would have started
 public void displayShaderNamesList(float tableX, float tableY, float tableWidth, float internalPadding) {
     if (shaderNames == null || shaderNames.isEmpty()) {
         // return if there's nothing to show.
         return;
     }
+    
+    // ensure states are initialized
+    if (soloStates == null || muteStates == null || 
+        soloStates.length != shaderNames.size() || muteStates.length != shaderNames.size()) {
+        initializeShaderControls(); 
+        if (soloStates == null || muteStates == null || 
+            soloStates.length != shaderNames.size() || muteStates.length != shaderNames.size()) {
+             println("Error: Mismatch in shaderNames and solo/mute state array sizes. Aborting displayShaderNamesList.");
+             return;
+        }
+    }
+
+    soloButtonBounds.clear();
+    muteButtonBounds.clear();
 
     // calculate height available for shader names table (remaining space on screen)
-    float availableHeightForShaders = height - tableY - padding;
+    float availableHeightForShaders = height - tableY - padding; // 'padding' is a global from setupUI
     if (availableHeightForShaders <= internalPadding * 2 + 20 + 5) { // not enough space for header and minimal content
          return; // no space to draw meaningfully
     }
 
+    // define column widths
+    // buttonsActualCombinedWidth uses the float shaderButtonWidth for precision in this intermediate step
+    float buttonsActualCombinedWidth = (shaderButtonWidth * 2) + shaderButtonSpacing; 
+    float actionsColContentWidth = buttonsActualCombinedWidth + internalPadding; 
+    // ensure minimum width for actions column content area
+    if (actionsColContentWidth < buttonsActualCombinedWidth + 4) actionsColContentWidth = buttonsActualCombinedWidth + 4;
 
-    fill(0);
-    textAlign(LEFT, TOP);
+    float usableWidthForShaderList = tableWidth - (2 * internalPadding) - internalPadding; // tableWidth - 3 * internalPadding
+    if (usableWidthForShaderList < 0) usableWidthForShaderList = 0;
+
+    float shaderNameColContentWidth = usableWidthForShaderList - actionsColContentWidth;
+    if (shaderNameColContentWidth < 0) { 
+        shaderNameColContentWidth = 0; 
+    }
+    
+    float actionsColContentStartX = tableX + internalPadding + shaderNameColContentWidth + internalPadding;
+    float separatorLineX = actionsColContentStartX - internalPadding / 2;
+
+    fill(0); 
+    textAlign(LEFT, TOP); 
     textSize(16); // consistent text size
 
-    // draw shader names table header
+    // draw shader names table header (adapted for two columns)
     float headerTextY_shaders = tableY + internalPadding;
-    String shaderTableHeader = "current shaders";
-    text(shaderTableHeader, tableX + internalPadding, headerTextY_shaders);
-
+    text("Shader Name", tableX + internalPadding, headerTextY_shaders);
+    text("S / M", actionsColContentStartX, headerTextY_shaders); 
+    
     stroke(0);
     strokeWeight(1);
     float headerLineY_shaders = headerTextY_shaders + 20 + 5; // Y position of the underline
-    line(tableX, headerLineY_shaders, tableX + tableWidth, headerLineY_shaders);
+    line(tableX, headerLineY_shaders, tableX + tableWidth, headerLineY_shaders); 
+
+    if (availableHeightForShaders > 0) { 
+        line(separatorLineX, tableY, separatorLineX, tableY + availableHeightForShaders);
+    }
 
     // draw shader names rows
     for (int i = 0; i < shaderNames.size(); i++) {
         String displayName = shaderNames.get(i);
+        float rowContentY = headerLineY_shaders + internalPadding + (i * debugRowHeight); 
+        // buttonDrawY_float is the precise top Y for this row's buttons before rounding
+        float buttonDrawY_float = rowContentY; 
 
-        float rowTextY = headerLineY_shaders + internalPadding + (i * debugRowHeight);
-        
-        // check if the row fits within the available height for the shader table (inside its border)
-        if (rowTextY + debugRowHeight <= tableY + availableHeightForShaders - internalPadding) {
-            if (i == currentShaderChoice) {
-                // highlight the current shader choice with different text color
-                fill(20, 150, 20); // A distinct green color
-                text("> " + displayName + " <", tableX + internalPadding + 5, rowTextY); // add arrows and indent
-                fill(0); // reset fill color for subsequent items or tables
-            } else {
-                text(displayName, tableX + internalPadding, rowTextY);
-            }
-        } else {
+        if (rowContentY + debugRowHeight > tableY + availableHeightForShaders - internalPadding) {
             break; // stop drawing if rows exceed available height
+        }
+        
+        // shader Name (Column 1)
+        float shaderNameTextX = tableX + internalPadding;
+        textAlign(LEFT, CENTER); 
+        float shaderNameCenterY = rowContentY + debugRowHeight / 2; 
+
+        if (i == currentShaderChoice) {
+            // highlight the current shader choice with different text color
+            fill(20, 150, 20); // distinct green color
+            text("> " + displayName + " <", shaderNameTextX + 5, shaderNameCenterY); // add arrows and indent
+            fill(0); // reset fill color for subsequent items or tables
+        } else {
+            fill(0); 
+            text(displayName, shaderNameTextX, shaderNameCenterY);
+        }
+        textAlign(LEFT, TOP); // reset textAlign
+
+        // actions (S/M Buttons
+        // calculate precise float X positions for buttons first
+        float buttonsGroupOffsetX = (actionsColContentWidth - buttonsActualCombinedWidth) / 2;
+        if (buttonsGroupOffsetX < 0) buttonsGroupOffsetX = 0; 
+
+        float soloButtonActualX_float = actionsColContentStartX + buttonsGroupOffsetX;
+        float muteButtonActualX_float = soloButtonActualX_float + shaderButtonWidth + shaderButtonSpacing;
+
+        // round all float coordinates and dimensions to integers for Rectangle creation and drawing
+        int roundedButtonDrawY = Math.round(buttonDrawY_float);
+        int roundedButtonHeight = Math.round(debugRowHeight); // should effectively be (int)debugRowHeight if it's whole number
+        int roundedShaderButtonControlWidth = Math.round(shaderButtonWidth);
+        
+        int roundedSoloButtonActualX = Math.round(soloButtonActualX_float);
+        int roundedMuteButtonActualX = Math.round(muteButtonActualX_float);
+
+        // solo Button
+        Rectangle currentSoloBound = new Rectangle(
+            roundedSoloButtonActualX, roundedButtonDrawY, 
+            roundedShaderButtonControlWidth, roundedButtonHeight 
+        );
+        soloButtonBounds.add(currentSoloBound);
+        
+        stroke(0); 
+        strokeWeight(1);
+        fill(soloStates[i] ? color(255, 255, 100, 200) : color(80, 200)); 
+        // draw using the Rectangle's integer fields for consistency with bounds
+        rect(currentSoloBound.x, currentSoloBound.y, currentSoloBound.width, currentSoloBound.height); 
+        
+        fill(soloStates[i] ? color(0) : color(200)); 
+        textAlign(CENTER, CENTER);
+        textSize(roundedButtonHeight * 0.60f); 
+        text("S", currentSoloBound.x + currentSoloBound.width / 2, currentSoloBound.y + currentSoloBound.height / 2);
+        
+        // mute Button
+        Rectangle currentMuteBound = new Rectangle(
+            roundedMuteButtonActualX, roundedButtonDrawY, 
+            roundedShaderButtonControlWidth, roundedButtonHeight
+        );
+        muteButtonBounds.add(currentMuteBound); 
+
+        stroke(0); 
+        strokeWeight(1);
+        fill(muteStates[i] ? color(255, 100, 100, 200) : color(80, 200)); 
+        // draw using the Rectangle's integer fields
+        rect(currentMuteBound.x, currentMuteBound.y, currentMuteBound.width, currentMuteBound.height); 
+        
+        fill(muteStates[i] ? color(255) : color(200)); 
+        // textAlign is already CENTER, CENTER
+        // textSize is already roundedButtonHeight * 0.60f
+        text("M", currentMuteBound.x + currentMuteBound.width / 2, currentMuteBound.y + currentMuteBound.height / 2);
+        
+        textSize(16); // reset text size
+        textAlign(LEFT, TOP); // reset alignment
+        
+        fill(0); // reset fill for next iteration
+    }
+
+    // draw shader names table border (original comment)
+    noFill();
+    stroke(0);
+    strokeWeight(borderWeight); // borderWeight is a global from your setupUI
+    rect(tableX, tableY, tableWidth, availableHeightForShaders);
+}
+
+// nitialize shader control states
+void initializeShaderControls() {
+    if (shaderNames == null) {
+        // this case should ideally be avoided by ensuring shaderNames is populated first.
+        println("Warning: shaderNames is null during initializeShaderControls. Initializing as empty.");
+        shaderNames = new ArrayList<String>(); 
+    }
+
+    int numShaders = shaderNames.size();
+
+    // initialize or resize state arrays if needed
+    // this ensures that if shaderNames were to be repopulated with a different size,
+    // these arrays would be correctly sized. given shaderNames is static at runtime
+    // after initial population, this will effectively run once for sizing.
+    if (soloStates == null || soloStates.length != numShaders) {
+        soloStates = new boolean[numShaders]; // all false by default (not soloed)
+    }
+    if (muteStates == null || muteStates.length != numShaders) {
+        muteStates = new boolean[numShaders]; // all false by default (not muted)
+    }
+
+    // button bounds lists will be cleared and repopulated in displayShaderNamesList,
+    // so no need to size them here, just ensure they are not null.
+    if (soloButtonBounds == null) soloButtonBounds = new ArrayList<Rectangle>();
+    if (muteButtonBounds == null) muteButtonBounds = new ArrayList<Rectangle>();
+    
+    println("Shader controls initialized for " + numShaders + " shaders.");
+}
+
+// determine active shader indices based on solo/mute states
+ArrayList<Integer> getActiveShaderIndices() {
+    ArrayList<Integer> activeIndices = new ArrayList<Integer>();
+    if (shaderNames == null || soloStates == null || muteStates == null || 
+        soloStates.length != shaderNames.size() || muteStates.length != shaderNames.size()) {
+        println("Error: Cannot get active shader indices, states not initialized correctly or mismatch with shaderNames size.");
+        return activeIndices; // return empty list
+    }
+
+    boolean anySoloActive = false;
+    for (int i = 0; i < shaderNames.size(); i++) {
+        if (soloStates[i]) {
+            anySoloActive = true;
+            break;
         }
     }
 
-    // draw shader names table border
-    noFill();
-    stroke(0);
-    strokeWeight(borderWeight);
-    rect(tableX, tableY, tableWidth, availableHeightForShaders);
+    if (anySoloActive) {
+        for (int i = 0; i < shaderNames.size(); i++) {
+            if (soloStates[i]) { // only soloed shaders are active
+                activeIndices.add(i);
+            }
+        }
+    } else { // no solos active, so consider mutes
+        for (int i = 0; i < shaderNames.size(); i++) {
+            if (!muteStates[i]) { // add if not muted
+                activeIndices.add(i);
+            }
+        }
+    }
+    return activeIndices;
 }
 
 // helper function to format debug values (keeps displayInfoTables cleaner)
@@ -680,26 +856,60 @@ String formatDisplayValue(Object value) {
 
 // fire if mouse was pressed
 void mousePressed() {
-    if (slotBounds != null && slotImageFiles != null) {
-		// iterate through slots
-        for (int i = 0; i < numDisplaySlots; i++) {
-            if (slotBounds[i] != null && slotBounds[i].width > 0 && slotBounds[i].contains(mouseX, mouseY)) {
-				// get file from clicked slot
-                File fileToSave = slotImageFiles[i];
+    // adjust mouse coordinates for global offset
+    int adjustedMouseX = mouseX - GLOBAL_MOUSE_OFFSET_X;
+    int adjustedMouseY = mouseY - GLOBAL_MOUSE_OFFSET_Y;
 
-				// save screenshot to 'saved' folder, play animation
+    boolean stateChanged = false; 
+
+    // handle Solo/Mute button clicks using ADJUSTED coordinates
+    if (soloButtonBounds != null && muteButtonBounds != null && 
+        soloStates != null && muteStates != null && 
+        shaderNames != null && !shaderNames.isEmpty()) {
+
+        for (int i = shaderNames.size() - 1; i >= 0; i--) { // iterate backwards for potential UI overlap
+            // check Mute buttons using adjusted coordinates
+            if (i < muteButtonBounds.size() && muteButtonBounds.get(i).contains(adjustedMouseX, adjustedMouseY)) {
+                muteStates[i] = !muteStates[i];
+                if (muteStates[i]) { 
+                    soloStates[i] = false; 
+                }
+                stateChanged = true;
+                break; 
+            }
+
+            // check Solo buttons using adjusted coordinates
+            if (i < soloButtonBounds.size() && soloButtonBounds.get(i).contains(adjustedMouseX, adjustedMouseY)) {
+                soloStates[i] = !soloStates[i];
+                if (soloStates[i]) { 
+                    muteStates[i] = false; 
+                }
+                stateChanged = true;
+                break; 
+            }
+        }
+
+        if (stateChanged) {
+            sendActiveShaderList(); 
+        }
+    }
+
+    // screenshot save logic
+    if (!stateChanged && slotBounds != null && slotImageFiles != null) {
+        for (int i = 0; i < numDisplaySlots; i++) {
+            // adjusted coordinates for checking screenshot slot bounds
+            if (slotBounds[i] != null && slotBounds[i].width > 0 && slotBounds[i].contains(adjustedMouseX, adjustedMouseY)) { // MODIFIED
+                File fileToSave = slotImageFiles[i];
                 if (fileToSave != null) {
                     saveScreenshot(fileToSave);
-                    savedAnimation = 90;        // duration
-                    animatingSaveForSlot = i;   // set slot to animate
+                    savedAnimation = 90;        
+                    animatingSaveForSlot = i;   
                 }
-				// exit after handling click for one image
-                return;
+                return; 
             }
         }
     }
 }
-
     
 // when the mouse exits the window
 public void mouseExited() {

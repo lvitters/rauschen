@@ -76,3 +76,21 @@ void oscEvent(OscMessage msg) {
 	// add control sketch's fps
 	debugInfo.put("thisFps", frameRate);
 }
+
+// send the list of active shader indices via OSC
+void sendActiveShaderList() {
+    if (oscP5 == null || mainSketchLocation == null) {
+        println("OSC not initialized. Cannot send shader list.");
+        return;
+    }
+
+    ArrayList<Integer> activeIndices = getActiveShaderIndices();
+    
+    OscMessage shaderListMessage = new OscMessage("/activeShaderIndices");
+    
+    for (Integer index : activeIndices) {
+        shaderListMessage.add(index.intValue());
+    }
+    
+    oscP5.send(shaderListMessage, mainSketchLocation);
+}

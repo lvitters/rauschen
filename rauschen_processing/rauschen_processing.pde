@@ -656,8 +656,8 @@ void showDebug() {
 		rect(0, 0, 210, 65);
 		fill(255, 255, 255);
 		textSize(25);
-		text("showDebug(): fps: " + (int) frameRate, 10, 30);
-		text("showDebug(): isAutoMode: " + isAutoMode, 10, 55);
+		text("fps: " + (int) frameRate, 10, 30);
+		text("isAutoMode: " + isAutoMode, 10, 55);
 }
 
 // listen to key presses (fallback - stuff generally handled by control sketch)

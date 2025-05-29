@@ -2,7 +2,7 @@ import java.util.concurrent.ThreadLocalRandom;		// faster random functions
 import java.util.concurrent.*;
 import java.io.File;
 import java.util.Arrays;
-import java.util.Comparator;						
+import java.util.Comparator;	
 import wellen.*;									// audio stuff
 import wellen.dsp.*;								// should be included in the above, but for some reason isn't
 import javax.sound.midi.*;
@@ -48,6 +48,7 @@ FilterBandPass bandPassFilter = new FilterBandPass();
 
 // shader stuff
 ArrayList<PShader> shaders = new ArrayList<PShader>();
+ArrayList<Integer> activeShaders = new ArrayList<Integer>();
 float shaderTime = 0;
 int shaderChoice = -1;
 int lastShaderChoice;
@@ -153,6 +154,7 @@ public void setup() {
 	// set uniform variables for all shaders
 	for (int i = 0; i < shaders.size(); i++) {
 		shaders.get(i).set("u_resolution", (float)width, (float)height);
+		activeShaders.add(i);	// init all active
 	}
 
 	// start wellen's digital signal processing but pause for now
@@ -208,14 +210,14 @@ public void draw() {
 		shaderChoice = -1;
 	} else {
 		if (isRandomShaderEachFrame) {
-			int rand = intRandom(0, shaders.size() - 1);
-			applyShader(rand);
+			int rand = pickRandomActiveShader();
+			if (!activeShaders.isEmpty()) applyShader(rand);
 			// set to shaderChoice for display
 			shaderChoice = rand;
 		} else {
 			// use last choice to apply in case currently no shader is set
 			if (shaderChoice == -1) shaderChoice = lastShaderChoice;
-			applyShader(shaderChoice);
+			if (!activeShaders.isEmpty()) applyShader(shaderChoice);
 		}
 	}
 
@@ -335,13 +337,13 @@ void setNewGridWithNoise() {
 	if (xStep < 1) xStep = 1;
 	if (yStep < 1) yStep = 1;
 
-	if (printDebug) println("xStep: " + xStep + " yStep: " + yStep);
+	if (printDebug) println("setNewGridWithNoise(): xStep: " + xStep + " yStep: " + yStep);
 
 	// determine if step should be the same in both dimensions
 	if (toggleSameStepDimsNoise.getNoiseBool(-4, 3)) {
 		// apply same step to both dimensions
 		yStep = xStep;
-		if (printDebug) println("same step");
+		if (printDebug) println("setNewGridWithNoise(): same step");
 	}
 
 	determineRandomOffset(xStep, yStep);
@@ -366,6 +368,11 @@ void determineEvenOffset(int x, int y) {
 
 // for resource intensive calculations on individual pixels, use a shader
 void applyShader(int shader) {
+	if (shader == -1) {
+		if (printDebug) println("applyShader(): no shader to apply");
+		return;
+	}
+
 	// apply shader time (like T in noise)
     shaderTime += shaderTimeNoise.getNoiseRange(.05, .3);
     shaders.get(shader).set("u_time", shaderTime);
@@ -391,7 +398,7 @@ void applyShader(int shader) {
             buffer.endDraw();
             // 'buffer' now holds the result of this frame's shader pass
         } catch (Exception e) {
-            println("buffer draw error in applyShader: " + e.getMessage());
+            println("applyShader(): buffer draw error in applyShader: " + e.getMessage());
         }
     }
 
@@ -402,8 +409,43 @@ void applyShader(int shader) {
 			tempBuffer.image(buffer, 0, 0); 
         tempBuffer.endDraw();
     } else {
-        println("applyShader: cannot copy buffer to tempBuffer - one of them is null.");
+        println("applyShader(): cannot copy buffer to tempBuffer - one of them is null.");
     }
+}
+
+// pick new shader according to activeShaders, returns -1 if no shader can be picked
+public Integer pickRandomActiveShader() {
+    // check if there are any shaders loaded at all.
+    if (shaders.isEmpty()) {
+        if (printDebug) println("pickRandomActiveShader(): shaders list empty");
+        return -1;
+    }
+
+    // check if the activeShaders list itself is empty
+    if (activeShaders.isEmpty()) {
+        if (printDebug) println("pickRandomActiveShader(): no active shaders");
+        return -1;
+    }
+
+    ArrayList<Integer> candidateIndices = new ArrayList<Integer>();
+
+    // iterate from 0 up to the number of loaded shaders.
+    for (int i = 0; i < shaders.size(); i++) {
+		// check if it contains index, add to candidates
+        if (activeShaders.contains(i)) {
+            candidateIndices.add(i);
+        }
+    }
+
+    // if there are no candidates
+    if (candidateIndices.isEmpty()) {
+        if (printDebug) println("pickRandomActiveShader(): no candidate shaders found");
+        return -1;
+    }
+
+    // randomly pick one index from the list of valid, active candidates
+    int randomIndexWithinCandidates = intRandom(0, candidateIndices.size() - 1);
+    return candidateIndices.get(randomIndexWithinCandidates);
 }
 
 // resize buffer for "zooming into" shader, similar to grid step being higher in manipulatePixelArray()
@@ -416,7 +458,7 @@ public void resizeBuffer(float w, float h) {
         return;
     }
     
-    if (printDebug) println("resizing buffers to: " + newW + "x" + newH + " with content preservation.");
+    if (printDebug) println("resizeBuffer(): resizing buffers to: " + newW + "x" + newH + " with content preservation.");
 
     // store references to the current buffers
     PGraphics oldBuffer = buffer; 
@@ -519,7 +561,7 @@ void timedEvents() {
 
 // switch between which events to fire
 void chooseEvent(int event) {
-	if (printDebug) println("event: " + event);
+	if (printDebug) println("chooseEvent(): event: " + event);
 	audioSamplingMode = intRandom(0, 2);
 	switch (event) {
 		case 0:
@@ -532,7 +574,7 @@ void chooseEvent(int event) {
 		case 1:
 			isApplyingShader = toggleShader.getNoiseBool(-1, 1);
 			if (isApplyingShader) {
-				if (printDebug) println("applying shader");
+				if (printDebug) println("chooseEvent(): applying shader");
 				tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
 			}
 			resizeBuffer(width, height);
@@ -543,7 +585,7 @@ void chooseEvent(int event) {
 		case 3:
 			// isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);
 			isRandomShaderEachFrame = !isRandomShaderEachFrame;
-			if (!isRandomShaderEachFrame) shaderChoice = intRandom(0, shaders.size() - 1);
+			if (!isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();
 		break;
 	}
 }
@@ -555,7 +597,7 @@ void applyAudioFilter() {
 	// manually
 	// float targetFreq = map(mouseX, 0, width, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 1.0f);
 	// float bandwidth = map(mouseY, 0, height, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 0.5f);
-	if (printDebug) println("freq: " + bandPassFilter.get_frequency() + "\n" + "bandwidth: " + bandPassFilter.get_bandwidth());
+	if (printDebug) println("applyAudioFilter(): freq: " + bandPassFilter.get_frequency() + "\n" + "bandwidth: " + bandPassFilter.get_bandwidth());
 }
 
 // take a screenshot with date and time to special path
@@ -572,7 +614,7 @@ void takeScreenshot() {
     new Thread(new Runnable() {
         public void run() {
             frameToSave.save(filename);
-            if (printDebug) println("screenshot saved: " + filename);
+            if (printDebug) println("takeScreenshot(): screenshot saved: " + filename);
         }
     }).start();
 
@@ -596,7 +638,7 @@ void cleanupImageFolder() {
 		// delete oldest files until we're back to the maximum
 		int numToDelete = files.length - maxFiles;
 		for (int i = 0; i < numToDelete; i++) {
-			if (printDebug) println("deleting old file: " + files[i].getName());
+			if (printDebug) println("cleanupImageFolder(): deleting old file: " + files[i].getName());
 			files[i].delete();
 		}
 	}
@@ -624,8 +666,8 @@ void showDebug() {
 		rect(0, 0, 210, 65);
 		fill(255, 255, 255);
 		textSize(25);
-		text("fps: " + (int) frameRate, 10, 30);
-		text("isAutoMode: " + isAutoMode, 10, 55);
+		text("showDebug(): fps: " + (int) frameRate, 10, 30);
+		text("showDebug(): isAutoMode: " + isAutoMode, 10, 55);
 }
 
 // listen to key presses (fallback - stuff generally handled by control sketch)

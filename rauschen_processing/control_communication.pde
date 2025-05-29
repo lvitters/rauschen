@@ -45,6 +45,9 @@ void sendShaderInfoOSC() {
 	// send message
     oscP5.send(msg, controlSketchLocation);
 
+	// make sure UI is overwritten
+	if (activeShaders.isEmpty()) shaderChoice = -1;
+
 	// create OSC message with shader choice
     oscP5.send(new OscMessage("/shaderChoice").add(shaderChoice), controlSketchLocation);
 }
@@ -135,5 +138,15 @@ void oscEvent(OscMessage message) {
 	}	
 	else if (message.checkAddrPattern("/setControllerLEDs")) {
 		setControllerLEDs();
+	}	
+	else if (message.checkAddrPattern("/activeShaderIndices")) {
+		// clear shader states
+		activeShaders.clear();
+		// get how many arguments where send
+        int numactiveShaders = message.arguments().length;
+        // write to shader states 
+        for (int i = 0; i < numactiveShaders; i++) {
+            activeShaders.add(message.get(i).intValue());
+        }
 	}
 }

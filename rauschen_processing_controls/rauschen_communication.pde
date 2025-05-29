@@ -1,11 +1,11 @@
 // communication with main sketch "rauschen"
 
 // called when new OSC message is received
-void oscEvent(OscMessage msg) {
+void oscEvent(OscMessage message) {
 	// check if it's the message with noises
-	if (msg.checkAddrPattern("/noises")) {
+	if (message.checkAddrPattern("/noises")) {
 		// get how many arguments where send
-		int numValues = msg.arguments().length;
+		int numValues = message.arguments().length;
 
 		// ensure there is the right number of graphs
 		while (graphs.size() < numValues) {
@@ -19,32 +19,32 @@ void oscEvent(OscMessage msg) {
 		
 		// add received values directly to graphs
 		for (int i = 0; i < numValues; i++) {
-			float value = msg.get(i).floatValue();
+			float value = message.get(i).floatValue();
 			graphs.get(i).addPoint(value);
 		}
 	}
 
 	// general handler for debug info messages
-	else if (msg.addrPattern().startsWith("/info/")) {
-		String key = msg.addrPattern().substring(6); // remove "/info/" prefix to get the key
+	else if (message.addrPattern().startsWith("/info/")) {
+		String key = message.addrPattern().substring(6); // remove "/info/" prefix to get the key
 		
 		// extract the value based on the OSC message's typetag
 		Object value = null;
-		char type = msg.typetag().charAt(0); // get the type of the first argument
+		char type = message.typetag().charAt(0); // get the type of the first argument
 		
 		switch(type) {
 		case 'i': // integer
-			value = msg.get(0).intValue();
+			value = message.get(0).intValue();
 			break;
 		case 'f': // float
-			value = msg.get(0).floatValue();
+			value = message.get(0).floatValue();
 			break;
 		case 's': // string
-			value = msg.get(0).stringValue();
+			value = message.get(0).stringValue();
 			break;
 		default:
 			// default to float for unknown types
-			value = msg.get(0).floatValue();
+			value = message.get(0).floatValue();
 		}
 		
 		// special handling for boolean values (sent as integers)
@@ -57,20 +57,20 @@ void oscEvent(OscMessage msg) {
 	}
 
 	// handler for shader info messages
-	else if (msg.checkAddrPattern("/shaderNames")) {
+	else if (message.checkAddrPattern("/shaderNames")) {
         shaderNames.clear();
 		// get how many arguments where send
-        int numShaders = msg.arguments().length;
+        int numShaders = message.arguments().length;
         
         for (int i = 0; i < numShaders; i++) {
-            shaderNames.add(msg.get(i).stringValue());
+            shaderNames.add(message.get(i).stringValue());
         }
     }
     
     // update current shader choice when received
-    else if (msg.addrPattern().equals("/shaderChoice")) {
+    else if (message.addrPattern().equals("/shaderChoice")) {
 		// set to currentShaderChoice
-        currentShaderChoice = msg.get(0).intValue();
+        currentShaderChoice = message.get(0).intValue();
     }
 
 	// add control sketch's fps
@@ -80,7 +80,7 @@ void oscEvent(OscMessage msg) {
 // send the list of active shader indices via OSC
 void sendActiveShaderList() {
     if (oscP5 == null || mainSketchLocation == null) {
-        println("OSC not initialized. Cannot send shader list.");
+        println("sendActiveShaderList(): OSC not initialized. Cannot send shader list.");
         return;
     }
 
@@ -93,6 +93,4 @@ void sendActiveShaderList() {
     }
     
     oscP5.send(shaderListMessage, mainSketchLocation);
-
-	println(shaderListMessage);
 }

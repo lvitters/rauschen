@@ -13,19 +13,19 @@ void setupMidiOutput() {
 				outputDevice = device;
 				outputDevice.open();
 				midiReceiver = outputDevice.getReceiver();
-				println("successfully opened Grid for output");
+				println("setupMidiOutput(): successfully opened Grid for output");
 				break;
 			}
 		}
 		if (outputDevice == null) {
-			println("could not find Grid with output capability");
+			println("setupMidiOutput(): could not find Grid with output capability");
 		} else {
 			// set all controller LEDs
 			//resetControllerLEDs();
 			setControllerLEDs();
 		}
 	} catch (Exception e) {
-		println("error setting up MIDI output: " + e.getMessage());
+		println("setupMidiOutput(): error setting up MIDI output: " + e.getMessage());
 		e.printStackTrace();
 	}
 }
@@ -113,7 +113,7 @@ void setControllerLEDs() {
 			}
 		}
 	} catch (Exception e) {
-		println("error setting LEDs: " + e.getMessage());
+		println("setControllerLEDs(): error setting LEDs: " + e.getMessage());
 		e.printStackTrace();
 	}
 }
@@ -133,10 +133,10 @@ void resetControllerLEDs() {
 				midiReceiver.send(message, -1);
 			}
 
-			println("reset all controller LEDs");
+			println("resetControllerLEDs(): reset all controller LEDs");
 		}
 	} catch (Exception e) {
-		println("error resetting controller: " + e.getMessage());
+		println("resetControllerLEDs(): error resetting controller: " + e.getMessage());
 		e.printStackTrace();
 	}
 }
@@ -148,7 +148,7 @@ void listMidiControllers() {
 		MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
 		
 		// print detailed info about all available MIDI devices
-		println("available MIDI devices:");
+		println("listMidiControllers(): available MIDI devices:");
 		for (int i = 0; i < infos.length; i++) {
 			MidiDevice device = MidiSystem.getMidiDevice(infos[i]);
 			println("-------------------------------");
@@ -161,7 +161,7 @@ void listMidiControllers() {
 			println("max receivers: " + device.getMaxReceivers());
 		}
 	} catch (Exception e) {
-		println("error: " + e.getMessage());
+		println("listMidiControllers(): error: " + e.getMessage());
 		e.printStackTrace();
 	}
 }

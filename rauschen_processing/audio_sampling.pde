@@ -90,3 +90,13 @@ void toggleSound(Boolean generateSound) {
 		isGeneratingSound = false;
 	}
 }
+
+// apply audio filter with noise
+void applyAudioFilter() {
+	bandPassFilter.set_frequency(frequencyNoise.getVariableNoiseRange(0, 100, Wellen.DEFAULT_SAMPLING_RATE - 18000, Wellen.DEFAULT_SAMPLING_RATE - 8000));
+	bandPassFilter.set_bandwidth(bandwidthNoise.getVariableNoiseRange(0, 100, Wellen.DEFAULT_SAMPLING_RATE - 18000, Wellen.DEFAULT_SAMPLING_RATE - 8000) * 0.5f);
+	// manually
+	// float targetFreq = map(mouseX, 0, width, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 1.0f);
+	// float bandwidth = map(mouseY, 0, height, 1.0f, Wellen.DEFAULT_SAMPLING_RATE * 0.5f);
+	if (printDebug) println("applyAudioFilter(): freq: " + bandPassFilter.get_frequency() + "\n" + "bandwidth: " + bandPassFilter.get_bandwidth());
+}

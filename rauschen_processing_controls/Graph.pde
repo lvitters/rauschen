@@ -64,3 +64,19 @@ class Graph {
         popMatrix(); // restore original transformations
     }
 }
+
+// display all the graph and the border around their area
+public void displayGraphsArea() {
+	// display the graphs
+	for (int i = 0; i < graphs.size(); i++) {
+		// get and display graph
+		Graph g = graphs.get(i);
+		g.display();
+	}
+
+	// draw the border
+	noFill();
+	stroke(0);
+	strokeWeight(borderWeight); // use same weight as debug border
+	rect(graphAreaX, graphAreaY, graphAreaWidth, graphAreaHeight); 
+}

@@ -14,15 +14,15 @@ void setupMidiInput() {
                 inputDevice.open();
                 Transmitter transmitter = inputDevice.getTransmitter();
                 transmitter.setReceiver(new MidiInputReceiver());
-                println("setupMidiInput(): successfully opened Grid for input");
+                if (printDebug) println("setupMidiInput(): successfully opened Grid for input");
                 break;
             }
         }
         if (inputDevice == null) {
-            println("setupMidiInput(): could not find Grid with input capability");
+            if (printDebug) println("setupMidiInput(): could not find Grid with input capability");
         }
     } catch (Exception e) {
-        println("setupMidiInput(): error: " + e.getMessage());
+        if (printDebug) println("setupMidiInput(): error: " + e.getMessage());
         e.printStackTrace();
     }
 }
@@ -40,18 +40,18 @@ void setupMidiOutput() {
 				outputDevice = device;
 				outputDevice.open();
 				midiReceiver = outputDevice.getReceiver();
-				println("setupMidiOutput(): successfully opened Grid for output");
+				if (printDebug) println("setupMidiOutput(): successfully opened Grid for output");
 				break;
 			}
 		}
 		if (outputDevice == null) {
-			println("setupMidiOutput(): could not find Grid with output capability");
+			if (printDebug) println("setupMidiOutput(): could not find Grid with output capability");
 		} else {
 			// reset all controller LEDs
 			//resetControllerLEDs();
 		}
 	} catch (Exception e) {
-		println("setupMidiOutput(): error setting up MIDI output: " + e.getMessage());
+		if (printDebug) println("setupMidiOutput(): error setting up MIDI output: " + e.getMessage());
 		e.printStackTrace();
 	}
 }
@@ -71,10 +71,10 @@ void resetControllerLEDs() {
 				midiReceiver.send(message, -1);
 			}
 
-			println("resetControllerLEDs(): reset all controller LEDs");
+			if (printDebug) println("resetControllerLEDs(): reset all controller LEDs");
 		}
 	} catch (Exception e) {
-		println("resetControllerLEDs(): error resetting controller: " + e.getMessage());
+		if (printDebug) println("resetControllerLEDs(): error resetting controller: " + e.getMessage());
 		e.printStackTrace();
 	}
 }

@@ -13,19 +13,19 @@ void setupMidiOutput() {
 				outputDevice = device;
 				outputDevice.open();
 				midiReceiver = outputDevice.getReceiver();
-				println("setupMidiOutput(): successfully opened Grid for output");
+				if (printDebug) println("setupMidiOutput(): successfully opened Grid for output");
 				break;
 			}
 		}
 		if (outputDevice == null) {
-			println("setupMidiOutput(): could not find Grid with output capability");
+			if (printDebug) println("setupMidiOutput(): could not find Grid with output capability");
 		} else {
 			// set all controller LEDs
 			//resetControllerLEDs();
 			setControllerLEDs();
 		}
 	} catch (Exception e) {
-		println("setupMidiOutput(): error setting up MIDI output: " + e.getMessage());
+		if (printDebug) println("setupMidiOutput(): error setting up MIDI output: " + e.getMessage());
 		e.printStackTrace();
 	}
 }
@@ -113,7 +113,7 @@ void setControllerLEDs() {
 			}
 		}
 	} catch (Exception e) {
-		println("setControllerLEDs(): error setting LEDs: " + e.getMessage());
+		if (printDebug) ("setControllerLEDs(): error setting LEDs: " + e.getMessage());
 		e.printStackTrace();
 	}
 }
@@ -133,10 +133,10 @@ void resetControllerLEDs() {
 				midiReceiver.send(message, -1);
 			}
 
-			println("resetControllerLEDs(): reset all controller LEDs");
+			if (printDebug) println("resetControllerLEDs(): reset all controller LEDs");
 		}
 	} catch (Exception e) {
-		println("resetControllerLEDs(): error resetting controller: " + e.getMessage());
+		if (printDebug) println("resetControllerLEDs(): error resetting controller: " + e.getMessage());
 		e.printStackTrace();
 	}
 }

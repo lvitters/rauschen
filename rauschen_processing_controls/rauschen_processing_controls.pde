@@ -66,6 +66,9 @@ int graphLength = 600;
 // HashMap to store debugInfo values
 HashMap<String, Object> debugInfo = new HashMap<String, Object>();
 
+// print debug messages or not (this is different from the debug info table);
+Boolean printDebug = false;
+
 // store the shaders names for display
 ArrayList<String> shaderNames = new ArrayList<String>();
 int currentShaderChoice = -1;
@@ -283,10 +286,10 @@ public void loadScreensInBackground() {
 	// ensure the screenshot directory exists, create if necessary
 	if (!dir.exists()) {
 		if (dir.mkdirs()) {
-			println("loadScreensInBackground(): created screenshots directory: " + screensDir);
+			if (printDebug) println("loadScreensInBackground(): created screenshots directory: " + screensDir);
 		} else {
 			// handle error if directory creation fails
-			println("loadScreensInBackground(): error: failed to create screenshots directory: " + screensDir);
+			if (printDebug) println("loadScreensInBackground(): error: failed to create screenshots directory: " + screensDir);
 			loadedImages = new PImage[0]; // set to empty results
 			foundFiles = new File[0];
 			// update global temporary variables even on error
@@ -311,7 +314,7 @@ public void loadScreensInBackground() {
 
 	// handle cases where listing files fails or returns null
 	if (allImageFiles == null) {
-		println("loadScreensInBackground(): warning: listFiles returned null for " + screensDir);
+		if (printDebug) println("loadScreensInBackground(): warning: listFiles returned null for " + screensDir);
 		loadedImages = new PImage[0]; // Set to empty results
 		foundFiles = new File[0];
 	} else {
@@ -376,11 +379,11 @@ public void loadScreensInBackground() {
 				loadedImages[i] = loadImage(foundFiles[i].getAbsolutePath());
 				// check if loading failed (loadImage returns null)
 				if (loadedImages[i] == null) {
-					println("loadScreensInBackground(): warning (background): loadImage returned null for " + foundFiles[i].getName());
+					if (printDebug) println("loadScreensInBackground(): warning (background): loadImage returned null for " + foundFiles[i].getName());
 				}
 			} catch (Exception e) {
 				// catch potential errors during image loading
-				println("loadScreensInBackground(): error loading image in background " + foundFiles[i].getName() + ": " + e.getMessage());
+				if (printDebug) println("loadScreensInBackground(): error loading image in background " + foundFiles[i].getName() + ": " + e.getMessage());
 				loadedImages[i] = null; // set to null on error
 			}
 		}
@@ -504,7 +507,7 @@ void saveScreenshot(File sourceFile) {
 		// println("saveScreenshot(): saved screenshot: " + sourceFile.getName() + " to " + destFile.getAbsolutePath());
 		
 	} catch (Exception e) {
-		println("saveScreenshot(): error saving screenshot: " + e.getMessage());
+		if (printDebug) println("saveScreenshot(): error saving screenshot: " + e.getMessage());
 		e.printStackTrace();
 	}
 }
@@ -641,7 +644,7 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
         initializeShaderControls(); 
         if (soloStates == null || muteStates == null || 
             soloStates.length != shaderNames.size() || muteStates.length != shaderNames.size()) {
-            println("displayShaderNamesList(): error: mismatch in shaderNames and solo/mute state array sizes. aborting displayShaderNamesList.");
+            if (printDebug) println("displayShaderNamesList(): error: mismatch in shaderNames and solo/mute state array sizes. aborting displayShaderNamesList.");
             return;
         }
     }
@@ -798,7 +801,7 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
 void initializeShaderControls() {
     if (shaderNames == null) {
         // this case should ideally be avoided by ensuring shaderNames is populated first.
-        println("initializeShaderControls(): warning: shaderNames is null during initializeShaderControls. initializing as empty.");
+        if (printDebug) println("initializeShaderControls(): warning: shaderNames is null during initializeShaderControls. initializing as empty.");
         shaderNames = new ArrayList<String>(); 
     }
 
@@ -820,7 +823,7 @@ void initializeShaderControls() {
     if (soloButtonBounds == null) soloButtonBounds = new ArrayList<Rectangle>();
     if (muteButtonBounds == null) muteButtonBounds = new ArrayList<Rectangle>();
     
-    println("initializeShaderControls(): shader controls initialized for " + numShaders + " shaders.");
+    if (printDebug) ("initializeShaderControls(): shader controls initialized for " + numShaders + " shaders.");
 }
 
 // determine active shader indices based on solo/mute states
@@ -828,7 +831,7 @@ ArrayList<Integer> getActiveShaderIndices() {
     ArrayList<Integer> activeIndices = new ArrayList<Integer>();
     if (shaderNames == null || soloStates == null || muteStates == null || 
         soloStates.length != shaderNames.size() || muteStates.length != shaderNames.size()) {
-        println("getActiveShaderIndices(): error: cannot get active shader indices, states not initialized correctly or mismatch with shaderNames size.");
+        if (printDebug) ("getActiveShaderIndices(): error: cannot get active shader indices, states not initialized correctly or mismatch with shaderNames size.");
         return activeIndices; // return empty list
     }
 
@@ -934,4 +937,12 @@ public void mouseExited() {
 // when the mouse enters the window
 public void mouseEntered() {
 	mouseOver = true;
+}
+
+// listen to key presses
+void keyPressed() {
+	// print (more) debug info
+	if (key == 'p') {
+		printDebug = !printDebug;
+	}
 }

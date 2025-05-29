@@ -80,7 +80,7 @@ void oscEvent(OscMessage message) {
 // send the list of active shader indices via OSC
 void sendActiveShaderList() {
     if (oscP5 == null || mainSketchLocation == null) {
-        println("sendActiveShaderList(): OSC not initialized. Cannot send shader list.");
+       if (printDebug)  println("sendActiveShaderList(): OSC not initialized. Cannot send shader list.");
         return;
     }
 

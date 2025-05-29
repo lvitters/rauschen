@@ -74,7 +74,7 @@ void oscEvent(OscMessage message) {
     }
 
 	// add control sketch's fps
-	debugInfo.put("thisFps", frameRate);
+	// debugInfo.put("thisFps", frameRate);
 }
 
 // send the list of active shader indices via OSC

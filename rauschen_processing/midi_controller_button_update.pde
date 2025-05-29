@@ -113,7 +113,7 @@ void setControllerLEDs() {
 			}
 		}
 	} catch (Exception e) {
-		if (printDebug) ("setControllerLEDs(): error setting LEDs: " + e.getMessage());
+		if (printDebug) println("setControllerLEDs(): error setting LEDs: " + e.getMessage());
 		e.printStackTrace();
 	}
 }

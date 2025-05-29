@@ -80,13 +80,12 @@ PImage[] slotImages_Original;    	// original, unscaled PImage for each display 
 PImage[] slotImages_Scaled;      	// PImage scaled for display for each slot
 File[] slotImageFiles;         		// File object for image in each slot
 Rectangle[] slotBounds;          	// display bounds for each slot
+boolean[] slotIsSaved;				// which slots have been saved
 File lastSuccessfullyPlacedCandidateFile = null; // newest candidate file last successfully placed
 PImage[] tempRecentScreens; 		// background loading for loadScreensInBackground 
 File[] tempFiles; 
 String screensDir = "../rauschen_screens/temp/";
 String savedScreensDir = "../rauschen_screens/saved/";
-int savedAnimation = 0;
-int animatingSaveForSlot = -1; 
 public boolean mouseOver = true;
 float screenshotAreaBottomY;
 float scaledImageWidth;
@@ -198,6 +197,7 @@ public void setupUI() {
     slotImages_Scaled = new PImage[numDisplaySlots];
     slotImageFiles = new File[numDisplaySlots];
     slotBounds = new Rectangle[numDisplaySlots];
+	slotIsSaved = new boolean[numDisplaySlots];
 	// init Rectangle objects
     for (int i = 0; i < numDisplaySlots; i++) {
         slotBounds[i] = new Rectangle();
@@ -265,6 +265,7 @@ public void checkForRecentScreens() {
         // place the new image into the determined target slot
         slotImages_Original[targetSlotIndex] = currentTopCandidateImage;
         slotImageFiles[targetSlotIndex] = currentTopCandidateFile;
+		slotIsSaved[targetSlotIndex] = false;
         updateSpecificScaledScreen(targetSlotIndex); 
         lastSuccessfullyPlacedCandidateFile = currentTopCandidateFile;
 
@@ -442,29 +443,72 @@ void displayRecentScreens() {
 
             slotBounds[i].setBounds((int)x, (int)y, (int)w, (int)h);
 
+			// display image
             strokeWeight(borderWeight); stroke(0); noFill();
             rect(x - borderWeight / 2, y - borderWeight / 2, w + borderWeight, h + borderWeight);
             image(displayImg, x, y);
 
-            boolean isOverThisImage = (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h && mouseOver);
+			// saved label
+			String savedLabel = "save";
+			// determine a dynamic text size:
+			// scales with image height (h * 0.06 means 6% of image height)
+			// constrained between 10px (minimum) and 16px (maximum)
+			float labelTextSize = constrain(h * 0.06f, 20, 28);
+			
+			// padding around the text within its background box, relative to text size
+			float labelPadding = labelTextSize * 0.3f;
+
+			// set text properties for measuring and drawing
+			// textFont(font); // assuming 'font' is already set globally as desired
+			textSize(labelTextSize);
+			textAlign(LEFT, TOP); // align text to the top-left
+
+			// calculate width
+			float labelTextWidth = textWidth(savedLabel);
+			// for height, with textAlign(LEFT, TOP), textSize is a good approximation
+			float labelTextHeight = labelTextSize; 
+
+			// define background box properties
+			float boxX = x; // position the box at the screenshot's top-left X
+			float boxY = y; // position the box at the screenshot's top-left Y
+			float boxWidth = labelTextWidth + (labelPadding * 2);
+			float boxHeight = labelTextHeight + (labelPadding * 2);
+
+			// when hovering over
+            boolean isOverThisImage = (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h && mouseOver && !slotIsSaved[i]);
             if (isOverThisImage) {
-                mouseOverAnyImage = true; 
+                mouseOverAnyImage = true;
+
+				// image overlay 
                 noStroke(); 
-                fill(50, 255, 50, 40); 
+                fill(0, 150, 50, 20); 	// background grey
                 rect(x, y, w, h);
+
+				// draw the background box for the label
+				stroke(0); // set the border color
+				strokeWeight(borderWeight);
+                fill(170, 170, 170); // background grey
+                // aligning with image edge
+                rect(boxX + 5, boxY + 5, boxWidth, boxHeight);
+                // draw "SAVED" text
+                fill(0);
+                // position text inside box, accounting for padding
+                text(savedLabel, boxX + 5 + labelPadding, boxY + 7 + labelPadding);	// font is slightly off so add more here
             }
 
-            // animation check for saving: use animatingSaveForSlot
-            if (savedAnimation > 0 && i == animatingSaveForSlot) { 
-                float alpha = map(savedAnimation, 0, 90, 0, 230); 
-                noStroke();
-                textMode(SHAPE);
-                fill(255, 255, 255, alpha * 0.6);
-                rect(x, y, w, h);
-                textAlign(CENTER, CENTER); 
-                textSize(min(w, h) * 0.2f); 
-                text("SAVED", x + w/2, y + h/2);
-                textMode(MODEL);
+			// check if the image in this slot is marked as saved
+            if (slotIsSaved != null && i < slotIsSaved.length && slotIsSaved[i]) {
+				savedLabel = "saved";
+				labelTextWidth = textWidth(savedLabel);
+				boxWidth = labelTextWidth + (labelPadding * 2);
+                // draw the background box for the label
+                fill(0, 150, 50); // green from solo button
+                // aligning with image edge
+                rect(boxX + 5, boxY + 5, boxWidth, boxHeight);
+                // draw "SAVED" text
+                fill(255);
+                // position text inside box, accounting for padding
+                text(savedLabel, boxX + 5 + labelPadding, boxY + 7 + labelPadding);	// font is slightly off so add more here
             }
         } else {
             // no image for this slot, or image has invalid dimensions.
@@ -482,12 +526,6 @@ void displayRecentScreens() {
     }
 
     if (mouseOverAnyImage) cursor(handCursor); else cursor(defaultCursor);
-    
-    if (savedAnimation > 0) {
-        savedAnimation--;
-    } else {
-        animatingSaveForSlot = -1; // reset when animation is done
-    }
 }
 
 // copy a chosen screenshot to another folder
@@ -823,7 +861,7 @@ void initializeShaderControls() {
     if (soloButtonBounds == null) soloButtonBounds = new ArrayList<Rectangle>();
     if (muteButtonBounds == null) muteButtonBounds = new ArrayList<Rectangle>();
     
-    if (printDebug) ("initializeShaderControls(): shader controls initialized for " + numShaders + " shaders.");
+    if (printDebug) println("initializeShaderControls(): shader controls initialized for " + numShaders + " shaders.");
 }
 
 // determine active shader indices based on solo/mute states
@@ -831,7 +869,7 @@ ArrayList<Integer> getActiveShaderIndices() {
     ArrayList<Integer> activeIndices = new ArrayList<Integer>();
     if (shaderNames == null || soloStates == null || muteStates == null || 
         soloStates.length != shaderNames.size() || muteStates.length != shaderNames.size()) {
-        if (printDebug) ("getActiveShaderIndices(): error: cannot get active shader indices, states not initialized correctly or mismatch with shaderNames size.");
+        if (printDebug) println("getActiveShaderIndices(): error: cannot get active shader indices, states not initialized correctly or mismatch with shaderNames size.");
         return activeIndices; // return empty list
     }
 
@@ -919,8 +957,7 @@ void mousePressed() {
                 File fileToSave = slotImageFiles[i];
                 if (fileToSave != null) {
                     saveScreenshot(fileToSave);
-                    savedAnimation = 90;        
-                    animatingSaveForSlot = i;   
+                    slotIsSaved[i] = true;
                 }
                 return; 
             }

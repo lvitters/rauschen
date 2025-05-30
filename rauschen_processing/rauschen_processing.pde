@@ -84,15 +84,25 @@ Noise toggleRandomShaderEachFrameNoise;
 Noise frequencyNoise;
 Noise bandwidthNoise;
 
+// FastNoiseLite for fast 2D noise textures 
+FastNoiseLite noiseColorOffsetFastNoise;
+float noiseColorOffsetFastNoiseTime = 0;
+
+// for switching between fast noise types
+FastNoiseLite.NoiseType[] fastNoiseTypes = {
+		FastNoiseLite.NoiseType.OpenSimplex2,
+		FastNoiseLite.NoiseType.OpenSimplex2S,
+		FastNoiseLite.NoiseType.Cellular,
+		FastNoiseLite.NoiseType.Perlin,
+		FastNoiseLite.NoiseType.ValueCubic,
+		FastNoiseLite.NoiseType.Value
+};
+
 // colors
 PVector finalCellColor;
 float finalCellR, finalCellG, finalCellB;
 PVector leadingColor;
 float noiseColorOffset;
-
-// FastNoiseLite for colorNoise
-FastNoiseLite noiseColorOffsetFastNoise;
-float z = 0;
 
 // toggles
 Boolean showDebug = false;
@@ -199,8 +209,11 @@ public void setup() {
 	bandwidthNoise = new Noise(intRandom(0, 100), .005);
 	noises.add(bandwidthNoise);
 
+	// init 2D texture fastNoise
 	noiseColorOffsetFastNoise = new FastNoiseLite();
-	noiseColorOffsetFastNoise.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
+	int rand = intRandom(0, fastNoiseTypes.length -1);
+	noiseColorOffsetFastNoise.SetNoiseType(fastNoiseTypes[rand]);
+
 }
 
 public void draw() {
@@ -278,7 +291,7 @@ void manipulatePixelArray() {
 		leadingColor.y = greenNoise.getNoiseRange(0, 255); 
 		leadingColor.z = blueNoise.getNoiseRange(0, 255);
 		// inc FastNoise time
-		z+= floatRandom(.01, 2);
+		if (isNoiseColorFastNoiseOffset) noiseColorOffsetFastNoiseTime += noiseColorOffsetNoise.getNoiseRange(.1, 3);
 	}
 	buffer.loadPixels();
 		// iterate through pixel array with step and apply offset
@@ -300,7 +313,10 @@ void manipulatePixelArray() {
 					int rand = intRandom(1, 3);
 					float colorOffset;
 					if (!isNoiseColorFastNoiseOffset) colorOffset = floatRandom(-noiseColorOffset, noiseColorOffset + 1);
-					else colorOffset = noiseColorOffsetFastNoise.GetNoise(x, y, z) * 255;
+					else {
+						colorOffset = map(noiseColorOffsetFastNoise.GetNoise(x, y, noiseColorOffsetFastNoiseTime), -1, 1, -255, 255);
+						// colorOffset = (colorOffset + 1) * 127.5; // map from -1 - 1 to 0 - 255 "efficiently"
+					}
 					if (rand == 1) 	{
 						finalCellR += colorOffset;
 						if (finalCellR < 0) finalCellR = 0; else if (finalCellR > 255) finalCellR = 255;
@@ -598,6 +614,9 @@ void chooseEvent(int event) {
 			isNoiseColorRandomOffset = toggleNoiseColorNoise.getNoiseBool(-1, 1);
 		break;
 		case 3:
+			// set new noise type and apply
+			int rand = intRandom(0, fastNoiseTypes.length -1);
+			noiseColorOffsetFastNoise.SetNoiseType(fastNoiseTypes[rand]);
 			isNoiseColorFastNoiseOffset = toggleNoiseColorNoise.getNoiseBool(-1, 1);
 		break;
 		case 4:

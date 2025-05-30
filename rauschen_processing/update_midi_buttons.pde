@@ -48,10 +48,10 @@ void setControllerLEDs() {
 						value = isRandomSwitchTime ? 127 : 0;
 					break;
 					case 9:
-						value = isNoiseColor ? 127 : 0;
+						value = isNoiseColorRandomOffset ? 127 : 0;
 					break;
 					case 13:
-						value = 0;
+						value = isNoiseColorFastNoiseOffset ? 127 : 0;
 					break;
 					case 10:
 						value = isEvenOffset ? 127 : 0;

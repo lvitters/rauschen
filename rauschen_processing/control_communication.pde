@@ -23,7 +23,8 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/isAutoMode").add(isAutoMode ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/nextEvent").add(nextEvent), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isRandomSwitchTime").add(isRandomSwitchTime ? 1 : 0), controlSketchLocation);
-    oscP5.send(new OscMessage("/info/isNoiseColor").add(isNoiseColor ? 1 : 0), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/isNoiseColorRandomOffset").add(isNoiseColorRandomOffset ? 1 : 0), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/isNoiseColorFastNoiseOffset").add(isNoiseColorFastNoiseOffset ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isApplyingShader").add(isApplyingShader ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isRandomShaderEachFrame").add(isRandomShaderEachFrame ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/shaderTime").add(shaderTime), controlSketchLocation);
@@ -112,11 +113,17 @@ void oscEvent(OscMessage message) {
 		if (value == 0) isEvenOffset = false;
 		if (value == 1) isEvenOffset = true;
 	}
-	else if (message.checkAddrPattern("/isNoiseColor")) {
+	else if (message.checkAddrPattern("/isNoiseColorRandomOffset")) {
 		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isNoiseColor = false;
-		if (value == 1) isNoiseColor = true;
+		if (value == 0) isNoiseColorRandomOffset = false;
+		if (value == 1) isNoiseColorRandomOffset = true;
+	}
+	else if (message.checkAddrPattern("/isNoiseColorFastNoiseOffset")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+		if (value == 0) isNoiseColorFastNoiseOffset = false;
+		if (value == 1) isNoiseColorFastNoiseOffset = true;
 	}
 	else if (message.checkAddrPattern("/isGeneratingSound")) {
 		float value = message.get(0).floatValue();

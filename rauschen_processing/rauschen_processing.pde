@@ -67,7 +67,7 @@ String[] shaderNames = {
 // color
 color c;
 
-// noises
+// standard Perlin noises
 ArrayList<Noise> noises = new ArrayList<Noise>();
 Noise xStepNoise;
 Noise yStepNoise;
@@ -90,12 +90,17 @@ float finalCellR, finalCellG, finalCellB;
 PVector leadingColor;
 float noiseColorOffset;
 
+// FastNoiseLite for colorNoise
+FastNoiseLite noiseColorOffsetFastNoise;
+float z = 0;
+
 // toggles
 Boolean showDebug = false;
 Boolean printDebug = false;
 Boolean isAutoMode = false;
 Boolean isRandomSwitchTime = false;
-Boolean isNoiseColor = false;
+Boolean isNoiseColorRandomOffset = false;
+Boolean isNoiseColorFastNoiseOffset = false;
 Boolean isApplyingShader = false;
 Boolean isRandomShaderEachFrame = false;
 Boolean isGeneratingSound = false;
@@ -193,6 +198,9 @@ public void setup() {
 	noises.add(frequencyNoise);
 	bandwidthNoise = new Noise(intRandom(0, 100), .005);
 	noises.add(bandwidthNoise);
+
+	noiseColorOffsetFastNoise = new FastNoiseLite();
+	noiseColorOffsetFastNoise.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
 }
 
 public void draw() {
@@ -200,7 +208,10 @@ public void draw() {
 	if (isAutoMode) timedEvents();
 
 	// limit for performance
-	// if (xStep < 2 || yStep < 2) isNoiseColor = false;
+	if (isNoiseColorFastNoiseOffset && xStep == 1 && yStep == 1) {
+		xStep += 1;
+		yStep += 1;
+	}
 
 	// manipulate buffer's pixels
 	if (!isApplyingShader) {
@@ -254,7 +265,7 @@ void manipulatePixelArray() {
 	// get color in PVector (it stores three floats) for pixels or steps
 	leadingColor = new PVector(0, 0, 0);
 	// generate global color with noise
-	if (isNoiseColor) {
+	if (isNoiseColorRandomOffset) {
 		// get noiseColorOffset
 		noiseColorOffsetNoise.changeInc(floatRandom(.001, .01));
 		noiseColorOffset = noiseColorOffsetNoise.getNoiseRange(0, 255);
@@ -266,6 +277,8 @@ void manipulatePixelArray() {
 		leadingColor.x = redNoise.getNoiseRange(0, 255);
 		leadingColor.y = greenNoise.getNoiseRange(0, 255); 
 		leadingColor.z = blueNoise.getNoiseRange(0, 255);
+		// inc FastNoise time
+		z+= floatRandom(.01, 2);
 	}
 	buffer.loadPixels();
 		// iterate through pixel array with step and apply offset
@@ -277,15 +290,17 @@ void manipulatePixelArray() {
 				// offset only applies to first iteration
 				if (y > 0) yOffset = 0;
 				else yOffset = yOffsetRecord;
-				// apply global noise color with slight random offset for each pixel
-				if (isNoiseColor) {
+				// apply global noise color with slight random offset for each pixel/cell
+				if (isNoiseColorRandomOffset) {
 					// color for each pixel or cell so the color offset won't be added continuously
 					finalCellR = leadingColor.x;
 					finalCellG = leadingColor.y;
 					finalCellB = leadingColor.z;
 					// change only one value per pixel and constrain to rgb
 					int rand = intRandom(1, 3);
-					float colorOffset = floatRandom(-noiseColorOffset, noiseColorOffset + 1);
+					float colorOffset;
+					if (!isNoiseColorFastNoiseOffset) colorOffset = floatRandom(-noiseColorOffset, noiseColorOffset + 1);
+					else colorOffset = noiseColorOffsetFastNoise.GetNoise(x, y, z) * 255;
 					if (rand == 1) 	{
 						finalCellR += colorOffset;
 						if (finalCellR < 0) finalCellR = 0; else if (finalCellR > 255) finalCellR = 255;
@@ -580,9 +595,12 @@ void chooseEvent(int event) {
 			resizeBuffer(width, height);
 		break;
 		case 2:
-			isNoiseColor = toggleNoiseColorNoise.getNoiseBool(-1, 1);
+			isNoiseColorRandomOffset = toggleNoiseColorNoise.getNoiseBool(-1, 1);
 		break;
 		case 3:
+			isNoiseColorFastNoiseOffset = toggleNoiseColorNoise.getNoiseBool(-1, 1);
+		break;
+		case 4:
 			// isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);
 			isRandomShaderEachFrame = !isRandomShaderEachFrame;
 			if (!isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();

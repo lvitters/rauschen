@@ -47,7 +47,10 @@ class MidiInputReceiver implements Receiver {
 							name = "/isRandomSwitchTime";
 						break;
 						case 9:
-							name = "/isNoiseColor";
+							name = "/isNoiseColorRandomOffset";
+						break;
+						case 13:
+							name = "/isNoiseColorFastNoiseOffset";
 						break;
 						case 10:
 							name = "/isEvenOffset";

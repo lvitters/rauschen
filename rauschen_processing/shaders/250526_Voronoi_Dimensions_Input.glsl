@@ -75,7 +75,7 @@ void main() {
                 float rand_val5 = rand(random_seed - vec2(2.14, 3.71));
 
                 float cell_specific_time_speed_factor = 0.75 + rand_val1 * 0.5;
-                float time_factor = u_time * TIME_ANIMATION_SPEED * cell_specific_time_speed_factor;
+                float time_factor = TIME_ANIMATION_SPEED * cell_specific_time_speed_factor;
 
                 float base_freq_x_contrib = 1.0 + norm_i * 1.5;
                 float base_freq_y_contrib = 1.0 + norm_j * 1.5;

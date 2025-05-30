@@ -52,7 +52,7 @@ void main() {
             float norm_i = float(i) / max(1.0, float(NUM_CELLS_X - 1)); 
             float norm_j = float(j) / max(1.0, float(NUM_CELLS_Y - 1));
 
-            float time_factor = u_time * TIME_ANIMATION_SPEED;
+            float time_factor = TIME_ANIMATION_SPEED;
 
             // Define unique frequencies and phases for each point's orbit.
             // These create diverse Lissajous-like paths.

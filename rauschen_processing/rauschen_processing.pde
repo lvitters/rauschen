@@ -53,7 +53,6 @@ float shaderTime = 0;
 int shaderChoice = -1;
 int lastShaderChoice;
 String[] shaderNames = {
-		"250403_FlowField.glsl",
 		"250408_RectangularCells.glsl", 
 		"250430_GameOfLife.glsl",
 		"250501_1DNoise.glsl",
@@ -61,7 +60,8 @@ String[] shaderNames = {
 		"250501_FlowFieldAdvection.glsl",
 		"250501_SmoothLife.glsl",
 		"250526_Voronoi_Simple.glsl",
-		"250526_Voronoi_Dimensions_Input.glsl"
+		"250526_Voronoi_Dimensions_Input.glsl",
+		"250530_FlowField_Direction.glsl"
 };
 
 // color

@@ -97,6 +97,7 @@ FastNoiseLite.NoiseType[] fastNoiseTypes = {
 		FastNoiseLite.NoiseType.ValueCubic,
 		FastNoiseLite.NoiseType.Value
 };
+FastNoiseLite.NoiseType fastNoiseType;
 
 // colors
 PVector finalCellColor;
@@ -209,10 +210,10 @@ public void setup() {
 	bandwidthNoise = new Noise(intRandom(0, 100), .005);
 	noises.add(bandwidthNoise);
 
-	// init 2D texture fastNoise
+	// init 2D texture with random fastNoise type
 	noiseColorOffsetFastNoise = new FastNoiseLite();
-	int rand = intRandom(0, fastNoiseTypes.length -1);
-	noiseColorOffsetFastNoise.SetNoiseType(fastNoiseTypes[rand]);
+	fastNoiseType = fastNoiseTypes[intRandom(0, fastNoiseTypes.length -1)];
+	noiseColorOffsetFastNoise.SetNoiseType(fastNoiseType);
 
 }
 
@@ -221,7 +222,7 @@ public void draw() {
 	if (isAutoMode) timedEvents();
 
 	// limit for performance
-	if (isNoiseColorFastNoiseOffset && xStep == 1 && yStep == 1) {
+	if (isNoiseColorRandomOffset && isNoiseColorFastNoiseOffset && xStep == 1 && yStep == 1) {
 		xStep += 1;
 		yStep += 1;
 	}
@@ -614,10 +615,11 @@ void chooseEvent(int event) {
 			isNoiseColorRandomOffset = toggleNoiseColorNoise.getNoiseBool(-1, 1);
 		break;
 		case 3:
-			// set new noise type and apply
-			int rand = intRandom(0, fastNoiseTypes.length -1);
-			noiseColorOffsetFastNoise.SetNoiseType(fastNoiseTypes[rand]);
+			// set new noise type and apply (use toggleNoiseColorNoise because isNoiseColorFastNoiseOffset 
+			// only works when isNoiseColorRandomOffset - previously isNoiseColor - is true anyways)
 			isNoiseColorFastNoiseOffset = toggleNoiseColorNoise.getNoiseBool(-1, 1);
+			fastNoiseType = fastNoiseTypes[intRandom(0, fastNoiseTypes.length -1)];
+			noiseColorOffsetFastNoise.SetNoiseType(fastNoiseType);
 		break;
 		case 4:
 			// isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);

@@ -79,83 +79,85 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
     }
 
     // draw shader names rows
-    for (int i = 0; i < shaderNames.size(); i++) {
-        String displayName = shaderNames.get(i);
-        float rowContentY = headerLineY_shaders + internalPadding + (i * debugRowHeight); 
-        float buttonDrawY_float = rowContentY; 
+	if (shaderNames.size() > 0) {
+		for (int i = 0; i < shaderNames.size(); i++) {
+			String displayName = shaderNames.get(i);
+			float rowContentY = headerLineY_shaders + internalPadding + (i * debugRowHeight); 
+			float buttonDrawY_float = rowContentY; 
 
-        if (rowContentY + debugRowHeight > tableY + availableHeightForShaders - internalPadding) {
-            break; // stop drawing if rows exceed available height (original comment)
-        }
-        
-        // shader name (column 1)
-        float shaderNameTextX = tableX + internalPadding;
-        textAlign(LEFT, CENTER); 
-        float shaderNameCenterY = rowContentY + debugRowHeight / 2; 
+			if (rowContentY + debugRowHeight > tableY + availableHeightForShaders - internalPadding) {
+				break; // stop drawing if rows exceed available height (original comment)
+			}
+			
+			// shader name (column 1)
+			float shaderNameTextX = tableX + internalPadding;
+			textAlign(LEFT, CENTER); 
+			float shaderNameCenterY = rowContentY + debugRowHeight / 2; 
 
-        if (i == currentShaderChoice) {
-            // highlight the current shader choice with different text color (original comment)
-            fill(20, 150, 20); // A distinct green color (original comment)
-            text("> " + displayName + " <", shaderNameTextX + 5, shaderNameCenterY); // add arrows and indent (original comment)
-            fill(0); // reset fill color for subsequent items or tables (original comment)
-        } else {
-            fill(0); 
-            text(displayName, shaderNameTextX, shaderNameCenterY);
-        }
-        textAlign(LEFT, TOP); // reset textAlign
+			if (i == currentShaderChoice) {
+				// highlight the current shader choice with different text color (original comment)
+				fill(20, 150, 20); // A distinct green color (original comment)
+				text("> " + displayName + " <", shaderNameTextX + 5, shaderNameCenterY); // add arrows and indent (original comment)
+				fill(0); // reset fill color for subsequent items or tables (original comment)
+			} else {
+				fill(0); 
+				text(displayName, shaderNameTextX, shaderNameCenterY);
+			}
+			textAlign(LEFT, TOP); // reset textAlign
 
-        // actions (S/M Buttons in column 2)
-        // buttonsGroupOffsetX will center the buttons within the actionsColContentWidth
-        float buttonsGroupOffsetX = (actionsColContentWidth - buttonsActualCombinedWidth) / 2;
-        if (buttonsGroupOffsetX < 0) buttonsGroupOffsetX = 0; // prevent negative offset if column is very narrow
+			// actions (S/M Buttons in column 2)
+			// buttonsGroupOffsetX will center the buttons within the actionsColContentWidth
+			float buttonsGroupOffsetX = (actionsColContentWidth - buttonsActualCombinedWidth) / 2;
+			if (buttonsGroupOffsetX < 0) buttonsGroupOffsetX = 0; // prevent negative offset if column is very narrow
 
-        float soloButtonActualX_float = actionsColContentStartX + buttonsGroupOffsetX;
-        float muteButtonActualX_float = soloButtonActualX_float + shaderButtonWidth + shaderButtonSpacing;
+			float soloButtonActualX_float = actionsColContentStartX + buttonsGroupOffsetX;
+			float muteButtonActualX_float = soloButtonActualX_float + shaderButtonWidth + shaderButtonSpacing;
 
-        int roundedButtonDrawY = Math.round(buttonDrawY_float);
-        int roundedButtonHeight = Math.round(debugRowHeight); 
-        int roundedShaderButtonControlWidth = Math.round(shaderButtonWidth);
-        
-        int roundedSoloButtonActualX = Math.round(soloButtonActualX_float);
-        int roundedMuteButtonActualX = Math.round(muteButtonActualX_float);
+			int roundedButtonDrawY = Math.round(buttonDrawY_float);
+			int roundedButtonHeight = Math.round(debugRowHeight); 
+			int roundedShaderButtonControlWidth = Math.round(shaderButtonWidth);
+			
+			int roundedSoloButtonActualX = Math.round(soloButtonActualX_float);
+			int roundedMuteButtonActualX = Math.round(muteButtonActualX_float);
 
-        // solo button
-        Rectangle currentSoloBound = new Rectangle(
-            roundedSoloButtonActualX, roundedButtonDrawY, 
-            roundedShaderButtonControlWidth, roundedButtonHeight 
-        );
-        soloButtonBounds.add(currentSoloBound);
-        
-        stroke(0); 
-        strokeWeight(1);
-        fill(soloStates[i] ? color(0, 150, 50) : color(170, 170, 170)); 
-        rect(currentSoloBound.x, currentSoloBound.y, currentSoloBound.width, currentSoloBound.height); 
-        
-        fill(soloStates[i] ? color(255) : color(0)); 
-        textAlign(CENTER, CENTER);
-        textSize(roundedButtonHeight * 0.60f); 
-        text("SOLO", currentSoloBound.x + currentSoloBound.width / 2, currentSoloBound.y + currentSoloBound.height / 2);
-        
-        // mute button
-        Rectangle currentMuteBound = new Rectangle(
-            roundedMuteButtonActualX, roundedButtonDrawY, 
-            roundedShaderButtonControlWidth, roundedButtonHeight
-        );
-        muteButtonBounds.add(currentMuteBound); 
+			// solo button
+			Rectangle currentSoloBound = new Rectangle(
+				roundedSoloButtonActualX, roundedButtonDrawY, 
+				roundedShaderButtonControlWidth, roundedButtonHeight 
+			);
+			soloButtonBounds.add(currentSoloBound);
+			
+			stroke(0); 
+			strokeWeight(1);
+			fill(soloStates[i] ? color(0, 150, 50) : color(170, 170, 170)); 
+			rect(currentSoloBound.x, currentSoloBound.y, currentSoloBound.width, currentSoloBound.height); 
+			
+			fill(soloStates[i] ? color(255) : color(0)); 
+			textAlign(CENTER, CENTER);
+			textSize(roundedButtonHeight * 0.60f); 
+			text("SOLO", currentSoloBound.x + currentSoloBound.width / 2, currentSoloBound.y + currentSoloBound.height / 2);
+			
+			// mute button
+			Rectangle currentMuteBound = new Rectangle(
+				roundedMuteButtonActualX, roundedButtonDrawY, 
+				roundedShaderButtonControlWidth, roundedButtonHeight
+			);
+			muteButtonBounds.add(currentMuteBound); 
 
-        stroke(0); 
-        strokeWeight(1);
-        fill(muteStates[i] ? color(255, 100, 100) : color(170, 170, 170)); 
-        rect(currentMuteBound.x, currentMuteBound.y, currentMuteBound.width, currentMuteBound.height); 
-        
-        fill(muteStates[i] ? color(255) : color(0)); 
-        text("MUTE", currentMuteBound.x + currentMuteBound.width / 2, currentMuteBound.y + currentMuteBound.height / 2);
-        
-        textSize(textSize); 
-        textAlign(LEFT, TOP); 
-        
-        fill(0); 
-    }
+			stroke(0); 
+			strokeWeight(1);
+			fill(muteStates[i] ? color(255, 100, 100) : color(170, 170, 170)); 
+			rect(currentMuteBound.x, currentMuteBound.y, currentMuteBound.width, currentMuteBound.height); 
+			
+			fill(muteStates[i] ? color(255) : color(0)); 
+			text("MUTE", currentMuteBound.x + currentMuteBound.width / 2, currentMuteBound.y + currentMuteBound.height / 2);
+			
+			textSize(textSize); 
+			textAlign(LEFT, TOP); 
+			
+			fill(0); 
+		}
+	}
 
     // draw shader names table border (original comment)
     noFill();

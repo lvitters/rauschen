@@ -83,6 +83,8 @@ Noise shaderTimeNoise;
 Noise toggleRandomShaderEachFrameNoise;
 Noise frequencyNoise;
 Noise bandwidthNoise;
+Noise noiseColorFastNoiseOffsetXNoise;
+Noise noiseColorFastNoiseOffsetYNoise;
 
 // FastNoiseLite for fast 2D noise textures 
 FastNoiseLite noiseColorOffsetFastNoise;
@@ -98,6 +100,8 @@ FastNoiseLite.NoiseType[] fastNoiseTypes = {
 		FastNoiseLite.NoiseType.Value
 };
 FastNoiseLite.NoiseType fastNoiseType;
+float xOff;
+float yOff;
 
 // colors
 PVector finalCellColor;
@@ -210,6 +214,11 @@ public void setup() {
 	bandwidthNoise = new Noise(intRandom(0, 100), .005);
 	noises.add(bandwidthNoise);
 
+	noiseColorFastNoiseOffsetXNoise = new Noise(intRandom(0, 100), .0008);
+	noises.add(noiseColorFastNoiseOffsetXNoise);
+	noiseColorFastNoiseOffsetYNoise = new Noise(intRandom(0, 100), .0008);
+	noises.add(noiseColorFastNoiseOffsetYNoise);
+
 	// init 2D texture with random fastNoise type
 	noiseColorOffsetFastNoise = new FastNoiseLite();
 	fastNoiseType = fastNoiseTypes[intRandom(0, fastNoiseTypes.length -1)];
@@ -222,7 +231,7 @@ public void draw() {
 	if (isAutoMode) timedEvents();
 
 	// limit for performance
-	if (isNoiseColorRandomOffset && isNoiseColorFastNoiseOffset && xStep == 1 && yStep == 1) {
+	if (isNoiseColorRandomOffset && isNoiseColorFastNoiseOffset && xStep <= 2 && yStep <= 2) {
 		xStep += 1;
 		yStep += 1;
 	}
@@ -292,7 +301,11 @@ void manipulatePixelArray() {
 		leadingColor.y = greenNoise.getNoiseRange(0, 255); 
 		leadingColor.z = blueNoise.getNoiseRange(0, 255);
 		// inc FastNoise time
-		if (isNoiseColorFastNoiseOffset) noiseColorOffsetFastNoiseTime += noiseColorOffsetNoise.getNoiseRange(.1, 3);
+		if (isNoiseColorFastNoiseOffset) {
+			noiseColorOffsetFastNoiseTime += noiseColorOffsetNoise.getNoiseRange(.1, 3);
+			xOff = noiseColorFastNoiseOffsetXNoise.getNoiseRange(-5, 5);
+			yOff = noiseColorFastNoiseOffsetYNoise.getNoiseRange(-5, 5);
+		}
 	}
 	buffer.loadPixels();
 		// iterate through pixel array with step and apply offset
@@ -315,9 +328,14 @@ void manipulatePixelArray() {
 					float colorOffset;
 					if (!isNoiseColorFastNoiseOffset) colorOffset = floatRandom(-noiseColorOffset, noiseColorOffset + 1);
 					else {
-						colorOffset = map(noiseColorOffsetFastNoise.GetNoise(x, y, noiseColorOffsetFastNoiseTime), -1, 1, -255, 255);
-						// colorOffset = (colorOffset + 1) * 127.5; // map from -1 - 1 to 0 - 255 "efficiently"
+						// calculate noise coordinates for "zoom" centered in buffer
+						float nX = ((buffer.width/2.0) / 2.0f) * (1.0f - xOff) + (x / 2.0f) * xOff;
+						float nY = ((buffer.height/2.0) / 2.0f) * (1.0f - yOff) + (y / 2.0f) * yOff;
+
+						// get the noise value using the centered coordinates
+						colorOffset = map(noiseColorOffsetFastNoise.GetNoise(nX, nY, noiseColorOffsetFastNoiseTime), -1, 1, -255, 255);
 					}
+					// set to one channel per frame
 					if (rand == 1) 	{
 						finalCellR += colorOffset;
 						if (finalCellR < 0) finalCellR = 0; else if (finalCellR > 255) finalCellR = 255;

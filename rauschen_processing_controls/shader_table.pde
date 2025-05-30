@@ -157,13 +157,14 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
 			
 			fill(0); 
 		}
-	}
 
-    // draw shader names table border (original comment)
-    noFill();
-    stroke(0);
-    strokeWeight(borderWeight); // borderWeight is a global from your setupUI
-    rect(tableX, tableY, tableWidth, availableHeightForShaders);
+		// draw shader names table border (original comment)
+		noFill();
+		stroke(0);
+		strokeWeight(borderWeight); // borderWeight is a global from your setupUI
+		rect(tableX, tableY, tableWidth, availableHeightForShaders);
+	
+	}
 }
 
 // init shader control states

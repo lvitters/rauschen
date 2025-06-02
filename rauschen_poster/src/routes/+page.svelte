@@ -110,16 +110,18 @@
 
         <h1 class="text-5xl font-interference text-right w-[90vmin] font-bold mt-2">
 			MASTER EXHIBITION
+			<br>
         </h1>
-
-		<br>
 		
 		<h1 class="text-4xl font-interference text-right w-[90vmin] font-bold mt-2">
+			Lucca Vitters
+			<br>
+			<br>
             JUNE 19 + 20
         </h1>
 		
 		<h1 class="text-4xl font-interference text-right w-[90vmin] font-bold mt-2">
-            4pm - 9pm
+            5pm - 8pm
         </h1>
 
 		<br>

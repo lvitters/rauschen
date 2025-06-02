@@ -8,10 +8,24 @@ import wellen.dsp.*;								// should be included in the above, but for some rea
 import javax.sound.midi.*;
 import oscP5.*;
 import netP5.*;
+import processing.opengl.PSurfaceJOGL;				// to set window undecorated
+import com.jogamp.newt.Window;
+import com.jogamp.newt.util.EDTUtil;
 
 // main window
 int width = 1000;
 int height = 1000;
+
+// to set window undecorated
+Boolean isUndecorated = false;
+Window newtWindow = null;
+EDTUtil edtUtil = null;
+volatile boolean isCurrentlyUndecorated = false;
+// to move around window with no title bar
+boolean upArrowDown = false;
+boolean downArrowDown = false;
+boolean leftArrowDown = false;
+boolean rightArrowDown = false;
 
 // resolution steps
 int maxStep = width;
@@ -148,7 +162,10 @@ public void setup() {
 	windowTitle("RAUSCHEN");
 
 	// determine this window location on screen
-	surface.setLocation(0, 40);
+	if (!isUndecorated) surface.setLocation(0, 40);
+
+	// start sketch without title bar
+	if (isUndecorated) removeTitleBar();
 
 	// can't go in settings for some reason
 	frameRate(120);
@@ -227,6 +244,9 @@ public void setup() {
 }
 
 public void draw() {
+	// move window around with arrow keys if there is no title bar
+	if (isUndecorated) moveWindow();
+
 	// handle any timed events first because it may affect the pixel array manipulation
 	if (isAutoMode) timedEvents();
 
@@ -743,5 +763,115 @@ void keyPressed() {
 	if (key == 'n') {
 		if (!isGeneratingSound) toggleSound(true);
 		else toggleSound(false);
+	}
+
+	// move window around
+	if (key == CODED) {
+		if (keyCode == UP) {
+			upArrowDown = true;
+		} else if (keyCode == DOWN) {
+			downArrowDown = true;
+		} else if (keyCode == LEFT) {
+			leftArrowDown = true;
+		} else if (keyCode == RIGHT) {
+			rightArrowDown = true;
+		}
+  	}
+}
+
+// for moving window when there is title bar
+void keyReleased() {
+	if (key == CODED) {
+		if (keyCode == UP) {
+			upArrowDown = false;
+		} else if (keyCode == DOWN) {
+			downArrowDown = false;
+		} else if (keyCode == LEFT) {
+			leftArrowDown = false;
+		} else if (keyCode == RIGHT) {
+			rightArrowDown = false;
+		}
+	}
+}
+
+// move window according to arrow key states
+void moveWindow() {
+	if (newtWindow != null && edtUtil != null) {
+		int deltaX = 0;
+		int deltaY = 0;
+		final int moveAmount = 1; // pixels to move per frame if key is held
+
+		if (upArrowDown) {
+			deltaY -= moveAmount;
+		}
+		if (downArrowDown) {
+			deltaY += moveAmount;
+		}
+		if (leftArrowDown) {
+			deltaX -= moveAmount;
+		}
+		if (rightArrowDown) {
+			deltaX += moveAmount;
+		}
+
+		// if there's any movement to apply
+		if (deltaX != 0 || deltaY != 0) {
+			// get current position (reading is safe from any thread)
+			final int currentX = newtWindow.getX();
+			final int currentY = newtWindow.getY();
+			
+			final int finalNewX = currentX + deltaX;
+			final int finalNewY = currentY + deltaY;
+
+			// dispatch the setPosition call to the NEWT EDT (non-blocking)
+			edtUtil.invoke(false, new Runnable() {
+				@Override
+				public void run() {
+					try { 
+						newtWindow.setPosition(finalNewX, finalNewY);
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+				}
+			});
+		}
+	}
+}
+
+// remove title bar of window for faux full screen
+void removeTitleBar() {
+	// get both surfaces
+	if (surface instanceof PSurfaceJOGL) {
+		PSurfaceJOGL joglSurface = (PSurfaceJOGL) surface;
+		Object nativeObject = joglSurface.getNative();
+		if (nativeObject instanceof Window) {
+			// assign to the GLOBAL newtWindow variable
+			newtWindow = (Window) nativeObject;
+			if (newtWindow.getScreen() != null && newtWindow.getScreen().getDisplay() != null) {
+				// assign to the GLOBAL edtUtil variable
+				edtUtil = newtWindow.getScreen().getDisplay().getEDTUtil();
+				if (edtUtil == null) {
+				newtWindow = null; // invalidate newtWindow if edtUtil is not available
+				}
+			} else {
+				newtWindow = null; // invalidate newtWindow
+			}
+		}
+	}
+
+	// call title bar removal logic if both are not null
+	if (newtWindow != null && edtUtil != null) {
+		edtUtil.invoke(false, new Runnable() { 
+			@Override
+			public void run() {
+				if (newtWindow.isVisible()) { 
+					newtWindow.setVisible(false);
+					newtWindow.setUndecorated(true);
+					newtWindow.setVisible(true);
+				} else {
+					newtWindow.setUndecorated(true);
+				}
+			}
+		});
 	}
 }

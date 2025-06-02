@@ -12,8 +12,13 @@ import netP5.*;
 
 
 // sketch window
-int manualWidth = 2560;
-int manualHeight = 1440 - 28 - 24;	// minus menu bar minus window bar
+int manualWidth = 1800;
+int manualHeight = 1000 - 28 - 24;	// minus menu bar minus window bar
+
+// UI changes
+int textSize = 10;
+// debug table
+float debugRowHeight = 12;
 
 // main sketch communication
 OscP5 oscP5;
@@ -99,9 +104,6 @@ final int GLOBAL_MOUSE_OFFSET_X = 6;
 final int GLOBAL_MOUSE_OFFSET_Y = 9;
 float padding = 10;
 float borderWeight = 1;
-int textSize = 16;
-// debug table
-float debugRowHeight = 20;
 // bounds for the graph display area determined at runtime
 float graphAreaX;
 float graphAreaY;
@@ -143,7 +145,7 @@ public void setup() {
 	windowTitle("RAUSCHEN controls");
 
 	// determine window location on screen
-	//surface.setLocation(1000, 40);
+	surface.setLocation(0, 0);
 
 	// can't go in settings for some reason
 	frameRate(120);

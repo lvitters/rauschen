@@ -1,4 +1,4 @@
-precision mediump float; // Or highp for better quality if needed
+precision highp float; // Or highp for better quality if needed
 
 // Uniforms: These are values passed into the shader from your program
 uniform vec2 u_resolution;  // The dimensions of the canvas (e.g., width, height)

@@ -495,7 +495,11 @@ public Integer pickRandomActiveShader() {
 
     // randomly pick one index from the list of valid, active candidates
     int randomIndexWithinCandidates = intRandom(0, candidateIndices.size() - 1);
-    return candidateIndices.get(randomIndexWithinCandidates);
+
+	// reset shader time (some shaders get their speed from the time)
+	if (shaderTime > 1000) shaderTime = 0;
+    
+	return candidateIndices.get(randomIndexWithinCandidates);
 }
 
 // resize buffer for "zooming into" shader, similar to grid step being higher in manipulatePixelArray()

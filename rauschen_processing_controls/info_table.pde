@@ -99,3 +99,15 @@ public void displayInfoTables() {
     // shader names table at `currentTopY` variable
     displayShaderNamesList(tableStartX, currentTopY, totalTableWidth, internalPadding);
 }
+
+// helper function to format debug values
+String formatDisplayValue(Object value) {
+    if (value == null) return "null";
+    if (value instanceof Boolean) {
+        return (Boolean)value ? "TRUE" : "FALSE";
+    } else if (value instanceof Float) {
+        return nf((Float)value, 0, 2); // round floats
+    } else {
+        return value.toString();
+    }
+}

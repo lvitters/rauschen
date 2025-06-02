@@ -12,13 +12,13 @@ import netP5.*;
 
 
 // sketch window
-int manualWidth = 1800;
-int manualHeight = 1000 - 28 - 24;	// minus menu bar minus window bar
+int manualWidth = 2560;
+int manualHeight = 1440 - 28 - 24;	// minus menu bar minus window bar
 
 // UI changes
-int textSize = 10;
+int textSize = 12;
 // debug table
-float debugRowHeight = 12;
+float debugRowHeight = 20;
 
 // main sketch communication
 OscP5 oscP5;
@@ -145,7 +145,7 @@ public void setup() {
 	windowTitle("RAUSCHEN controls");
 
 	// determine window location on screen
-	surface.setLocation(0, 0);
+	//surface.setLocation(0, 0);
 
 	// can't go in settings for some reason
 	frameRate(120);

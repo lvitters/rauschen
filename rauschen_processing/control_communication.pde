@@ -27,6 +27,7 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/isNoiseColorFastNoiseOffset").add(isNoiseColorFastNoiseOffset ? 1 : 0), controlSketchLocation);
     if (!isNoiseColorFastNoiseOffset || !isNoiseColorRandomOffset|| isApplyingShader) oscP5.send(new OscMessage("/info/fastNoiseType").add("none"), controlSketchLocation);
 	else oscP5.send(new OscMessage("/info/fastNoiseType").add(fastNoiseType.toString()), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/isFastNoiseColor").add(isFastNoiseColor ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isApplyingShader").add(isApplyingShader ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isRandomShaderEachFrame").add(isRandomShaderEachFrame ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/shaderTime").add(shaderTime), controlSketchLocation);
@@ -126,6 +127,12 @@ void oscEvent(OscMessage message) {
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isNoiseColorFastNoiseOffset = false;
 		if (value == 1) isNoiseColorFastNoiseOffset = true;
+	}
+	else if (message.checkAddrPattern("/isFastNoiseColor")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+		if (value == 0) isFastNoiseColor = false;
+		if (value == 1) isFastNoiseColor = true;
 	}
 	else if (message.checkAddrPattern("/isGeneratingSound")) {
 		float value = message.get(0).floatValue();

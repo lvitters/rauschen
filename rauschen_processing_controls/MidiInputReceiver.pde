@@ -53,6 +53,9 @@ class MidiInputReceiver implements Receiver {
 							name = "/isNoiseColorFastNoiseOffset";
 						break;
 						case 10:
+							name = "/isFastNoiseColor";
+						break;
+						case 14:
 							name = "/isEvenOffset";
 						break;
 						case 11:

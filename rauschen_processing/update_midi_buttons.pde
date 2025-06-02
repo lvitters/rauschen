@@ -54,10 +54,10 @@ void setControllerLEDs() {
 						value = isNoiseColorFastNoiseOffset ? 127 : 0;
 					break;
 					case 10:
-						value = isEvenOffset ? 127 : 0;
+						value = isFastNoiseColor ? 127 : 0;
 					break;
 					case 14:
-						value = 0;
+						value = isEvenOffset ? 127 : 0;
 					break;
 					case 11:
 						value = isGeneratingSound ? 127 : 0;

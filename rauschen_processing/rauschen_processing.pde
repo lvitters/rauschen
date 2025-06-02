@@ -103,6 +103,10 @@ Noise noiseColorFastNoiseOffsetYNoise;
 // FastNoiseLite for fast 2D noise textures 
 FastNoiseLite noiseColorOffsetFastNoise;
 float noiseColorOffsetFastNoiseTime = 0;
+float colorOffset;
+// same for isFastNoiseColor
+FastNoiseLite fastColorNoiseR, fastColorNoiseG, fastColorNoiseB;
+float fastColorNoiseRTime, fastColorNoiseGTime, fastColorNoiseBTime;
 
 // for switching between fast noise types
 FastNoiseLite.NoiseType[] fastNoiseTypes = {
@@ -130,6 +134,7 @@ Boolean isAutoMode = false;
 Boolean isRandomSwitchTime = false;
 Boolean isNoiseColorRandomOffset = false;
 Boolean isNoiseColorFastNoiseOffset = false;
+Boolean isFastNoiseColor = false;
 Boolean isApplyingShader = false;
 Boolean isRandomShaderEachFrame = false;
 Boolean isGeneratingSound = false;
@@ -241,6 +246,16 @@ public void setup() {
 	fastNoiseType = fastNoiseTypes[intRandom(0, fastNoiseTypes.length -1)];
 	noiseColorOffsetFastNoise.SetNoiseType(fastNoiseType);
 
+	// "complete" fastColorNoise
+	fastColorNoiseR = new FastNoiseLite();
+	fastColorNoiseR.SetSeed(intRandom(1, 10000));
+	fastColorNoiseR.SetNoiseType(fastNoiseType);
+	fastColorNoiseG = new FastNoiseLite();
+	fastColorNoiseG.SetSeed(intRandom(1, 10000));
+	fastColorNoiseG.SetNoiseType(fastNoiseType);
+	fastColorNoiseB = new FastNoiseLite();
+	fastColorNoiseB.SetSeed(intRandom(1, 10000));
+	fastColorNoiseB.SetNoiseType(fastNoiseType);
 }
 
 public void draw() {
@@ -251,7 +266,7 @@ public void draw() {
 	if (isAutoMode) timedEvents();
 
 	// limit for performance
-	if (isNoiseColorRandomOffset && isNoiseColorFastNoiseOffset && xStep <= 2 && yStep <= 2) {
+	if (((isNoiseColorRandomOffset && isNoiseColorFastNoiseOffset) || (isNoiseColorRandomOffset && isFastNoiseColor)) && xStep <= 2 && yStep <= 2) {
 		xStep += 1;
 		yStep += 1;
 	}
@@ -323,8 +338,16 @@ void manipulatePixelArray() {
 		// inc FastNoise time
 		if (isNoiseColorFastNoiseOffset) {
 			noiseColorOffsetFastNoiseTime += noiseColorOffsetNoise.getNoiseRange(.1, 3);
+			
+			// generate random offset so texture "wobbles"
 			xOff = noiseColorFastNoiseOffsetXNoise.getNoiseRange(-5, 5);
 			yOff = noiseColorFastNoiseOffsetYNoise.getNoiseRange(-5, 5);
+		}
+		// inc fastNoiseColor times
+		if (isFastNoiseColor) {
+			fastColorNoiseRTime += floatRandom(.1, 10);
+			fastColorNoiseGTime += floatRandom(.1, 10);
+			fastColorNoiseBTime += floatRandom(.1, 10);
 		}
 	}
 	buffer.loadPixels();
@@ -337,34 +360,35 @@ void manipulatePixelArray() {
 				// offset only applies to first iteration
 				if (y > 0) yOffset = 0;
 				else yOffset = yOffsetRecord;
+				// calculate noise coordinates for "zoom" centered in buffer
+				float nX = ((buffer.width/2.0) / 2.0f) * (1.0f - xOff) + (x / 2.0f) * xOff;
+				float nY = ((buffer.height/2.0) / 2.0f) * (1.0f - yOff) + (y / 2.0f) * yOff;
 				// apply global noise color with slight random offset for each pixel/cell
 				if (isNoiseColorRandomOffset) {
-					// color for each pixel or cell so the color offset won't be added continuously
-					finalCellR = leadingColor.x;
-					finalCellG = leadingColor.y;
-					finalCellB = leadingColor.z;
-					// change only one value per pixel and constrain to rgb
-					int rand = intRandom(1, 3);
-					float colorOffset;
-					if (!isNoiseColorFastNoiseOffset) colorOffset = floatRandom(-noiseColorOffset, noiseColorOffset + 1);
-					else {
-						// calculate noise coordinates for "zoom" centered in buffer
-						float nX = ((buffer.width/2.0) / 2.0f) * (1.0f - xOff) + (x / 2.0f) * xOff;
-						float nY = ((buffer.height/2.0) / 2.0f) * (1.0f - yOff) + (y / 2.0f) * yOff;
-
-						// get the noise value using the centered coordinates
-						colorOffset = map(noiseColorOffsetFastNoise.GetNoise(nX, nY, noiseColorOffsetFastNoiseTime), -1, 1, -255, 255);
-					}
-					// set to one channel per frame
-					if (rand == 1) 	{
-						finalCellR += colorOffset;
-						if (finalCellR < 0) finalCellR = 0; else if (finalCellR > 255) finalCellR = 255;
-					} else if (rand == 2) {
-						finalCellG += colorOffset;
-						if (finalCellG < 0) finalCellG = 0; else if (finalCellG > 255) finalCellG = 255;
+					if (isFastNoiseColor) {
+						finalCellR = map(fastColorNoiseR.GetNoise(nX, nY, fastColorNoiseRTime), -1, 1, 0, 255);
+						finalCellG = map(fastColorNoiseG.GetNoise(nX, nY, fastColorNoiseGTime), -1, 1, 0, 255);
+						finalCellB = map(fastColorNoiseB.GetNoise(nX, nY, fastColorNoiseBTime), -1, 1, 0, 255);
 					} else {
-						finalCellB += colorOffset;
-						if (finalCellB < 0) finalCellB = 0; else if (finalCellB > 255) finalCellB = 255;
+						// color for each pixel or cell so the color offset won't be added continuously
+						finalCellR = leadingColor.x;
+						finalCellG = leadingColor.y;
+						finalCellB = leadingColor.z;
+						// change only one value per pixel and constrain to rgb
+						int rand = intRandom(1, 3);
+						if (!isNoiseColorFastNoiseOffset) colorOffset = floatRandom(-noiseColorOffset, noiseColorOffset + 1);
+						else if (isNoiseColorFastNoiseOffset) colorOffset = map(noiseColorOffsetFastNoise.GetNoise(nX, nY, noiseColorOffsetFastNoiseTime), -1, 1, -255, 255);
+						// set to one channel per frame
+						if (rand == 1) 	{
+							finalCellR += colorOffset;
+							if (finalCellR < 0) finalCellR = 0; else if (finalCellR > 255) finalCellR = 255;
+						} else if (rand == 2) {
+							finalCellG += colorOffset;
+							if (finalCellG < 0) finalCellG = 0; else if (finalCellG > 255) finalCellG = 255;
+						} else {
+							finalCellB += colorOffset;
+							if (finalCellB < 0) finalCellB = 0; else if (finalCellB > 255) finalCellB = 255;
+						}
 					}
 				// or apply random color
 				} else {
@@ -522,6 +546,15 @@ public Integer pickRandomActiveShader() {
 	return candidateIndices.get(randomIndexWithinCandidates);
 }
 
+// occasionally set another noise type for FastNoiseLite noises
+void resetFastNoiseType() {
+	fastNoiseType = fastNoiseTypes[intRandom(0, fastNoiseTypes.length -1)];
+	noiseColorOffsetFastNoise.SetNoiseType(fastNoiseType);
+	fastColorNoiseR.SetNoiseType(fastNoiseType);
+	fastColorNoiseG.SetNoiseType(fastNoiseType);
+	fastColorNoiseB.SetNoiseType(fastNoiseType);
+}
+
 // resize buffer for "zooming into" shader, similar to grid step being higher in manipulatePixelArray()
 public void resizeBuffer(float w, float h) {
     int newW = (int)w;
@@ -660,10 +693,15 @@ void chooseEvent(int event) {
 			// set new noise type and apply (use toggleNoiseColorNoise because isNoiseColorFastNoiseOffset 
 			// only works when isNoiseColorRandomOffset - previously isNoiseColor - is true anyways)
 			isNoiseColorFastNoiseOffset = toggleNoiseColorNoise.getNoiseBool(-1, 1);
-			fastNoiseType = fastNoiseTypes[intRandom(0, fastNoiseTypes.length -1)];
-			noiseColorOffsetFastNoise.SetNoiseType(fastNoiseType);
+			resetFastNoiseType();
 		break;
 		case 4:
+			// set new noise type and apply (set isNoiseCOlorFastNoiseOffset to opposite of isFastNoiseColor because only of them can be on)
+			isFastNoiseColor = toggleNoiseColorNoise.getNoiseBool(-1, 1);
+			isNoiseColorFastNoiseOffset = !isFastNoiseColor;
+			resetFastNoiseType();
+		break;
+		case 5:
 			// isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);
 			isRandomShaderEachFrame = !isRandomShaderEachFrame;
 			if (!isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();

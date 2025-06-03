@@ -663,7 +663,7 @@ void timedEvents() {
 	eventCounter++;
 	if (!isRandomSwitchTime) nextEvent = switchTime + (switchTime * switchTimeMultiplier);
 	if (eventCounter > (nextEvent * 60)) {
-		chooseEvent(intRandom(0, 4));
+		chooseEvent(intRandom(0, 5));
 		if (maxSwitchTime > minSwitchTime) nextEvent = floatRandom(minSwitchTime + (minSwitchTime * switchTimeMultiplier), maxSwitchTime + (maxSwitchTime * switchTimeMultiplier));
 		else nextEvent = 0;
 		eventCounter = 0;
@@ -706,8 +706,7 @@ void chooseEvent(int event) {
 			resetFastNoiseType();
 		break;
 		case 5:
-			// isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);
-			isRandomShaderEachFrame = !isRandomShaderEachFrame;
+			isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);
 			if (!isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();
 		break;
 	}

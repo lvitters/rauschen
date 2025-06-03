@@ -59,10 +59,10 @@ class MidiInputReceiver implements Receiver {
 							name = "";
 						break;
 						case 11:
-							name = "/isEvenOffset";
+							name = "/isRandomShaderEachFrame";
 						break;
 						case 15:
-							name = "";
+							name = "/isEvenOffset";
 						break;
 						case 24:
 							name = "";

@@ -74,7 +74,7 @@ void audioblock(float[] pSamples) {
 		// fill with silence if no pixels
 		for (int i = 0; i < pSamples.length; i++) {
 			pSamples[i] = 0;
-			println("audioblock(): buffer empty");
+			if (printDebug) println("audioblock(): buffer empty");
 		}
 	}
 }

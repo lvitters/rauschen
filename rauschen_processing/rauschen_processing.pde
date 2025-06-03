@@ -137,7 +137,7 @@ Boolean isNoiseColorRandomOffset = false;
 Boolean isNoiseColorFastNoiseOffset = false;
 Boolean isFastNoiseColor = false;
 Boolean isApplyingShader = false;
-Boolean isRandomShaderEachFrame = false;
+Boolean isRandomShaderEachFrame = true;
 Boolean isGeneratingSound = true;
 Boolean isApplyingAudioFilter = true;
 Boolean isTakingScreenshots = true;
@@ -203,6 +203,9 @@ public void setup() {
 	// start wellen's digital signal processing but pause for now
 	DSP.start(this);
 	DSP.pause(true);
+
+	// turn on by default
+	toggleSound(true);
 	
 	// fill audioDebugPixels with empty pixels to ensure correct size
 	while (audioDebugPixels.size() < 1024) {

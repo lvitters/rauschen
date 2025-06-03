@@ -60,10 +60,10 @@ void setControllerLEDs() {
 						value = 0;
 					break;
 					case 11:
-						value = isEvenOffset ? 127 : 0;
+						value = isRandomShaderEachFrame ? 127 : 0;
 					break;
 					case 15:
-						value = 0;
+						value = isEvenOffset ? 127 : 0;
 					break;
 				}
 

@@ -128,6 +128,12 @@ void oscEvent(OscMessage message) {
 		if (value == 0) isFastNoiseColor = false;
 		if (value == 1) isFastNoiseColor = true;
 	}
+	else if (message.checkAddrPattern("/isRandomShaderEachFrame")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+		if (value == 0) isRandomShaderEachFrame = false;
+		if (value == 1) isRandomShaderEachFrame = true;
+	}
 	else if (message.checkAddrPattern("/isEvenOffset")) {
 		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value

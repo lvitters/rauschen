@@ -3,6 +3,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.io.FilenameFilter;
 import java.util.Arrays;
+import java.util.List;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.awt.Rectangle;
@@ -77,6 +78,11 @@ Boolean printDebug = false;
 // store the shaders names for display
 ArrayList<String> shaderNames = new ArrayList<String>();
 int currentShaderChoice = -1;
+
+// handle asynchronicity
+List<String> incomingShaderNames_staging = new ArrayList<String>();
+volatile boolean newShaderDataFromOSC = false; // 'volatile' for thread visibility
+final Object shaderDataLock = new Object();   // Lock object for synchronizing access
 
 // screenshot gallery
 int numDisplaySlots = 4; 			// number of fixed display slots
@@ -178,6 +184,8 @@ public void setup() {
 
 public void draw() {
 	background(170, 170, 170);
+
+	updateSharedShaderDataFromOSC();
 
 	checkForRecentScreens();
 	// load new screens once every X frames in background thread

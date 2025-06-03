@@ -57,15 +57,25 @@ void oscEvent(OscMessage message) {
 	}
 
 	// handler for shader info messages
-	else if (message.checkAddrPattern("/shaderNames")) {
-        shaderNames.clear();
-		// get how many arguments where send
-        int numShaders = message.arguments().length;
+	if (message.checkAddrPattern("/shaderNames")) {
+
+        // create temporary list to hold names from this message
+        ArrayList<String> receivedNamesThisMessage = new ArrayList<String>();
         
-        for (int i = 0; i < numShaders; i++) {
-            shaderNames.add(message.get(i).stringValue());
+        // get how many arguments were sent
+        int numArgs = message.arguments().length;
+
+        for (int i = 0; i < numArgs; i++) {
+            receivedNamesThisMessage.add(message.get(i).stringValue());
         }
-    }
+        
+        // update staging list and flag within a synchronized block
+        synchronized (shaderDataLock) {
+            incomingShaderNames_staging.clear();
+            incomingShaderNames_staging.addAll(receivedNamesThisMessage);
+            newShaderDataFromOSC = true; // signal that new data is ready
+        }
+	}
     
     // update current shader choice when received
     else if (message.addrPattern().equals("/shaderChoice")) {

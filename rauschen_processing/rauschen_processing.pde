@@ -129,6 +129,7 @@ float noiseColorOffset;
 
 // toggles
 Boolean showDebug = false;
+Boolean showAudioLine = false;
 Boolean printDebug = false;
 Boolean isAutoMode = false;
 Boolean isRandomSwitchTime = false;
@@ -137,7 +138,7 @@ Boolean isNoiseColorFastNoiseOffset = false;
 Boolean isFastNoiseColor = false;
 Boolean isApplyingShader = false;
 Boolean isRandomShaderEachFrame = false;
-Boolean isGeneratingSound = false;
+Boolean isGeneratingSound = true;
 Boolean isApplyingAudioFilter = true;
 Boolean isTakingScreenshots = true;
 Boolean isEvenOffset = false;
@@ -301,6 +302,7 @@ public void draw() {
 	if (isTakingScreenshots && (frameCount % (60 * 3) == 0)) takeScreenshot();
 
 	if (showDebug) showDebug();
+	if (showAudioLine) showAudioLine();
 
 	// send information to control sketch
 	if (frameCount % 2 == 0) {
@@ -424,8 +426,6 @@ void setNewGridWithNoise() {
 	// get new step close to old step with noise, bias towards lower numbers
 	xStep = (int)xStepNoise.getVariableNoiseRange(-maxStep/2, 0, maxStep/2, maxStep, 2);
 	yStep = (int)yStepNoise.getVariableNoiseRange(-maxStep/2, 0, maxStep/2, maxStep, 2);
-	// xStep = (int)xStepNoise.getNoiseRange(-10, maxStep, 2);
-	// yStep = (int)yStepNoise.getNoiseRange(-10, maxStep, 2);
 
 	// cutoff over one and apply
 	if (xStep < 1) xStep = 1;
@@ -755,28 +755,32 @@ void cleanupImageFolder() {
 
 // render rudimentary debug info to the main window (rest is handled in control sketch)
 void showDebug() {
-		// audio pixels debug line (only show when sound is actually playing)
-		// if (isGeneratingSound && audioDebugPixels != null) {
-		// 	for (int i = 0; i < audioDebugPixels.size(); i++) {
-		// 		PVector p = audioDebugPixels.get(i);
-		// 		if (i == 0 || i == audioDebugPixels.size() - 1) {
-		// 			stroke(0, 255, 0);
-		// 			strokeWeight(10);
-		// 		} else {
-		// 			stroke(255, 0, 0);
-		// 			strokeWeight(5);
-		// 		}
-		// 		if (p != null) point(p.x, p.y);
-		// 		noStroke();
-		// 	}
-		// }
-		// rudimentary debug info
-		fill(0, 0, 0);
-		rect(0, 0, 210, 65);
-		fill(255, 255, 255);
-		textSize(25);
-		text("fps: " + (int) frameRate, 10, 30);
-		text("isAutoMode: " + isAutoMode, 10, 55);
+		translate(80, 0);
+			fill(0, 0, 0);
+			rect(0, 0, 210, 65);
+			fill(255, 255, 255);
+			textSize(25);
+			text("fps: " + (int) frameRate, 10, 30);
+			text("isAutoMode: " + isAutoMode, 10, 55);
+		translate(-80, 0);
+}
+
+// audio pixels debug line (only show when sound is actually playing)
+void showAudioLine() {
+	if (isGeneratingSound && audioDebugPixels != null) {
+		for (int i = 0; i < audioDebugPixels.size(); i++) {
+			PVector p = audioDebugPixels.get(i);
+			if (i == 0 || i == audioDebugPixels.size() - 1) {
+				stroke(0, 255, 0);
+				strokeWeight(10);
+			} else {
+				stroke(255, 0, 0);
+				strokeWeight(5);
+			}
+			if (p != null) point(p.x, p.y);
+			noStroke();
+		}
+	}
 }
 
 // listen to key presses (fallback - stuff generally handled by control sketch)

@@ -110,12 +110,6 @@ void oscEvent(OscMessage message) {
 		if (value == 0) isRandomSwitchTime = false;
 		if (value == 1) isRandomSwitchTime = true;
 	}
-	else if (message.checkAddrPattern("/isEvenOffset")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isEvenOffset = false;
-		if (value == 1) isEvenOffset = true;
-	}
 	else if (message.checkAddrPattern("/isNoiseColorRandomOffset")) {
 		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
@@ -133,6 +127,12 @@ void oscEvent(OscMessage message) {
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isFastNoiseColor = false;
 		if (value == 1) isFastNoiseColor = true;
+	}
+	else if (message.checkAddrPattern("/isEvenOffset")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+		if (value == 0) isEvenOffset = false;
+		if (value == 1) isEvenOffset = true;
 	}
 	else if (message.checkAddrPattern("/isGeneratingSound")) {
 		float value = message.get(0).floatValue();
@@ -152,6 +152,14 @@ void oscEvent(OscMessage message) {
 		if (value == 0) showDebug = false;
 		if (value == 1) showDebug = true;
 	}	
+	else if (message.checkAddrPattern("/showAudioLine")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+		if (value == 0) showAudioLine = false;
+		if (value == 1) showAudioLine = true;
+	}
+
+	// other
 	else if (message.checkAddrPattern("/setControllerLEDs")) {
 		setControllerLEDs();
 	}	

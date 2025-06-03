@@ -56,17 +56,37 @@ class MidiInputReceiver implements Receiver {
 							name = "/isFastNoiseColor";
 						break;
 						case 14:
-							name = "/isEvenOffset";
+							name = "";
 						break;
 						case 11:
-							name = "/isGeneratingSound";
+							name = "/isEvenOffset";
 						break;
 						case 15:
+							name = "";
+						break;
+						case 24:
+							name = "";
+						break;
+						case 28:
+							name = "";
+						break;
+						case 25:
+							name = "";
+						break;
+						case 29:
+							name = "";
+						break;
+						case 26:
+							name = "/isGeneratingSound";
+						break;
+						case 30:
 							name = "/isApplyingAudioFilter";
 						break;
 						case 27:
-							// rauschen
 							name = "/showDebug";
+						break;
+						case 31:
+							name = "/showAudioLine";
 						break;
 						case 32:
 							name = "/setControllerLEDs";

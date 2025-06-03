@@ -57,13 +57,13 @@ void setControllerLEDs() {
 						value = isFastNoiseColor ? 127 : 0;
 					break;
 					case 14:
-						value = isEvenOffset ? 127 : 0;
+						value = 0;
 					break;
 					case 11:
-						value = isGeneratingSound ? 127 : 0;
+						value = isEvenOffset ? 127 : 0;
 					break;
 					case 15:
-						value = isApplyingAudioFilter ? 127 : 0;
+						value = 0;
 					break;
 				}
 
@@ -76,9 +76,9 @@ void setControllerLEDs() {
 			// reset
 			value = 0;			
 			
-			// LEDs values 25 to 31 (32 is debug in controls) 
+			// LEDs values 24 to 31 (32 is debug in controls) 
 			// short press / long press are spaced apart 4 CCs
-			for (int control = 24; control < 31; control++) {
+			for (int control = 24; control < 32; control++) {
 				switch (control) {
 					case 24:
 						value = 0;
@@ -93,16 +93,16 @@ void setControllerLEDs() {
 						value = 0;
 					break;
 					case 26:
-						value = 0;
+						value = isGeneratingSound ? 127 : 0;
 					break;
 					case 30:
-						value = 0;
+						value = isApplyingAudioFilter ? 127 : 0;
 					break;
 					case 27:
 						value = showDebug ? 127 : 0;
 					break;
 					case 31:
-						value = 0;
+						value = showAudioLine ? 127 : 0;
 					break;
 				}
 

@@ -26,13 +26,13 @@ void main() {
 
     // Speed at which grid dimensions change (lower value = slower change)
     // For example, 0.2 means dimensions change roughly every 1.0/0.2 = 5 seconds.
-    float grid_change_speed = 0.2; 
+    float grid_change_speed = 0.8; 
     float discrete_time_grid = floor(u_time * grid_change_speed);
 
     // Minimum and maximum number of columns/rows for the grid.
     // Feel free to adjust these!
     float min_grid_dim = 2.0;
-    float max_grid_dim = 10.0; // Max 10x10 grid
+    float max_grid_dim = 20.0; // Max 10x10 grid
 
     // Calculate number of columns and rows
     // Using different seeds for columns and rows to make their changes independent.
@@ -65,7 +65,7 @@ void main() {
 
     // Speed at which the shuffle pattern changes
     // For example, 0.5 means the shuffle changes roughly every 1.0/0.5 = 2 seconds.
-    float shuffle_change_speed = 0.5; 
+    float shuffle_change_speed = 2; 
     float discrete_time_shuffle = floor(u_time * shuffle_change_speed);
 
     float total_cells = num_cols * num_rows;

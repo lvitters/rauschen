@@ -708,7 +708,7 @@ void chooseEvent(int event) {
 		break;
 		case 5:
 			isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);
-			if (!isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();
+			if (isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();
 		break;
 	}
 }

@@ -75,7 +75,8 @@ String[] shaderNames = {
 		"250501_SmoothLife.glsl",
 		"250526_Voronoi_Simple.glsl",
 		"250526_Voronoi_Dimensions_Input.glsl",
-		"250530_FlowField_Direction.glsl"
+		"250530_FlowField_Direction.glsl",
+		"250603_RectangularCellsLines.glsl"
 };
 
 // color

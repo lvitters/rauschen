@@ -77,7 +77,8 @@ String[] shaderNames = {
 		"250526_Voronoi_Dimensions_Input.glsl",
 		"250530_FlowField_Direction.glsl",
 		"250603_RectangularCellsLines.glsl",
-		"250603_ReshuffleGrid.glsl"
+		"250603_ReshuffleGrid.glsl",
+		"250606_rotationalPropagation.glsl"
 };
 
 // color
@@ -114,7 +115,7 @@ float fastColorNoiseRTime, fastColorNoiseGTime, fastColorNoiseBTime;
 FastNoiseLite.NoiseType[] fastNoiseTypes = {
 		FastNoiseLite.NoiseType.OpenSimplex2,
 		FastNoiseLite.NoiseType.OpenSimplex2S,
-		FastNoiseLite.NoiseType.Cellular,
+		// FastNoiseLite.NoiseType.Cellular,		// kinda ugly
 		FastNoiseLite.NoiseType.Perlin,
 		FastNoiseLite.NoiseType.ValueCubic,
 		FastNoiseLite.NoiseType.Value
@@ -237,9 +238,9 @@ public void setup() {
 	noises.add(shaderTimeNoise);
 	toggleRandomShaderEachFrameNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(toggleRandomShaderEachFrameNoise);
-	frequencyNoise = new Noise(intRandom(0, 100), .005);
+	frequencyNoise = new Noise(intRandom(0, 100), .002);
 	noises.add(frequencyNoise);
-	bandwidthNoise = new Noise(intRandom(0, 100), .005);
+	bandwidthNoise = new Noise(intRandom(0, 100), .002);
 	noises.add(bandwidthNoise);
 
 	noiseColorFastNoiseOffsetXNoise = new Noise(intRandom(0, 100), .0008);
@@ -271,10 +272,15 @@ public void draw() {
 	// handle any timed events first because it may affect the pixel array manipulation
 	if (isAutoMode) timedEvents();
 
-	// limit for performance
-	if (((isNoiseColorRandomOffset && isNoiseColorFastNoiseOffset) || (isNoiseColorRandomOffset && isFastNoiseColor)) && xStep <= 2 && yStep <= 2) {
-		xStep += 1;
-		yStep += 1;
+	// limit for performance in certain modes
+	if ((isNoiseColorRandomOffset && isNoiseColorFastNoiseOffset) || (isNoiseColorRandomOffset && isFastNoiseColor)) {
+		if (xStep <= 1 && yStep <= 1) {
+			xStep += 2;
+			yStep += 2;
+		} else if (xStep <= 2 && yStep <= 2) {
+			xStep += 1;
+			yStep += 1;
+		}
 	}
 
 	// manipulate buffer's pixels
@@ -284,6 +290,9 @@ public void draw() {
 		if (shaderChoice != -1) lastShaderChoice = shaderChoice;
 		shaderChoice = -1;
 	} else {
+		// reset shader time occasionally
+		if (shaderTime > 1000) shaderTime = intRandom(0, 10);		// don't start at the same spot every time
+		// apply shaders
 		if (isRandomShaderEachFrame) {
 			int rand = pickRandomActiveShader();
 			if (!activeShaders.isEmpty()) applyShader(rand);
@@ -544,9 +553,6 @@ public Integer pickRandomActiveShader() {
 
     // randomly pick one index from the list of valid, active candidates
     int randomIndexWithinCandidates = intRandom(0, candidateIndices.size() - 1);
-
-	// reset shader time (some shaders get their speed from the time)
-	if (shaderTime > 1000) shaderTime = 0;
     
 	return candidateIndices.get(randomIndexWithinCandidates);
 }
@@ -674,7 +680,7 @@ void timedEvents() {
 // switch between which events to fire
 void chooseEvent(int event) {
 	if (printDebug) println("chooseEvent(): event: " + event);
-	audioSamplingMode = intRandom(0, 2);
+	audioSamplingMode = intRandom(0, 2);	// choose new audio line orientation
 	switch (event) {
 		case 0:
 			if (!isApplyingShader) {

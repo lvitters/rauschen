@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
 @import 'tailwindcss';
 
 @theme {
+	--font-tiny5: "Tiny5", sans-serif;
 	--font-interference: "KH Interference", sans-serif;
 	--font-terminal: "Terminal Grotesque", sans-serif;
 }

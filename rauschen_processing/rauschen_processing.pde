@@ -78,7 +78,8 @@ String[] shaderNames = {
 		"250530_FlowField_Direction.glsl",
 		"250603_RectangularCellsLines.glsl",
 		"250603_ReshuffleGrid.glsl",
-		"250606_rotationalPropagation.glsl"
+		"250606_rotationalPropagation.glsl",
+		"250606_rotationCenter.glsl"
 };
 
 // color

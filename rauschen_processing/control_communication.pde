@@ -178,5 +178,12 @@ void oscEvent(OscMessage message) {
         for (int i = 0; i < numactiveShaders; i++) {
             activeShaders.add(message.get(i).intValue());
         }
+		// when isRandomShaderEachFrame, set lastShaderChoice to whatever activeShaders came in last
+		if (!isRandomShaderEachFrame) {
+			if (!activeShaders.isEmpty()) {
+				int rand = pickRandomActiveShader();
+				lastShaderChoice = rand;
+			}
+		}
 	}
 }

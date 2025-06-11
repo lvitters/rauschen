@@ -74,7 +74,7 @@ void main() {
     vec2 radiusNoiseInput = vec2(regionID * 15.0 + 100.0, timeScale * 0.8);
     float radiusNoise = fbm(radiusNoiseInput);
     float baseRadius = 0.15; // Base rotation radius
-    float radiusVariation = 0.12; // How much the radius can vary
+    float radiusVariation = 0.8; // How much the radius can vary
     float dynamicRadius = baseRadius + radiusVariation * radiusNoise;
     
     // Keep rotation center at screen center

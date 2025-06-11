@@ -26,7 +26,7 @@ public void displayInfoTables() {
         java.util.Collections.sort(keys);
 
         // calculate debug table height
-        float headerTextY_debug = currentTopY + internalPadding;
+        float headerTextY_debug = currentTopY + internalPadding + 3;
         float headerHeight_debug = (headerTextY_debug - currentTopY) + 20 + 5; // height of header text area + line spacing
 
         float rowsHeight_debug = 0;

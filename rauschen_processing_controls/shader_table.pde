@@ -69,9 +69,9 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
     textSize(textSize); // consistent text size
 
     // draw shader names table header (adapted for two columns)
-    float headerTextY_shaders = tableY + internalPadding;
+    float headerTextY_shaders = tableY + internalPadding + 3;
     text("shaders", tableX + internalPadding, headerTextY_shaders);
-    text("actions", actionsColContentStartX, headerTextY_shaders);
+    text("actions", actionsColContentStartX + 2, headerTextY_shaders);
     
     stroke(0);
     strokeWeight(1);

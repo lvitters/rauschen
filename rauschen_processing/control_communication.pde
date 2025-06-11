@@ -31,6 +31,7 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/isApplyingShader").add(isApplyingShader ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isRandomShaderEachFrame").add(isRandomShaderEachFrame ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/shaderTime").add(shaderTime), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/isShadersOnly").add(isShadersOnly ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isEvenOffset").add(isEvenOffset ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isTakingScreenshots").add(isTakingScreenshots ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isGeneratingSound").add(isGeneratingSound ? 1 : 0), controlSketchLocation);
@@ -139,6 +140,20 @@ void oscEvent(OscMessage message) {
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isEvenOffset = false;
 		if (value == 1) isEvenOffset = true;
+	}
+	else if (message.checkAddrPattern("/shaderTimeMultiplier")) {
+		float value = message.get(0).floatValue();
+		shaderTimeMultiplier = map(value, 0, 127, 1, 10);			// cannot be 0
+	}
+	else if (message.checkAddrPattern("/shaderTimeDivisor")) {
+		float value = message.get(0).floatValue();
+		shaderTimeDivisor = map(value, 0, 127, 1, 0.001);			// cannot be 0
+	}
+	else if (message.checkAddrPattern("/isShadersOnly")) {
+		float value = message.get(0).floatValue();
+		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+		if (value == 0) isShadersOnly = false;
+		if (value == 1) isShadersOnly = true;
 	}
 	else if (message.checkAddrPattern("/isGeneratingSound")) {
 		float value = message.get(0).floatValue();

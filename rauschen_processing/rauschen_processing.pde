@@ -66,6 +66,8 @@ ArrayList<Integer> activeShaders = new ArrayList<Integer>();
 float shaderTime = 0;
 int shaderChoice = -1;
 int lastShaderChoice;
+float shaderTimeMultiplier = 1;
+float shaderTimeDivisor = 1;
 String[] shaderNames = {
 		"250408_RectangularCells.glsl", 
 		"250430_GameOfLife.glsl",
@@ -142,6 +144,7 @@ Boolean isNoiseColorRandomOffset = false;
 Boolean isNoiseColorFastNoiseOffset = false;
 Boolean isFastNoiseColor = false;
 Boolean isApplyingShader = false;
+Boolean isShadersOnly = false;
 Boolean isRandomShaderEachFrame = true;
 Boolean isGeneratingSound = true;
 Boolean isApplyingAudioFilter = true;
@@ -286,12 +289,7 @@ public void draw() {
 	}
 
 	// manipulate buffer's pixels
-	if (!isApplyingShader) {
-		manipulatePixelArray();
-		// set to -1 for displaying no shader is used
-		if (shaderChoice != -1) lastShaderChoice = shaderChoice;
-		shaderChoice = -1;
-	} else {
+	if (isApplyingShader || isShadersOnly || frameCount < 10) {
 		// reset shader time occasionally
 		if (shaderTime > 1000) shaderTime = intRandom(0, 10);		// don't start at the same spot every time
 		// apply shaders
@@ -305,7 +303,12 @@ public void draw() {
 			if (shaderChoice == -1) shaderChoice = lastShaderChoice;
 			if (!activeShaders.isEmpty()) applyShader(shaderChoice);
 		}
-	}
+	} else {
+		manipulatePixelArray();
+		// set to -1 for displaying no shader is used
+		if (shaderChoice != -1) lastShaderChoice = shaderChoice;
+		shaderChoice = -1;
+	} 
 
 	makeBufferCopyForAudio();
 
@@ -484,7 +487,7 @@ void applyShader(int shader) {
 	}
 
 	// apply shader time (like T in noise)
-    shaderTime += shaderTimeNoise.getNoiseRange(.05, .3);
+    shaderTime += (shaderTimeNoise.getNoiseRange(.05, .3) * shaderTimeMultiplier) * shaderTimeDivisor;
     shaders.get(shader).set("u_time", shaderTime);
 
     // set resolution uniform just in case it wasn't set universally or needs update

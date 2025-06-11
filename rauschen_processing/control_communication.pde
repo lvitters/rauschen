@@ -197,6 +197,7 @@ void oscEvent(OscMessage message) {
 		if (!isRandomShaderEachFrame) {
 			if (!activeShaders.isEmpty()) {
 				int rand = pickRandomActiveShader();
+				shaderChoice = rand;
 				lastShaderChoice = rand;
 			}
 		}

@@ -217,29 +217,26 @@ void displayRecentScreens() {
             image(displayImg, x, y);
 
 			// saved label
-			String savedLabel = "save";
-			// determine a dynamic text size:
-			// scales with image height (h * 0.06 means 6% of image height)
-			// constrained between 10px (minimum) and 16px (maximum)
+			String savedLabel = "SAVE";
 			float labelTextSize = constrain(h * 0.06f, 20, 28);
 			
 			// padding around the text within its background box, relative to text size
-			float labelPadding = labelTextSize * 0.3f;
+			float labelPadding = textSize * 0.5f;
 
 			// set text properties for measuring and drawing
 			// textFont(font); // assuming 'font' is already set globally as desired
-			textSize(labelTextSize);
+			textSize(textSize + 2);
 			textAlign(LEFT, TOP); // align text to the top-left
 
 			// calculate width
 			float labelTextWidth = textWidth(savedLabel);
 			// for height, with textAlign(LEFT, TOP), textSize is a good approximation
-			float labelTextHeight = labelTextSize; 
+			float labelTextHeight = debugRowHeight; 
 
 			// define background box properties
 			float boxX = x; // position the box at the screenshot's top-left X
 			float boxY = y; // position the box at the screenshot's top-left Y
-			float boxWidth = labelTextWidth + (labelPadding * 2);
+			float boxWidth = labelTextWidth + (labelPadding * 3);
 			float boxHeight = labelTextHeight + (labelPadding * 2);
 
 			// when hovering over
@@ -257,26 +254,26 @@ void displayRecentScreens() {
 				strokeWeight(borderWeight);
                 fill(170, 170, 170); // background grey
                 // aligning with image edge
-                rect(boxX + 5, boxY + 5, boxWidth, boxHeight);
+                rect(boxX + 5, boxY + 5, boxWidth + 10, boxHeight);
                 // draw "SAVED" text
                 fill(0);
                 // position text inside box, accounting for padding
-                text(savedLabel, boxX + 5 + labelPadding, boxY + 7 + labelPadding);	// font is slightly off so add more here
+                text(savedLabel, boxX + 12 + labelPadding, boxY + 9 + labelPadding);	// font is slightly off so add more here
             }
 
 			// check if the image in this slot is marked as saved
             if (slotIsSaved != null && i < slotIsSaved.length && slotIsSaved[i]) {
-				savedLabel = "saved";
+				savedLabel = "SAVED";
 				labelTextWidth = textWidth(savedLabel);
 				boxWidth = labelTextWidth + (labelPadding * 2);
                 // draw the background box for the label
                 fill(0, 150, 50); // green from solo button
                 // aligning with image edge
-                rect(boxX + 5, boxY + 5, boxWidth, boxHeight);
+                rect(boxX + 5, boxY + 5, boxWidth + 15, boxHeight);
                 // draw "SAVED" text
                 fill(255);
                 // position text inside box, accounting for padding
-                text(savedLabel, boxX + 5 + labelPadding, boxY + 7 + labelPadding);	// font is slightly off so add more here
+                text(savedLabel, boxX + 12 + labelPadding, boxY + 9 + labelPadding);	// font is slightly off so add more here
             }
         } else {
             // no image for this slot, or image has invalid dimensions.

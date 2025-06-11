@@ -19,7 +19,7 @@ int manualHeight = 1440 - 28 - 24;	// minus menu bar minus window bar
 // UI changes
 int textSize = 12;
 // debug table
-float debugRowHeight = 20;
+float debugRowHeight = 18;
 
 // main sketch communication
 OscP5 oscP5;

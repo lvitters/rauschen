@@ -41,6 +41,7 @@ int xOffsetRecord = 0;
 int yOffset = 0;
 int yOffsetRecord = 0;
 int maxIndex = width * height * 4;
+int globalSpeedDivisor = 1;
 
 // buffer for display
 PGraphics buffer;
@@ -288,29 +289,32 @@ public void draw() {
 		}
 	}
 
-	// manipulate buffer's pixels
-	if (isApplyingShader || isShadersOnly || frameCount < 10) {
-		// reset shader time occasionally
-		if (shaderTime > 1000) shaderTime = intRandom(0, 10);		// don't start at the same spot every time
-		// apply shaders
-		if (isRandomShaderEachFrame) {
-			int rand = pickRandomActiveShader();
-			if (!activeShaders.isEmpty()) applyShader(rand);
-			// set to shaderChoice for display
-			shaderChoice = rand;
+	// apply globalSpeed to buffer manipulation
+	if (frameCount % globalSpeedDivisor == 0) {
+		// manipulate buffer's pixels
+		if (isApplyingShader || isShadersOnly || frameCount < 10) {
+			// reset shader time occasionally
+			if (shaderTime > 1000) shaderTime = intRandom(0, 10);		// don't start at the same spot every time
+			// apply shaders
+			if (isRandomShaderEachFrame) {
+				int rand = pickRandomActiveShader();
+				if (!activeShaders.isEmpty()) applyShader(rand);
+				// set to shaderChoice for display
+				shaderChoice = rand;
+			} else {
+				// use last choice to apply in case currently no shader is set
+				if (shaderChoice == -1) shaderChoice = lastShaderChoice;
+				if (!activeShaders.isEmpty()) applyShader(shaderChoice);
+			}
 		} else {
-			// use last choice to apply in case currently no shader is set
-			if (shaderChoice == -1) shaderChoice = lastShaderChoice;
-			if (!activeShaders.isEmpty()) applyShader(shaderChoice);
+			manipulatePixelArray();
+			// set to -1 for displaying no shader is used
+			if (shaderChoice != -1) lastShaderChoice = shaderChoice;
+			shaderChoice = -1;
 		}
-	} else {
-		manipulatePixelArray();
-		// set to -1 for displaying no shader is used
-		if (shaderChoice != -1) lastShaderChoice = shaderChoice;
-		shaderChoice = -1;
-	} 
+		makeBufferCopyForAudio();
+	}
 
-	makeBufferCopyForAudio();
 
 	if (isApplyingAudioFilter) applyAudioFilter();
 

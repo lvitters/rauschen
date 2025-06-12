@@ -22,29 +22,17 @@ class MidiInputReceiver implements Receiver {
 						case 4:
 							name = "/switchTimeMultiplier";
 						break;
-						case 1:
-							name = "/sameStep";
-						break;
-						case 5:
-							name = "/sameStepMultiplier";
-						break;
-						case 2:
-							name = "/xStep";
-						break;
-						case 6:
-							name = "/xStepMultiplier";
-						break;
-						case 3:
-							name = "/yStep";
-						break;
-						case 7:
-							name = "/yStepMultiplier";
-						break;
 						case 8:
 							name = "/isAutoMode";
 						break;
 						case 12:
 							name = "/isRandomSwitchTime";
+						break;
+						case 1:
+							name = "/sameStep";
+						break;
+						case 5:
+							name = "/sameStepMultiplier";
 						break;
 						case 9:
 							name = "/isNoiseColorRandomOffset";
@@ -52,8 +40,20 @@ class MidiInputReceiver implements Receiver {
 						case 13:
 							name = "/isNoiseColorFastNoiseOffset";
 						break;
+						case 2:
+							name = "/xStep";
+						break;
+						case 6:
+							name = "/xStepMultiplier";
+						break;
 						case 10:
 							name = "/isFastNoiseColor";
+						break;
+						case 3:
+							name = "/yStep";
+						break;
+						case 7:
+							name = "/yStepMultiplier";
 						break;
 						case 11:
 							name = "/isRandomShaderEachFrame";
@@ -69,6 +69,9 @@ class MidiInputReceiver implements Receiver {
 						break;
 						case 24:
 							name = "/isShadersOnly";
+						break;
+						case 17: 
+							name = "/globalSpeedDivisor";
 						break;
 						case 26:
 							name = "/isGeneratingSound";

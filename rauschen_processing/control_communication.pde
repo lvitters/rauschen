@@ -36,6 +36,7 @@ void sendDebugOSC() {
 	oscP5.send(new OscMessage("/info/isTakingScreenshots").add(isTakingScreenshots ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isGeneratingSound").add(isGeneratingSound ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isApplyingAudioFilter").add(isApplyingAudioFilter ? 1 : 0), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/globalSpeedDivisor").add(globalSpeedDivisor), controlSketchLocation);
 }
 
 // send shader names and choice over OSC
@@ -69,36 +70,6 @@ void oscEvent(OscMessage message) {
 		float value = message.get(0).floatValue();
 		switchTimeMultiplier = map(value, 0, 127, 1, 5);		// should be 0 most of the time
 	}
-	else if (message.checkAddrPattern("/sameStep")) {
-		float value = message.get(0).floatValue();
-		nextX = nextY = (int) map(value, 0, 127, 1, width/10);	// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
-	}
-	else if (message.checkAddrPattern("/sameStepMultiplier")) {
-		float value = message.get(0).floatValue();
-		xStepMultiplier = yStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
-	}
-	else if (message.checkAddrPattern("/xStep")) {
-		float value = message.get(0).floatValue();
-		nextX = (int) map(value, 0, 127, 1, width/10);			// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
-	}
-	else if (message.checkAddrPattern("/xStepMultiplier")) {
-		float value = message.get(0).floatValue();
-		xStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
-	}
-	else if (message.checkAddrPattern("/yStep")) {
-		float value = message.get(0).floatValue();
-		nextY = (int) map(value, 0, 127, 1, height/10);			// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
-	}
-	else if (message.checkAddrPattern("/yStepMultiplier")) {
-		float value = message.get(0).floatValue();
-		yStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
-	}
 	else if (message.checkAddrPattern("/isAutoMode")) {
 		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
@@ -110,6 +81,16 @@ void oscEvent(OscMessage message) {
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isRandomSwitchTime = false;
 		if (value == 1) isRandomSwitchTime = true;
+	}
+	else if (message.checkAddrPattern("/sameStep")) {
+		float value = message.get(0).floatValue();
+		nextX = nextY = (int) map(value, 0, 127, 1, width/10);	// cannot be 0, should depend on the res
+		stepUpdatedManually = true;
+	}
+	else if (message.checkAddrPattern("/sameStepMultiplier")) {
+		float value = message.get(0).floatValue();
+		xStepMultiplier = yStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
+		stepUpdatedManually = true;
 	}
 	else if (message.checkAddrPattern("/isNoiseColorRandomOffset")) {
 		float value = message.get(0).floatValue();
@@ -123,11 +104,31 @@ void oscEvent(OscMessage message) {
 		if (value == 0) isNoiseColorFastNoiseOffset = false;
 		if (value == 1) isNoiseColorFastNoiseOffset = true;
 	}
+	else if (message.checkAddrPattern("/xStep")) {
+		float value = message.get(0).floatValue();
+		nextX = (int) map(value, 0, 127, 1, width/10);			// cannot be 0, should depend on the res
+		stepUpdatedManually = true;
+	}
+	else if (message.checkAddrPattern("/xStepMultiplier")) {
+		float value = message.get(0).floatValue();
+		xStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
+		stepUpdatedManually = true;
+	}
 	else if (message.checkAddrPattern("/isFastNoiseColor")) {
 		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isFastNoiseColor = false;
 		if (value == 1) isFastNoiseColor = true;
+	}
+	else if (message.checkAddrPattern("/yStep")) {
+		float value = message.get(0).floatValue();
+		nextY = (int) map(value, 0, 127, 1, height/10);			// cannot be 0, should depend on the res
+		stepUpdatedManually = true;
+	}
+	else if (message.checkAddrPattern("/yStepMultiplier")) {
+		float value = message.get(0).floatValue();
+		yStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
+		stepUpdatedManually = true;
 	}
 	else if (message.checkAddrPattern("/isRandomShaderEachFrame")) {
 		float value = message.get(0).floatValue();
@@ -154,6 +155,10 @@ void oscEvent(OscMessage message) {
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) isShadersOnly = false;
 		if (value == 1) isShadersOnly = true;
+	}
+	else if (message.checkAddrPattern("/globalSpeedDivisor")) {
+		float value = message.get(0).floatValue();
+		globalSpeedDivisor = (int) map(value, 0, 127, 1, 20);				// cannot be 0
 	}
 	else if (message.checkAddrPattern("/isGeneratingSound")) {
 		float value = message.get(0).floatValue();

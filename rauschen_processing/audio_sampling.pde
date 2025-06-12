@@ -68,7 +68,8 @@ void audioblock(float[] pSamples) {
 			pSamples[i] = map(average, 0, 255, -0.5, 0.5);
 
 			// apply audio filter
-			if (isApplyingAudioFilter) pSamples[i] = bandPassFilter.process(pSamples[i]);
+			// if (isApplyingAudioFilter) pSamples[i] = bandPassFilter.process(pSamples[i]);
+			pSamples[i] = bandPassFilter.process(pSamples[i]);
 		}
 	} else {
 		// fill with silence if no pixels
@@ -97,8 +98,8 @@ void applyAudioFilter() {
 		bandPassFilter.set_frequency(frequencyNoise.getVariableNoiseRange(0, 100, 30000, 40000));
 		bandPassFilter.set_bandwidth(bandwidthNoise.getVariableNoiseRange(0, 100, 30000, 40000) * 0.5f);
 	} else {
-		println(audioFrequency);
-		println(audioBandwidth);
+		// println(audioFrequency);
+		// println(audioBandwidth);
 		bandPassFilter.set_frequency(audioFrequency);
 		bandPassFilter.set_bandwidth(audioBandwidth);
 	}

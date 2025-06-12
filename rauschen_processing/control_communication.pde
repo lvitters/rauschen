@@ -164,11 +164,11 @@ void oscEvent(OscMessage message) {
 	}
 	else if (message.checkAddrPattern("/audioFrequency")) {
 		float value = message.get(0).floatValue();
-		audioFrequency = map(value, 0, 127, 1, 40000);				// cannot be 0
+		audioFrequency = map(value, 0, 127, 1, 20000);				// cannot be 0
 	}
 	else if (message.checkAddrPattern("/audioBandwidth")) {
 		float value = message.get(0).floatValue();
-		audioBandwidth = map(value, 0, 127, 1, 20000);				// cannot be 0
+		audioBandwidth = map(value, 0, 127, 1000, 20000);				// cannot be 0
 	}
 	else if (message.checkAddrPattern("/isGeneratingSound")) {
 		float value = message.get(0).floatValue();

@@ -62,7 +62,7 @@ int[] audioPixels;
 FilterBandPass bandPassFilter = new FilterBandPass();
 // manual controls
 float audioFrequency = 1;
-float audioBandwidth = 1;
+float audioBandwidth = 1000;
 
 // shader stuff
 ArrayList<PShader> shaders = new ArrayList<PShader>();

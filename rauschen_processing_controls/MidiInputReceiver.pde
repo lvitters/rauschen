@@ -61,10 +61,10 @@ class MidiInputReceiver implements Receiver {
 						case 15:
 							name = "/isEvenOffset";
 						break;
-						case 17:
+						case 16:
 							name = "/shaderTimeMultiplier";
 						break;
-						case 21:
+						case 20:
 							name = "/shaderTimeDivisor";
 						break;
 						case 24:

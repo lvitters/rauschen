@@ -81,7 +81,7 @@ void setControllerLEDs() {
 			for (int control = 24; control < 32; control++) {
 				switch (control) {
 					case 24:
-						value = 0;
+						value = isShadersOnly ? 127 : 0;
 					break;
 					case 28:
 						value = 0;

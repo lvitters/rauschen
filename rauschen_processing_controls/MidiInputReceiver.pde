@@ -73,6 +73,12 @@ class MidiInputReceiver implements Receiver {
 						case 17: 
 							name = "/globalSpeedDivisor";
 						break;
+						case 18:
+							name = "/audioFrequency";
+						break;
+						case 22:
+							name = "/audioBandwidth";
+						break;
 						case 26:
 							name = "/isGeneratingSound";
 						break;

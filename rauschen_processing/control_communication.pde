@@ -36,6 +36,8 @@ void sendDebugOSC() {
 	oscP5.send(new OscMessage("/info/isTakingScreenshots").add(isTakingScreenshots ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isGeneratingSound").add(isGeneratingSound ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isApplyingAudioFilter").add(isApplyingAudioFilter ? 1 : 0), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/audioFrequency").add(audioFrequency), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/audioBandwidth").add(audioBandwidth), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/globalSpeedDivisor").add(globalSpeedDivisor), controlSketchLocation);
 }
 
@@ -159,6 +161,14 @@ void oscEvent(OscMessage message) {
 	else if (message.checkAddrPattern("/globalSpeedDivisor")) {
 		float value = message.get(0).floatValue();
 		globalSpeedDivisor = (int) map(value, 0, 127, 1, 20);				// cannot be 0
+	}
+	else if (message.checkAddrPattern("/audioFrequency")) {
+		float value = message.get(0).floatValue();
+		audioFrequency = map(value, 0, 127, 1, 40000);				// cannot be 0
+	}
+	else if (message.checkAddrPattern("/audioBandwidth")) {
+		float value = message.get(0).floatValue();
+		audioBandwidth = map(value, 0, 127, 1, 20000);				// cannot be 0
 	}
 	else if (message.checkAddrPattern("/isGeneratingSound")) {
 		float value = message.get(0).floatValue();

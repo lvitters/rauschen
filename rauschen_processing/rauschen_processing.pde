@@ -60,6 +60,9 @@ int audioSamplingMode = 0;
 int[] audioPixels;
 // filter for making noise more "bearable"
 FilterBandPass bandPassFilter = new FilterBandPass();
+// manual controls
+float audioFrequency = 1;
+float audioBandwidth = 1;
 
 // shader stuff
 ArrayList<PShader> shaders = new ArrayList<PShader>();
@@ -315,8 +318,7 @@ public void draw() {
 		makeBufferCopyForAudio();
 	}
 
-
-	if (isApplyingAudioFilter) applyAudioFilter();
+	applyAudioFilter();
 
 	// display buffer
 	image(buffer, 0, 0, width, height);

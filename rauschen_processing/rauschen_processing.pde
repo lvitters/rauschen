@@ -86,7 +86,8 @@ String[] shaderNames = {
 		"250603_ReshuffleGrid.glsl",
 		"250606_rotationalPropagation.glsl",
 		"250606_rotationCenter.glsl",
-		"250611_rotationChaos.glsl"
+		"250611_rotationChaos.glsl",
+		"250613_GradientCellularAutomaton.glsl"
 };
 
 // color
@@ -724,7 +725,7 @@ void chooseEvent(int event) {
 			resetFastNoiseType();
 		break;
 		case 5:
-			isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);
+			isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1.5);
 			if (isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();
 		break;
 	}

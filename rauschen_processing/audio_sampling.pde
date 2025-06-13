@@ -95,8 +95,8 @@ void toggleSound(Boolean generateSound) {
 // apply audio filter with noise
 void applyAudioFilter() {
 	if (isApplyingAudioFilter) {
-		bandPassFilter.set_frequency(frequencyNoise.getVariableNoiseRange(0, 100, 30000, 40000));
-		bandPassFilter.set_bandwidth(bandwidthNoise.getVariableNoiseRange(0, 100, 30000, 40000) * 0.5f);
+		bandPassFilter.set_frequency(frequencyNoise.getVariableNoiseRange(100, 500, 15000, 18000));
+		bandPassFilter.set_bandwidth(bandwidthNoise.getVariableNoiseRange(100, 500, 15000, 18000));
 	} else {
 		// println(audioFrequency);
 		// println(audioBandwidth);

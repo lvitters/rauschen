@@ -315,9 +315,9 @@ public void draw() {
 			if (shaderChoice != -1) lastShaderChoice = shaderChoice;
 			shaderChoice = -1;
 		}
-		makeBufferCopyForAudio();
 	}
 
+	makeBufferCopyForAudio();
 	applyAudioFilter();
 
 	// display buffer

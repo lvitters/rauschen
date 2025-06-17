@@ -109,7 +109,7 @@
     .image-with-label {
         display: inline-block;
         position: relative;
-        border: 1px solid #333;
+        border: 1px solid white;
         padding: 16mm; /* Equal 10mm padding on all sides */
     }
 

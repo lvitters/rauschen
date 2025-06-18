@@ -13,11 +13,13 @@ import com.jogamp.newt.Window;
 import com.jogamp.newt.util.EDTUtil;
 
 // main window
-int width = 1000;
-int height = 1000;
+int width = 1200;
+int height = 1200;
+
+int screenshotWidth = 1000;
 
 // to set window undecorated
-Boolean isUndecorated = false;
+Boolean isUndecorated = true;
 Window newtWindow = null;
 EDTUtil edtUtil = null;
 volatile boolean isCurrentlyUndecorated = false;
@@ -26,6 +28,8 @@ boolean upArrowDown = false;
 boolean downArrowDown = false;
 boolean leftArrowDown = false;
 boolean rightArrowDown = false;
+boolean plusKeyDown = false;
+boolean minusKeyDown = false;
 
 // resolution steps
 int maxStep = width;
@@ -278,7 +282,10 @@ public void setup() {
 
 public void draw() {
 	// move window around with arrow keys if there is no title bar
-	if (isUndecorated) moveWindow();
+	if (isUndecorated) {
+		moveWindow();
+		resizeWindow();
+	}
 
 	// handle any timed events first because it may affect the pixel array manipulation
 	if (isAutoMode) timedEvents();
@@ -323,7 +330,8 @@ public void draw() {
 	applyAudioFilter();
 
 	// display buffer
-	image(buffer, 0, 0, width, height);
+	if (isUndecorated) image(buffer, 0, 0, newtWindow.getWidth(), newtWindow.getHeight());
+	else image(buffer, 0, 0, width, height);
 
 	// take screenshot every 3 seconds
 	if (isTakingScreenshots && (frameCount % (60 * 3) == 0)) takeScreenshot();
@@ -745,6 +753,8 @@ void takeScreenshot() {
     // create and start new thread to actually save for performance
     new Thread(new Runnable() {
         public void run() {
+			// resize to screenshotWidth if desired
+			if (width != screenshotWidth) frameToSave.resize(screenshotWidth, screenshotWidth);
             frameToSave.save(filename);
             if (printDebug) println("takeScreenshot(): screenshot saved: " + filename);
         }
@@ -828,6 +838,13 @@ void keyPressed() {
 	if (key == 'n') {
 		if (!isGeneratingSound) toggleSound(true);
 		else toggleSound(false);
+	} 
+	
+	// change window size
+	if (key == '+') {
+		plusKeyDown = true;
+	} else if (key == '-') {
+		minusKeyDown = true;
 	}
 
 	// move window around
@@ -845,7 +862,15 @@ void keyPressed() {
 }
 
 // for moving window when there is title bar
-void keyReleased() {
+void keyReleased() { 
+	// change window size
+	if (key == '+') {
+		plusKeyDown = false;
+	} else if (key == '-') {
+		minusKeyDown = false;
+	}
+
+	// move window around
 	if (key == CODED) {
 		if (keyCode == UP) {
 			upArrowDown = false;
@@ -855,6 +880,11 @@ void keyReleased() {
 			leftArrowDown = false;
 		} else if (keyCode == RIGHT) {
 			rightArrowDown = false;
+		} else if (key == '+') {
+			plusKeyDown = false;
+			println(plusKeyDown);
+		} else if (key == '-') {
+			minusKeyDown = false;
 		}
 	}
 }
@@ -894,6 +924,40 @@ void moveWindow() {
 				public void run() {
 					try { 
 						newtWindow.setPosition(finalNewX, finalNewY);
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+				}
+			});
+		}
+	}
+}
+
+// move window according to arrow key states
+void resizeWindow() {
+	if (newtWindow != null && edtUtil != null) {
+		int deltaSize = 0;
+		final int moveAmount = 1; // pixels to move per frame if key is held
+
+		if (plusKeyDown) {
+			deltaSize += moveAmount;
+		}
+		if (minusKeyDown) {
+			deltaSize -= moveAmount;
+		}
+
+		// if there's any transform to apply
+		if (deltaSize != 0) {
+			// get current size (reading is safe from any thread)
+			final int currentSize = newtWindow.getWidth();
+			final int finalNewSize = currentSize + deltaSize;
+
+			// dispatch the setPosition call to the NEWT EDT (non-blocking)
+			edtUtil.invoke(false, new Runnable() {
+				@Override
+				public void run() {
+					try {
+						newtWindow.setSize(finalNewSize, finalNewSize);
 					} catch (Throwable t) {
 						t.printStackTrace();
 					}

@@ -14,7 +14,7 @@ import netP5.*;
 
 // sketch window
 int manualWidth = 2560;
-int manualHeight = 1440 - 28 - 24;	// minus menu bar minus window bar
+int manualHeight = 1440 - 28; //- 24;	// minus menu bar minus window bar
 
 // UI changes
 int textSize = 12;

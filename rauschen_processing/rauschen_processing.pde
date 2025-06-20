@@ -13,8 +13,8 @@ import com.jogamp.newt.Window;
 import com.jogamp.newt.util.EDTUtil;
 
 // main window
-int width = 1200;
-int height = 1200;
+int width = 1000;
+int height = 1000;
 
 int screenshotWidth = 1000;
 
@@ -146,6 +146,7 @@ float noiseColorOffset;
 
 // toggles
 Boolean showDebug = false;
+boolean stopped = false;
 Boolean showAudioLine = false;
 Boolean printDebug = false;
 Boolean isAutoMode = false;
@@ -287,57 +288,61 @@ public void draw() {
 		resizeWindow();
 	}
 
-	// handle any timed events first because it may affect the pixel array manipulation
-	if (isAutoMode) timedEvents();
+	// stop (almost) everything
+	if (!stopped) {
 
-	// limit for performance in certain modes
-	if ((isNoiseColorRandomOffset && isNoiseColorFastNoiseOffset) || (isNoiseColorRandomOffset && isFastNoiseColor)) {
-		if (xStep <= 1 && yStep <= 1) {
-			xStep += 2;
-			yStep += 2;
-		} else if (xStep <= 2 && yStep <= 2) {
-			xStep += 1;
-			yStep += 1;
-		}
-	}
+		// handle any timed events first because it may affect the pixel array manipulation
+		if (isAutoMode) timedEvents();
 
-	// apply globalSpeed to buffer manipulation
-	if (frameCount % globalSpeedDivisor == 0) {
-		// manipulate buffer's pixels
-		if (isApplyingShader || isShadersOnly || frameCount < 10) {
-			// reset shader time occasionally
-			if (shaderTime > 1000) shaderTime = intRandom(0, 10);		// don't start at the same spot every time
-			// apply shaders
-			if (isRandomShaderEachFrame) {
-				int rand = pickRandomActiveShader();
-				if (!activeShaders.isEmpty()) applyShader(rand);
-				// set to shaderChoice for display
-				shaderChoice = rand;
-			} else {
-				// use last choice to apply in case currently no shader is set
-				if (shaderChoice == -1) shaderChoice = lastShaderChoice;
-				if (!activeShaders.isEmpty()) applyShader(shaderChoice);
+		// limit for performance in certain modes
+		if ((isNoiseColorRandomOffset && isNoiseColorFastNoiseOffset) || (isNoiseColorRandomOffset && isFastNoiseColor)) {
+			if (xStep <= 1 && yStep <= 1) {
+				xStep += 2;
+				yStep += 2;
+			} else if (xStep <= 2 && yStep <= 2) {
+				xStep += 1;
+				yStep += 1;
 			}
-		} else {
-			manipulatePixelArray();
-			// set to -1 for displaying no shader is used
-			if (shaderChoice != -1) lastShaderChoice = shaderChoice;
-			shaderChoice = -1;
 		}
+
+		// apply globalSpeed to buffer manipulation
+		if (frameCount % globalSpeedDivisor == 0) {
+			// manipulate buffer's pixels
+			if (isApplyingShader || isShadersOnly || frameCount < 10) {
+				// reset shader time occasionally
+				if (shaderTime > 1000) shaderTime = intRandom(0, 10);		// don't start at the same spot every time
+				// apply shaders
+				if (isRandomShaderEachFrame) {
+					int rand = pickRandomActiveShader();
+					if (!activeShaders.isEmpty()) applyShader(rand);
+					// set to shaderChoice for display
+					shaderChoice = rand;
+				} else {
+					// use last choice to apply in case currently no shader is set
+					if (shaderChoice == -1) shaderChoice = lastShaderChoice;
+					if (!activeShaders.isEmpty()) applyShader(shaderChoice);
+				}
+			} else {
+				manipulatePixelArray();
+				// set to -1 for displaying no shader is used
+				if (shaderChoice != -1) lastShaderChoice = shaderChoice;
+				shaderChoice = -1;
+			}
+		}
+
+		makeBufferCopyForAudio();
+		applyAudioFilter();
+
+		// display buffer
+		if (isUndecorated) image(buffer, 0, 0, newtWindow.getWidth(), newtWindow.getHeight());
+		else image(buffer, 0, 0, width, height);
+
+		// take screenshot every 3 seconds
+		if (isTakingScreenshots && (frameCount % (60 * 3) == 0)) takeScreenshot();
+
+		if (showDebug) showDebug();
+		if (showAudioLine) showAudioLine();
 	}
-
-	makeBufferCopyForAudio();
-	applyAudioFilter();
-
-	// display buffer
-	if (isUndecorated) image(buffer, 0, 0, newtWindow.getWidth(), newtWindow.getHeight());
-	else image(buffer, 0, 0, width, height);
-
-	// take screenshot every 3 seconds
-	if (isTakingScreenshots && (frameCount % (60 * 3) == 0)) takeScreenshot();
-
-	if (showDebug) showDebug();
-	if (showAudioLine) showAudioLine();
 
 	// send information to control sketch
 	if (frameCount % 2 == 0) {
@@ -839,6 +844,14 @@ void keyPressed() {
 		if (!isGeneratingSound) toggleSound(true);
 		else toggleSound(false);
 	} 
+	//stop entire sketch
+	if (key == ' ') {
+		stopped = !stopped;
+
+		// stop audio as well because otherwise annoying
+		if (!isGeneratingSound) toggleSound(true);
+		else toggleSound(false);
+	}
 	
 	// change window size
 	if (key == '+') {

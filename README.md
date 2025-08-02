@@ -6,8 +6,8 @@
 <td><img src="./README_img/20250620-RAUSCHEN-3-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 3" height="330"></td>
 <td><img src="./README_img/20250620-RAUSCHEN-1-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 1" height="330"></td>
 </tr>
-<p><em> *photos by [Mika Störkel](https://mikastoerkel.com/)* </em></p>
 </table>
+<p><em>photos by <a href="https://mikastoerkel.com/">Mika Störkel</a></em></p>
 
 *RAUSCHEN* is an emergent performance installation exploring the possibility space of a 1000x1000 pixel image. It generates a random, but orderly grid of pixels or cells according to a range of RNG and noise algorithms. These regular textures are fed into a modular shader system, consisting of contributions from conversations with currently popular LLMs.<br>
 *RAUSCHEN* then freely mixes and recursively feeds back their results into emergent textures of visual patterns and auditory noise, flashing by in quick succession. A control application constantly monitors its output in numbers and parameters, is able to save the generated textures to disk and provides the option to influence the pattern generation in order to perform a more curated visual experience.<br>

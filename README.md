@@ -1,5 +1,7 @@
 # RAUSCHEN
 
+<img src="./README_img/20250620-RAUSCHEN-15-MikaStoerkel-rotated" alt="RAUSCHEN projection 15" height="330">
+
 <table>
 <tr>
 <td><img src="./README_img/20250620-RAUSCHEN-2-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 2" height="330"></td>

@@ -165,7 +165,7 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 <tr>
 <td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4" style="height: 400px;"></td>
 <td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square" style="height: 400px;"></td>
-<tr>
+</tr>
 </table>
 
 It can also produce a PDF preparing a large set of screenshots in order to print them in batches.

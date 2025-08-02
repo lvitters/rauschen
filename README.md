@@ -41,7 +41,7 @@ The color of the cells is determined by a range of pseudo random number generato
 
 ## cells
 
-The cells can range in dimensions from 1 up to the dimensions of the buffer, and can be either square or rectangular. The dimensions of the cells, called xStep and yStep, are determined by a custom Noise class. All cells always have the same dimensions in a single frame.
+The cells can range in dimensions from 1 up to the dimensions of the buffer, and can be either square or rectangular. The dimensions of the cells, called **xStep** and **yStep**, are determined by a custom Noise class. All cells always have the same dimensions in a single frame.
 
 ## noise class
 
@@ -55,21 +55,21 @@ Occasionally, instead of displayed the grid of cells, *RAUSCHEN* will apply a ra
 
 ## events
 
-A random event happens every X seconds if *Auto Mode* *(isAutoMode)* is active. These include:
+A random event happens every X seconds if **Auto Mode** **(isAutoMode)** is active. These include:
 
-- setting up new dimensions for either the grid of cells or the buffer *setNewGridWithNoise() / resizeBuffer()*
+- setting up new dimensions for either the grid of cells or the buffer **setNewGridWithNoise()** / **resizeBuffer()**
 
-- switch to applying shaders instead of displaying the grid of cells *isApplyingShaders*
+- switch to applying shaders instead of displaying the grid of cells **isApplyingShaders**
 
-- switch between the grid of cells' colors being determined by the options described above ("Colors") *isNoiseColorRandomOffset / isNoiseColorRandomOffset / isFastNoiseColor / isFastNoiseColorFastNoiseOffset*
+- switch between the grid of cells' colors being determined by the options described in "colors" **isNoiseColorRandomOffset** / **isNoiseColorRandomOffset** / **isFastNoiseColor** / **isFastNoiseColorFastNoiseOffset**
 
-- switch between using the same shader in consecutive frames or using a random different shader each frame *isRandomShaderEachFrame*
+- switch between using the same shader in consecutive frames or using a random different shader each frame **isRandomShaderEachFrame**
 
 The time between two events can either be set manually, or be picked at random between each frame and a maximum interval.
 
 ## sound
 
-Each frame, a thread-safe copy is made of the buffer. Using the digital signal processing in [Wellen](https://github.com/dennisppaul/wellen), a sound sample is created from the buffer's pixels. The sample consists of a either horizontal, vertical or diagonal line of pixels, whose average color channel values ((R + G + B) / 3) are mapped to a frequency range. The sample is then passed through a band pass filter, where frequency and bandwidth are determined by - you guessed it - the custom Noise class.
+Each frame, a thread-safe copy is made of the buffer. Using the digital signal processing in [**Wellen**](https://github.com/dennisppaul/wellen), a sound sample is created from the buffer's pixels. The sample consists of a either horizontal, vertical or diagonal line of pixels, whose average color channel values ((R + G + B) / 3) are mapped to a frequency range. The sample is then passed through a band pass filter, where frequency and bandwidth are determined by - you guessed it - the custom Noise class.
 
 ## screenshots
 
@@ -92,6 +92,9 @@ At a set interval, *RAUSCHEN* will create a new thread in order to save the disp
 <td><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot" height="330"></td>
 </tr>
 </table>
+<em>photos: <a href="https://mikastoerkel.com/">Mika Störkel</a></em>
+
+<br>
 
 ## controls
 
@@ -109,7 +112,7 @@ Although there is a separate application to control *RAUSCHEN*, there are some r
 
 - **SPACE:** halt the entire application (good for photos)
 
-In order to map the application to a surface with a projector, the window's menu bar can be disabled by the toggle *isUndecorated*. The window can then be resized with the **'+'** and **'-'** keys, and moved around the screen with the **arrow keys**.
+In order to map the application to a surface with a projector, the window's menu bar can be disabled by the toggle **isUndecorated**. The window can then be resized with the **'+'** and **'-'** keys, and moved around the screen with the **arrow keys**.
 
 <br>
 
@@ -137,15 +140,15 @@ In order to map the application to a surface with a projector, the window's menu
 
 ## controls
 
-The variables present in the **'/info'** message can be set by *RAUSCHEN_processing_controls* sending *OSC* messages containing the corresponding key and value pairs back to *RAUSCHEN*. These variables will be overridden by the events from *Auto Mode* if it is active.
+The variables present in the **'/info'** message can be set by *RAUSCHEN_processing_controls* sending *OSC* messages containing the corresponding key and value pairs back to *RAUSCHEN*. These variables will be overridden by the events from **Auto Mode** if it is active.
 
-The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons to **SOLO** and **MUTE** them, similar to audio tracks in a DAW. This enables to mix and match shaders freely when *isRandomShaderEachFrame* is active, or determine which random shaders can be chosen for consecutive frames when it is not active.
+The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons to **SOLO** and **MUTE** them, similar to audio tracks in a DAW. This enables to mix and match shaders freely when **isRandomShaderEachFrame** is active, or determine which random shaders can be chosen for consecutive frames when it is not active.
 
 ## midi-controller
 
 <img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4" style="height: 330px;">
 
-*RAUSCHEN_processing_controls* uses the *Intech Studio Grid PBF4* midi controller. Its buttons and potentiometers are assigned to *MIDI* channels with the *Intech Studio Grid Editor 1.5.7*. *RAUSCHEN_processing_controls* listens to the set up *MIDI* channels, assigns their values to the corresponding variables and sends those pairs back to *RAUSCHEN_procesing* via *OSC* messages.
+*RAUSCHEN_processing_controls* uses the *Intech Studio Grid PBF4* midi controller. Its buttons and potentiometers are assigned to *MIDI* channels with the *Intech Studio Grid Editor 1.5.7*. *RAUSCHEN_processing_controls* listens to the set up *MIDI* channels, assigns their values to the corresponding variables and sends those pairs back to *RAUSCHEN_processing* via *OSC* messages.
 
 <img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor" style="height: 330px;">
 
@@ -158,6 +161,13 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 </tr>
 </table>
 
+# setup
+
+*RAUSCHEN* can either run on a screen in **AUTO MODE** or a performance / monitoring station can be set up to manually control the events and parameters.
+
+
+<td><img src="./README_img/20250620-RAUSCHEN-22-MikaStoerkel_cut.jpg" alt="monitoring station" height="330"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-14-MikaStoerkel_cut.jpg" alt="midi controller performing" height="330"></td>
 
 # RAUSCHEN_poster
 
@@ -170,7 +180,6 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 </tr>
 </table>
 
-It can also produce a PDF preparing a large set of screenshots in order to print them in batches. The screenshots will have their filename printed on the bottom right in order to have a unique timestamp as an identifier.
-
+It can also produce a PDF preparing a large set of screenshots in order to print them in batches. The screenshots will have their filename printed on the bottom right in order to provide a unique timestamp as an identifier.
 
 <img src="./README_img/PXL_20250619_113636889_cut.jpg" alt="RAUSCHEN prints" style="height: 330px;">

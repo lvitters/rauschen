@@ -165,9 +165,12 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 *RAUSCHEN* can either run on a screen in **AUTO MODE** or a performance / monitoring station can be set up to manually control the events and parameters.
 
-
+<table>
+<tr>
 <td><img src="./README_img/20250620-RAUSCHEN-22-MikaStoerkel_cut.jpg" alt="monitoring station" height="330"></td>
 <td><img src="./README_img/20250620-RAUSCHEN-14-MikaStoerkel_cut.jpg" alt="midi controller performing" height="330"></td>
+</tr>
+</table>
 
 # RAUSCHEN_poster
 

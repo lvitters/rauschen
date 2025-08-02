@@ -123,7 +123,7 @@ In order to map the application to a surface with a projector, the window's menu
 
 ## screenshots
 
-*RAUSCHEN_processing_controls* scans the folder that *RAUSCHEN* saves screenshots to a folder (**'temp'**) in a set interval. It displays the latest 4 a row of screenshots. When clicked on, it will save the corresponding screenshot to a permanent folder (**'saved'**).
+*RAUSCHEN_processing_controls* scans the folder that *RAUSCHEN* saves screenshots to (**'temp'**) in a set interval. It displays the latest 4 a row of screenshots. When clicked on, it will save the corresponding screenshot to a permanent folder (**'saved'**).
 
 ## displayed data
 

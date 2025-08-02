@@ -92,7 +92,6 @@ At a set interval, *RAUSCHEN* will create a new thread in order to save the disp
 <td><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot" height="330"></td>
 </tr>
 </table>
-<em>photos: <a href="https://mikastoerkel.com/">Mika Störkel</a></em>
 
 <br>
 

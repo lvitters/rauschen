@@ -114,18 +114,15 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 
 ![Intech Studio Grid PBF4](./README_img/250802_Intech_Studio_Grid_PBF4.jpg)
 
-*RAUSCHEN_processing_controls* uses the *Intech Studio Grid PBF4* midi controller. Its buttons and potentiometers are assigned to *MIDI* channels with the *Intech Studio Grid Editor 1.5.7*. *RAUSCHEN_processing_controls* listens to the set up *MIDI* channels, assigns their values to the corresponding variables and sends those pairs back to *RAUSCHEN_procesing* via *OSC* messages. 
+*RAUSCHEN_processing_controls* uses the *Intech Studio Grid PBF4* midi controller. Its buttons and potentiometers are assigned to *MIDI* channels with the *Intech Studio Grid Editor 1.5.7*. *RAUSCHEN_processing_controls* listens to the set up *MIDI* channels, assigns their values to the corresponding variables and sends those pairs back to *RAUSCHEN_procesing* via *OSC* messages.
 
-![Intech Studio Grid Editor](./README_img/250802_Intech_Studio_Grid_Editor_1.png)
+<img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor" style="height: 330px;">
 
 Some logic, mainly for enabling short and long presses, as well as saving variable values across page changes, is applied and saved directly to the controller in the form of *LUA* scripts.
 
 <table>
 <tr>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2.png" alt="Intech Studio Grid Button" height="300"></td>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3.png" alt="Intech Studio Grid Potientometer" height="300"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2.png" alt="Intech Studio Grid Button" height="330"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3.png" alt="Intech Studio Grid Potientometer" height="330"></td>
 </tr>
 </table>
-
-![Intech Studio Grid Button](./README_img/250802_Intech_Studio_Grid_Editor_2.png)
-![Intech Studio Grid Potientometer](./README_img/250802_Intech_Studio_Grid_Editor_3.png)

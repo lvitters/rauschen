@@ -16,7 +16,7 @@ While current image generation models denoise their random input textures using 
 
 <br>
 
-## Colors
+## colors
 
 The color of the cells is determined by a range of pseudo random number generators that determine their RGB values:
 
@@ -32,13 +32,13 @@ The color of the cells is determined by a range of pseudo random number generato
 
 <br>
 
-## Cells
+## cells
 
 The cells can range in dimensions from 1 up to the dimensions of the buffer, and can be either square or rectangular. The dimensions of the cells, called xStep and yStep, are determined by a custom Noise class. All cells always have the same dimensions in a single frame.
 
 <br>
 
-## Noise class
+## noise class
 
 For many operations, a custom Noise class is used that can return either a Noise value from 0 to 1, a Boolean determined by Noise, a Noise range from a custom low and high value, a Noise range from a custom low value range and a custom high value range, or each of those with a custom bias. The Noise class uses Processing's built in Perlin Noise. The increment with which they are computed can be set on initialization.
 
@@ -48,13 +48,13 @@ Noises are added to a list of Noises so they can be send to the control applicat
 
 <br>
 
-## Shaders
+## shaders
 
 Occasionally, instead of displayed the grid of cells, *RAUSCHEN* will apply a random shader from a list of shaders to the buffer. The shaders take a texture called tempBuffer as an input that is either the last grid of cells OR the last shader output. Depending on which event has fired last, this can be either the same shader multiple consecutive frames in a row, or a random different shader each frame, effectively mixing their outputs together.
 
 <br>
 
-## Events
+## events
 
 A random event happens every X seconds. These include:
 
@@ -74,19 +74,19 @@ The time between two events can either be set manually, or be picked at random b
 
 <br>
 
-## Sound
+## sound
 
 Each frame, a thread-safe copy is made of the buffer. Using the digital signal processing in [Wellen](https://github.com/dennisppaul/wellen), a sound sample is created from the buffer's pixels. The sample consists of a either horizontal, vertical or diagonal line of pixels, whose average color channel values ((R + G + B) / 3) are mapped to a frequency range. The sample is then passed through a band pass filter, where frequency and bandwidth are determined by - you guessed it - the custom Noise class.
 
 <br>
 
-## Screenshot
+## screenshots
 
 At a set interval, *RAUSCHEN* will create a new thread in order to save the display buffer as a screenshot, with a timestamp in its file name. If the screenshot folder exceeds a set number of screenshot, the oldest one will be deleted.
 
 <br>
 
-## Controls
+## controls
 
 Although there is a separate application to control *RAUSCHEN*, there are some rudimentary controls available:
 

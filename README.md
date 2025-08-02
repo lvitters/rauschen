@@ -127,7 +127,7 @@ In order to map the application to a surface with a projector, the window's menu
 
 ## displayed data
 
-*RAUSCHEN* receives a set of data from *RAUSCHEN_processing* via *OSC* messages:
+*RAUSCHEN_processing_controls* receives a set of data from *RAUSCHEN_processing* via *OSC* messages:
 
 - **'/noises'** contains the values of all the Noises from the list of Noises, in this case mapped from 0 to 1, and is displayed as differently colored graphs
 
@@ -191,4 +191,4 @@ It can also produce a PDF preparing a large set of screenshots in order to print
 
 # _other
 
-*_other* contains some files from test, such as the initial *p5.js* version of *RAUSCHEN*
+*_other* contains some files from tests, such as the initial *p5.js* version of *RAUSCHEN*

@@ -168,7 +168,7 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 </tr>
 </table>
 
-It can also produce a PDF preparing a large set of screenshots in order to print them in batches.
+It can also produce a PDF preparing a large set of screenshots in order to print them in batches. The screenshots will have their filename printed on the bottom right in order to have a unique timestamp as an identifier.
 
 
 <img src="./README_img/_DSC2849_omarzaki.jpg" alt="RAUSCHEN prints" style="height: 330px;">

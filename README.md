@@ -2,9 +2,9 @@
 
 <table>
 <tr>
+<td><img src="./README_img/20250620-RAUSCHEN-2-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 2" height="330"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-3-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 3" height="330"></td>
 <td><img src="./README_img/20250620-RAUSCHEN-1-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 1" height="330"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-3-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 2" height="330"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-2-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 3" height="330"></td>
 </tr>
 </table>
 
@@ -70,6 +70,8 @@ Each frame, a thread-safe copy is made of the buffer. Using the digital signal p
 
 At a set interval, *RAUSCHEN* will create a new thread in order to save the display buffer as a screenshot, with a timestamp in its file name. If the screenshot folder (**'temp'**) exceeds a set number of screenshot, the oldest one will be deleted.
 
+
+
 ## controls
 
 Although there is a separate application to control *RAUSCHEN*, there are some rudimentary controls available:
@@ -99,6 +101,24 @@ In order to map the application to a surface with a projector, the window's menu
 ## screenshots
 
 *RAUSCHEN_processing_controls* scans the folder that *RAUSCHEN* saves screenshots to a folder (**'temp'**) in a set interval. It displays the latest 4 a row of screenshots. When clicked on, it will save the corresponding screenshot to a permanent folder (**'saved'**).
+
+<table>
+<tr>
+<td><img src="./README_img/rauschen-20250611-164109-577.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250602-180127-227.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250530-171029-416.png" alt="RAUSCHEN screenshot" height="330"></td>
+</tr>
+<tr>
+<td><img src="./README_img/rauschen-20250422-155733-347.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250529-165834-148.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250613-154959-102.png" alt="RAUSCHEN screenshot" height="330"></td>
+</tr>
+<tr>
+<td><img src="./README_img/rauschen-20250407-165205-809.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250522-205038-804.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot" height="330"></td>
+</tr>
+</table>
 
 ## displayed data
 

@@ -12,7 +12,7 @@ While current image generation models denoise their random input textures using 
 
 # RAUSCHEN_processing
 
-*RAUSCHEN* is driven by a Processing 4.3.2 application running on macOS that creates a buffer of custom dimensions and fills it with randomly colored cells of pixels each frame.
+*RAUSCHEN* is driven by a *Processing 4.3.2* application running on *macOS* that creates a buffer of custom dimensions and fills it with randomly colored cells of pixels each frame, called *Rauschen_processing*.
 
 ## colors
 
@@ -42,15 +42,15 @@ Occasionally, instead of displayed the grid of cells, *RAUSCHEN* will apply a ra
 
 ## events
 
-A random event happens every X seconds. These include:
+A random event happens every X seconds if *Auto Mode* is active *(isAutoMode)* These include:
 
-- setting up new dimensions for either the grid of cells or the buffer
+- setting up new dimensions for either the grid of cells or the buffer *(setNewGridWithNoise() / resizeBuffer())*
 
-- switch to applying shaders instead of displaying the grid of cells
+- switch to applying shaders instead of displaying the grid of cells *(isApplyingShaders)*
 
-- switch between the grid of cells' colors being determined by the options described above ("Colors")
+- switch between the grid of cells' colors being determined by the options described above ("Colors") *(isNoiseColorRandomOffset / isNoiseColorRandomOffset / isFastNoiseColor / isFastNoiseColorFastNoiseOffset)*
 
-- switch between using the same shader in consecutive frames or using a random different shader each frame
+- switch between using the same shader in consecutive frames or using a random different shader each frame *(isRandomShaderEachFrame)*
 
 The time between two events can either be set manually, or be picked at random between each frame and a maximum interval.
 
@@ -60,7 +60,7 @@ Each frame, a thread-safe copy is made of the buffer. Using the digital signal p
 
 ## screenshots
 
-At a set interval, *RAUSCHEN* will create a new thread in order to save the display buffer as a screenshot, with a timestamp in its file name. If the screenshot folder exceeds a set number of screenshot, the oldest one will be deleted.
+At a set interval, *RAUSCHEN* will create a new thread in order to save the display buffer as a screenshot, with a timestamp in its file name. If the screenshot folder (**'temp'**) exceeds a set number of screenshot, the oldest one will be deleted.
 
 ## controls
 
@@ -70,7 +70,7 @@ Although there is a separate application to control *RAUSCHEN*, there are some r
 
 - **'P' key:** print debug info to console
 
-- **'A' key:** toggle *Auto Mode* (enable automatic *events* or not)
+- **'A' key:** toggle *Auto Mode* (enable/disable automatic events)
 
 - **'S' key:** choose a random event now
 
@@ -79,3 +79,46 @@ Although there is a separate application to control *RAUSCHEN*, there are some r
 - **SPACE:** halt the entire application (good for photos)
 
 In order to map the application to a surface with a projector, the window's menu bar can be disabled by the toggle *isUndecorated*. The window can then be resized with the **'+'** and **'-'** keys, and moved around the screen with the **arrow keys**.
+
+<br>
+
+# RAUSCHEN_processing_controls
+
+*RAUSCHEN* is controlled by another *Processing 4.3.2* application running on *macOS* called *RAUSCHEN_processing_controls*.
+
+![RAUSCHEN_processing_controls](./README_img/250613_control_screenshot.png)
+
+## screenshots
+
+*RAUSCHEN_processing_controls* scans the folder that *RAUSCHEN* saves screenshots to a folder (**'temp'**) in a set interval. It displays the latest 4 a row of screenshots. When clicked on, it will save the corresponding screenshot to a permanent folder (**'saved'**).
+
+## displayed data
+
+*RAUSCHEN* receives a set of data from *RAUSCHEN_processing* via *OSC* messages:
+
+- **'/noises'** contains the values of all the Noises from the list of Noises, in this case mapped from 0 to 1, and is displayed as differently colored graphs
+
+- **'/info'** contains the variable names and their values, which are determined manually or by events, plus some debug information, and is displayed as a list of variable names and their values
+
+- **'/shaderNames'** contains the names of the shaders added to the main application and is displayed as a list of available shaders
+
+- **'/shaderChoice'** contains the value determining which shader is currently in use, shown by the corresponding shader being highlighted in the list of available shaders
+
+## controls
+
+The variables present in the **'/info'** message can be set by *RAUSCHEN_processing_controls* sending *OSC* messages containing the corresponding key and value pairs back to *RAUSCHEN*. These variables will be overridden by the events from *Auto Mode* if it is active.
+
+The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons to **SOLO** and **MUTE** them, similar to audio tracks in a DAW. This enables to mix and match shaders freely when *isRandomShaderEachFrame* is active, or determine which random shaders can be chosen for consecutive frames when it is not active.
+
+## midi-controller
+
+![Intech Studio Grid PBF4](./README_img/Intech_Studio_Grid_PBF4.jpg)
+
+*RAUSCHEN_processing_controls* uses the *Intech Studio Grid PBF4* midi controller. Its buttons and potentiometers are assigned to *MIDI* channels with the *Intech Studio Grid Editor 1.5.7*. *RAUSCHEN_processing_controls* listens to the set up *MIDI* channels, assigns their values to the corresponding variables and sends those pairs back to *RAUSCHEN_procesing* via *OSC* messages. 
+
+![Intech Studio Grid Editor](./README_img/Intech_Studio_Grid_Editor_1.png)
+
+Some logic, mainly for enabling short and long presses, as well as saving variable values across page changes, is applied and saved directly to the controller in the form of *LUA* scripts.
+
+![Intech Studio Grid Button](./README_img/Intech_Studio_Grid_Editor_2.png)
+![Intech Studio Grid Potientometer](./README_img/Intech_Studio_Grid_Editor_3.png)

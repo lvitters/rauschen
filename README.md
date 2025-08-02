@@ -149,8 +149,8 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 
 <table>
 <tr>
-<td><img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4" style="height: 330px;"></td>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor" style="height: 330px;"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor"></td>
 </tr>
 </table>
 
@@ -158,8 +158,8 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2.png" alt="Intech Studio Grid Button" height="330"></td>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3.png" alt="Intech Studio Grid Potientometer" height="330"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2.png" alt="Intech Studio Grid Button"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3.png" alt="Intech Studio Grid Potientometer"></td>
 </tr>
 </table>
 
@@ -169,8 +169,8 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/20250620-RAUSCHEN-22-MikaStoerkel_cut.jpg" alt="monitoring station" height="330"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-14-MikaStoerkel_cut.jpg" alt="midi controller performing" height="330"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-22-MikaStoerkel_cut.jpg" alt="monitoring station"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-14-MikaStoerkel_cut.jpg" alt="midi controller performing"></td>
 </tr>
 </table>
 
@@ -180,8 +180,8 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4" style="height: 400px;"></td>
-<td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square" style="height: 400px;"></td>
+<td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4"></td>
+<td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square"></td>
 </tr>
 </table>
 

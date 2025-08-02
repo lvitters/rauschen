@@ -1,5 +1,13 @@
 # RAUSCHEN
 
+<table>
+<tr>
+<td><img src="./README_img/20250620-RAUSCHEN-1-Mika Störkel©_cut.jpg" alt="RAUSCHEN projection 1" height="330"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-3-Mika Störkel©_cut.jpg" alt="RAUSCHEN projection 2" height="330"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-2-Mika Störkel©_cut.jpg" alt="RAUSCHEN projection 3" height="330"></td>
+</tr>
+</table>
+
 *RAUSCHEN* is an emergent performance installation exploring the possibility space of a 1000x1000 pixel image. It generates a random, but orderly grid of pixels or cells according to a range of RNG and noise algorithms. These regular textures are fed into a modular shader system, consisting of contributions from conversations with currently popular LLMs.<br>
 *RAUSCHEN* then freely mixes and recursively feeds back their results into emergent textures of visual patterns and auditory noise, flashing by in quick succession. A control application constantly monitors its output in numbers and parameters, is able to save the generated textures to disk and provides the option to influence the pattern generation in order to perform a more curated visual experience.<br>
 While current image generation models denoise their random input textures using techniques under the broad term diffusion, *RAUSCHEN* uses procedural generation methods in order to achieve the opposite effect, infusing its fundamental noise textures with structural patterns for now only recognisable by the viewer.
@@ -112,7 +120,7 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 
 ## midi-controller
 
-<table><tr><img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4" style="height: 330px; text-align: center;"></tr></table>
+<table><tr><img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4" style="height: 330px;"></tr></table>
 
 *RAUSCHEN_processing_controls* uses the *Intech Studio Grid PBF4* midi controller. Its buttons and potentiometers are assigned to *MIDI* channels with the *Intech Studio Grid Editor 1.5.7*. *RAUSCHEN_processing_controls* listens to the set up *MIDI* channels, assigns their values to the corresponding variables and sends those pairs back to *RAUSCHEN_procesing* via *OSC* messages.
 

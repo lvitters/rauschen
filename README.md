@@ -189,3 +189,7 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 It can also produce a PDF preparing a large set of screenshots in order to print them in batches. The screenshots will have their filename printed on the bottom right in order to provide a unique timestamp as an identifier.
 
 <img src="./README_img/PXL_20250619_113636889_cut.jpg" alt="RAUSCHEN prints">
+
+# _other
+
+*_other* contains some files from test, such as the initial *p5.js* version of *RAUSCHEN*

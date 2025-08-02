@@ -19,7 +19,7 @@ int height = 1000;
 int screenshotWidth = 1000;
 
 // to set window undecorated
-Boolean isUndecorated = true;
+Boolean isUndecorated = false;
 Window newtWindow = null;
 EDTUtil edtUtil = null;
 volatile boolean isCurrentlyUndecorated = false;
@@ -837,7 +837,7 @@ void keyPressed() {
 	}
 	// switch to next mode now!
 	if (key == 's') {
-		chooseEvent(intRandom(0, 2));
+		chooseEvent(intRandom(0, 6));
 	}
 	// stop noise (audio)
 	if (key == 'n') {

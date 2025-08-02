@@ -66,16 +66,16 @@ At a set interval, *RAUSCHEN* will create a new thread in order to save the disp
 
 Although there is a separate application to control *RAUSCHEN*, there are some rudimentary controls available:
 
--**'F' key:** show rudimentary debug info
+- **'F' key:** show rudimentary debug info
 
--**'P' key:** print debug info to console
+- **'P' key:** print debug info to console
 
--**'A' key:** toggle *Auto Mode* (enable automatic *events* or not)
+- **'A' key:** toggle *Auto Mode* (enable automatic *events* or not)
 
--**'S' key:** choose a random event now
+- **'S' key:** choose a random event now
 
--**'N' key:** toggle audio
+- **'N' key:** toggle audio
 
--**SPACE:** halt the entire application (good for photos)
+- **SPACE:** halt the entire application (good for photos)
 
 In order to map the application to a surface with a projector, the window's menu bar can be disabled by the toggle *isUndecorated*. The window can then be resized with the **'+'** and **'-'** keys, and moved around the screen with the **arrow keys**.

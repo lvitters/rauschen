@@ -1,16 +1,15 @@
 # RAUSCHEN
 
 <table>
-<caption style="caption-side: bottom; text-align: center; font-style: italic;">
-	photos by <a href="https://mikastoerkel.com/">Mika Störkel</a>
-</caption>
 <tr>
 <td><img src="./README_img/20250620-RAUSCHEN-2-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 2" height="330"></td>
 <td><img src="./README_img/20250620-RAUSCHEN-3-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 3" height="330"></td>
 <td><img src="./README_img/20250620-RAUSCHEN-1-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 1" height="330"></td>
 </tr>
 </table>
-<p><em>photos by <a href="https://mikastoerkel.com/">Mika Störkel</a></em></p>
+*photos: [Mika Störkel](https://mikastoerkel.com/)
+
+<br>
 
 *RAUSCHEN* is an emergent performance installation exploring the possibility space of a 1000x1000 pixel image. It generates a random, but orderly grid of pixels or cells according to a range of RNG and noise algorithms. These regular textures are fed into a modular shader system, consisting of contributions from conversations with currently popular LLMs.<br>
 *RAUSCHEN* then freely mixes and recursively feeds back their results into emergent textures of visual patterns and auditory noise, flashing by in quick succession. A control application constantly monitors its output in numbers and parameters, is able to save the generated textures to disk and provides the option to influence the pattern generation in order to perform a more curated visual experience.<br>
@@ -171,7 +170,6 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 It can also produce a PDF preparing a large set of screenshots in order to print them in batches.
 
-<div style="text-align: center;">
-  <img src="./README_img/_DSC2849_omarzaki.jpg" alt="RAUSCHEN prints" style="height: 330px;">
-  <div style="font-style: italic; margin-top: 2px;">photo by Omar Zaki</div>
-</div>
+
+<img src="./README_img/_DSC2849_omarzaki.jpg" alt="RAUSCHEN prints" style="height: 330px;">
+*photo: Omar Zaki*

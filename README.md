@@ -42,15 +42,15 @@ Occasionally, instead of displayed the grid of cells, *RAUSCHEN* will apply a ra
 
 ## events
 
-A random event happens every X seconds if *Auto Mode* is active *(isAutoMode)* These include:
+A random event happens every X seconds if *Auto Mode* *(isAutoMode)* is active. These include:
 
-- setting up new dimensions for either the grid of cells or the buffer *(setNewGridWithNoise() / resizeBuffer())*
+- setting up new dimensions for either the grid of cells or the buffer *setNewGridWithNoise() / resizeBuffer()*
 
-- switch to applying shaders instead of displaying the grid of cells *(isApplyingShaders)*
+- switch to applying shaders instead of displaying the grid of cells *isApplyingShaders*
 
-- switch between the grid of cells' colors being determined by the options described above ("Colors") *(isNoiseColorRandomOffset / isNoiseColorRandomOffset / isFastNoiseColor / isFastNoiseColorFastNoiseOffset)*
+- switch between the grid of cells' colors being determined by the options described above ("Colors") *isNoiseColorRandomOffset / isNoiseColorRandomOffset / isFastNoiseColor / isFastNoiseColorFastNoiseOffset*
 
-- switch between using the same shader in consecutive frames or using a random different shader each frame *(isRandomShaderEachFrame)*
+- switch between using the same shader in consecutive frames or using a random different shader each frame *isRandomShaderEachFrame*
 
 The time between two events can either be set manually, or be picked at random between each frame and a maximum interval.
 
@@ -112,13 +112,13 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 
 ## midi-controller
 
-![Intech Studio Grid PBF4](./README_img/Intech_Studio_Grid_PBF4.jpg)
+![Intech Studio Grid PBF4](./README_img/250802_Intech_Studio_Grid_PBF4.jpg)
 
 *RAUSCHEN_processing_controls* uses the *Intech Studio Grid PBF4* midi controller. Its buttons and potentiometers are assigned to *MIDI* channels with the *Intech Studio Grid Editor 1.5.7*. *RAUSCHEN_processing_controls* listens to the set up *MIDI* channels, assigns their values to the corresponding variables and sends those pairs back to *RAUSCHEN_procesing* via *OSC* messages. 
 
-![Intech Studio Grid Editor](./README_img/Intech_Studio_Grid_Editor_1.png)
+![Intech Studio Grid Editor](./README_img/250802_Intech_Studio_Grid_Editor_1.png)
 
 Some logic, mainly for enabling short and long presses, as well as saving variable values across page changes, is applied and saved directly to the controller in the form of *LUA* scripts.
 
-![Intech Studio Grid Button](./README_img/Intech_Studio_Grid_Editor_2.png)
-![Intech Studio Grid Potientometer](./README_img/Intech_Studio_Grid_Editor_3.png)
+![Intech Studio Grid Button](./README_img/250802_Intech_Studio_Grid_Editor_2.png)
+![Intech Studio Grid Potientometer](./README_img/250802_Intech_Studio_Grid_Editor_3.png)

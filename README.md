@@ -146,11 +146,14 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 
 ## midi-controller
 
-<img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4" style="height: 330px;">
-
 *RAUSCHEN_processing_controls* uses the *Intech Studio Grid PBF4* midi controller. Its buttons and potentiometers are assigned to *MIDI* channels with the *Intech Studio Grid Editor 1.5.7*. *RAUSCHEN_processing_controls* listens to the set up *MIDI* channels, assigns their values to the corresponding variables and sends those pairs back to *RAUSCHEN_processing* via *OSC* messages.
 
-<img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor" style="height: 330px;">
+<table>
+<tr>
+<td><img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4" style="height: 330px;"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor" style="height: 330px;"></td>
+</tr>
+</table>
 
 Some logic, mainly for enabling short and long presses, as well as saving variable values across page changes, is applied and saved directly to the controller in the form of *LUA* scripts.
 
@@ -185,4 +188,4 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 It can also produce a PDF preparing a large set of screenshots in order to print them in batches. The screenshots will have their filename printed on the bottom right in order to provide a unique timestamp as an identifier.
 
-<img src="./README_img/PXL_20250619_113636889_cut.jpg" alt="RAUSCHEN prints" style="height: 330px;">
+<img src="./README_img/PXL_20250619_113636889_cut.jpg" alt="RAUSCHEN prints">

@@ -142,11 +142,11 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 
 ## midi-controller
 
-<table><tr><img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4" style="height: 330px;"></tr></table>
+<img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4" style="height: 330px;">
 
 *RAUSCHEN_processing_controls* uses the *Intech Studio Grid PBF4* midi controller. Its buttons and potentiometers are assigned to *MIDI* channels with the *Intech Studio Grid Editor 1.5.7*. *RAUSCHEN_processing_controls* listens to the set up *MIDI* channels, assigns their values to the corresponding variables and sends those pairs back to *RAUSCHEN_procesing* via *OSC* messages.
 
-<table><tr><img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor" style="height: 330px;"></tr></table>
+<img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor" style="height: 330px;">
 
 Some logic, mainly for enabling short and long presses, as well as saving variable values across page changes, is applied and saved directly to the controller in the form of *LUA* scripts.
 
@@ -164,16 +164,12 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4" style="height: 330px;"></td>
-<td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square" style="height: 330px;"></td>
+<td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4" style="height: 350px;"></td>
+<td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square" style="height: 350px;"></td>
 <tr>
 </table>
 
 It can also produce a PDF preparing a large set of screenshots in order to print them in batches.
 
-<table>
-<caption style="caption-side: bottom; text-align: center; font-style: italic;">
-	photos by Omar Zaki
-</caption>
-<tr><img src="./README_img/_DSC2849_omarzaki.jpg" alt="RAUSCHEN prints" style="height: 330px;"></tr>
-</table>
+<img src="./README_img/_DSC2849_omarzaki.jpg" alt="RAUSCHEN prints" style="height: 330px;">
+<p style="text-align: center; font-style: italic; margin-top: 2px; margin-bottom: 0;">photo by Omar Zaki</p>

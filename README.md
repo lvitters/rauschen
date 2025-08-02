@@ -158,8 +158,8 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2.png" alt="Intech Studio Grid Button"></td>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3.png" alt="Intech Studio Grid Potientometer"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2.png" alt="Intech Studio Grid Button" style="height: auto;"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3.png" alt="Intech Studio Grid Potientometer" style="height: auto;"></td>
 </tr>
 </table>
 
@@ -180,8 +180,8 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4"></td>
-<td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square"></td>
+<td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4" style="height: auto;"></td>
+<td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square" style="height: auto;"></td>
 </tr>
 </table>
 

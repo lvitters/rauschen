@@ -2,9 +2,9 @@
 
 <table>
 <tr>
-<td><img src="./README_img/20250620-RAUSCHEN-1-Mika Störkel©_cut.jpg" alt="RAUSCHEN projection 1" height="330"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-3-Mika Störkel©_cut.jpg" alt="RAUSCHEN projection 2" height="330"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-2-Mika Störkel©_cut.jpg" alt="RAUSCHEN projection 3" height="330"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-1-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 1" height="330"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-3-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 2" height="330"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-2-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 3" height="330"></td>
 </tr>
 </table>
 

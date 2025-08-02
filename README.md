@@ -92,22 +92,20 @@ Although there is a separate application to control *RAUSCHEN*, there are some r
 
 <br>
 
-**f key** - show rudimentary debug info
+**'F' key** - show rudimentary debug info
 
-**p key** - print debug info to console
+**'P' key** - print debug info to console
 
-**a key** - toggle *Auto Mode* (enable automatic *events* or not)
+**'A' key** - toggle *Auto Mode* (enable automatic *events* or not)
 
-**s key** - choose a random event now
+**'S' key** - choose a random event now
 
-**n key** - toggle audio
+**'N' key** - toggle audio
 
-<br>
-
-**space** halt the entire application (good for photos)
+**SPACE** - halt the entire application (good for photos)
 
 <br>
 
-In order to map the application to a surface with a projector, the window's menu bar can be disabled by the toggle *isUndecorated*. The window can then be resized with the **+** and **-** keys, and moved around the screen with the **arrow keys**.
+In order to map the application to a surface with a projector, the window's menu bar can be disabled by the toggle *isUndecorated*. The window can then be resized with the **'+'** and **'-'** keys, and moved around the screen with the **arrow keys**.
 
 <br>

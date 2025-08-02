@@ -6,6 +6,7 @@
 <td><img src="./README_img/20250620-RAUSCHEN-3-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 3" height="330"></td>
 <td><img src="./README_img/20250620-RAUSCHEN-1-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 1" height="330"></td>
 </tr>
+<em>*photos by [Mika Störkel](https://mikastoerkel.com/)*</em>
 </table>
 
 *RAUSCHEN* is an emergent performance installation exploring the possibility space of a 1000x1000 pixel image. It generates a random, but orderly grid of pixels or cells according to a range of RNG and noise algorithms. These regular textures are fed into a modular shader system, consisting of contributions from conversations with currently popular LLMs.<br>
@@ -70,7 +71,23 @@ Each frame, a thread-safe copy is made of the buffer. Using the digital signal p
 
 At a set interval, *RAUSCHEN* will create a new thread in order to save the display buffer as a screenshot, with a timestamp in its file name. If the screenshot folder (**'temp'**) exceeds a set number of screenshot, the oldest one will be deleted.
 
-
+<table>
+<tr>
+<td><img src="./README_img/rauschen-20250611-164109-577.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250602-180127-227.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250530-171029-416.png" alt="RAUSCHEN screenshot" height="330"></td>
+</tr>
+<tr>
+<td><img src="./README_img/rauschen-20250422-155733-347.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250529-165834-148.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250613-154959-102.png" alt="RAUSCHEN screenshot" height="330"></td>
+</tr>
+<tr>
+<td><img src="./README_img/rauschen-20250407-165205-809.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250522-205038-804.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot" height="330"></td>
+</tr>
+</table>
 
 ## controls
 
@@ -101,24 +118,6 @@ In order to map the application to a surface with a projector, the window's menu
 ## screenshots
 
 *RAUSCHEN_processing_controls* scans the folder that *RAUSCHEN* saves screenshots to a folder (**'temp'**) in a set interval. It displays the latest 4 a row of screenshots. When clicked on, it will save the corresponding screenshot to a permanent folder (**'saved'**).
-
-<table>
-<tr>
-<td><img src="./README_img/rauschen-20250611-164109-577.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250602-180127-227.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250530-171029-416.png" alt="RAUSCHEN screenshot" height="330"></td>
-</tr>
-<tr>
-<td><img src="./README_img/rauschen-20250422-155733-347.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250529-165834-148.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250613-154959-102.png" alt="RAUSCHEN screenshot" height="330"></td>
-</tr>
-<tr>
-<td><img src="./README_img/rauschen-20250407-165205-809.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250522-205038-804.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot" height="330"></td>
-</tr>
-</table>
 
 ## displayed data
 
@@ -153,4 +152,15 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 <td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2.png" alt="Intech Studio Grid Button" height="330"></td>
 <td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3.png" alt="Intech Studio Grid Potientometer" height="330"></td>
 </tr>
+</table>
+
+
+# RAUSCHEN_poster
+
+*RAUSCHEN_poster* contains some *SvelteKit* components that produce a poster and instagram sharepic for the opening or future exhibitions from either random or chosen sets of screenshots. It can also produce a PDF preparing a large set of screenshots in order to print them in batches.
+
+<table><tr><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN sharepic 3:4" style="height: 330px;"></tr></table>
+<table>
+<tr><img src="./README_img/_DSC2849_omarzaki.jpg" alt="RAUSCHEN prints" style="height: 330px;"></tr>
+<em>*photos by Omar Zaki*</em>
 </table>

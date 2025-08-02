@@ -120,5 +120,12 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 
 Some logic, mainly for enabling short and long presses, as well as saving variable values across page changes, is applied and saved directly to the controller in the form of *LUA* scripts.
 
+<table>
+<tr>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2.png" alt="Intech Studio Grid Button" height="300"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3.png" alt="Intech Studio Grid Potientometer" height="300"></td>
+</tr>
+</table>
+
 ![Intech Studio Grid Button](./README_img/250802_Intech_Studio_Grid_Editor_2.png)
 ![Intech Studio Grid Potientometer](./README_img/250802_Intech_Studio_Grid_Editor_3.png)

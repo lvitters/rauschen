@@ -164,12 +164,14 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4" style="height: 350px;"></td>
-<td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square" style="height: 350px;"></td>
+<td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4" style="height: 400px;"></td>
+<td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square" style="height: 400px;"></td>
 <tr>
 </table>
 
 It can also produce a PDF preparing a large set of screenshots in order to print them in batches.
 
-<img src="./README_img/_DSC2849_omarzaki.jpg" alt="RAUSCHEN prints" style="height: 330px;">
-<p style="text-align: center; font-style: italic; margin-top: 2px; margin-bottom: 0;">photo by Omar Zaki</p>
+<div style="text-align: center;">
+  <img src="./README_img/_DSC2849_omarzaki.jpg" alt="RAUSCHEN prints" style="height: 330px;">
+  <div style="font-style: italic; margin-top: 2px;">photo by Omar Zaki</div>
+</div>

@@ -7,7 +7,7 @@
 <td><img src="./README_img/20250620-RAUSCHEN-1-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 1" height="330"></td>
 </tr>
 </table>
-*photos:* *[Mika Störkel](https://mikastoerkel.com/)*
+<em>photos: <a href="https://mikastoerkel.com/">Mika Störkel</a></em>
 
 <br><br>
 
@@ -172,4 +172,4 @@ It can also produce a PDF preparing a large set of screenshots in order to print
 
 
 <img src="./README_img/_DSC2849_omarzaki.jpg" alt="RAUSCHEN prints" style="height: 330px;">
-*photo: Omar Zaki*
+<em>photo: Omar Zaki</a></em>

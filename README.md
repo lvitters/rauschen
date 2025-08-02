@@ -163,7 +163,7 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 # setup
 
-*RAUSCHEN* can either run on a screen in **AUTO MODE** or a performance / monitoring station can be set up to manually control the events and parameters.
+*RAUSCHEN* can either run on a screen in **AUTO MODE** or a performance station can be set up to manually control events and parameters or monitor and save screenshots.
 
 <table>
 <tr>

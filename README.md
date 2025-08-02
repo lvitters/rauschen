@@ -24,15 +24,9 @@ The color of the cells is determined by a range of pseudo random number generato
 
 - individual random number for each value and each cell
 
-<br>
-
 - a leading color determined by a custom Noise class, with each cell having a slight offset from that leading color that is also calculated by a custom Noise class
 
-<br>
-
 - a leading color determined by a custom Noise class, with each cell having a slight offset from that leading color that is calculated by a random one of the Noise types from the [FastNoiseLite](https://github.com/Auburn/FastNoiseLite) lib
-
-<br>
 
 - the entire grid of cells determined by a random one of the Noise types from [FastNoiseLite](https://github.com/Auburn/FastNoiseLite) lib
 
@@ -68,15 +62,9 @@ A random event happens every X seconds. These include:
 
 - setting up new dimensions for either the grid of cells or the buffer
 
-<br>
-
 - switch to applying shaders instead of displaying the grid of cells
 
-<br>
-
 - switch between the grid of cells' colors being determined by the options described above ("Colors")
-
-<br>
 
 - switch between using the same shader in consecutive frames or using a random different shader each frame
 
@@ -104,23 +92,15 @@ Although there is a separate application to control *RAUSCHEN*, there are some r
 
 <br>
 
-**f key** show rudimentary debug info
+**f key** - show rudimentary debug info
 
-<br>
+**p key** - print debug info to console
 
-**p key** print debug info to console
+**a key** - toggle *Auto Mode* (enable automatic *events* or not)
 
-<br>
+**s key** - choose a random event now
 
-**a key** toggle *Auto Mode* (enable automatic *events* or not)
-
-<br>
-
-**s key** choose a random event now
-
-<br>
-
-**n key** toggle audio
+**n key** - toggle audio
 
 <br>
 

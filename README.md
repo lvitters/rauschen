@@ -7,7 +7,7 @@
 <td><img src="./README_img/20250620-RAUSCHEN-1-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 1" height="330"></td>
 </tr>
 </table>
-*photos: [Mika Störkel](https://mikastoerkel.com/)
+*photos: [Mika Störkel](https://mikastoerkel.com/)*
 
 <br>
 

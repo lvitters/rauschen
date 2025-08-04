@@ -75,21 +75,21 @@ Each frame, a thread-safe copy is made of the buffer. Using the digital signal p
 
 At a set interval, *RAUSCHEN* will create a new thread in order to save the display buffer as a screenshot, with a timestamp in its file name. If the screenshot folder (**'temp'**) exceeds a set number of screenshot, the oldest one will be deleted.
 
-<table>
+<table style="width: 100%;">
 <tr>
-<td><img src="./README_img/rauschen-20250611-164109-577.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250602-180127-227.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250530-171029-416.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td style="width: 33.33%;"><img src="./README_img/rauschen-20250611-164109-577.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
+<td style="width: 33.33%;"><img src="./README_img/rauschen-20250602-180127-227.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
+<td style="width: 33.33%;"><img src="./README_img/rauschen-20250530-171029-416.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
 </tr>
 <tr>
-<td><img src="./README_img/rauschen-20250422-155733-347.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250529-165834-148.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250613-154959-102.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td style="width: 33.33%;"><img src="./README_img/rauschen-20250422-155733-347.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
+<td style="width: 33.33%;"><img src="./README_img/rauschen-20250529-165834-148.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
+<td style="width: 33.33%;"><img src="./README_img/rauschen-20250613-154959-102.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
 </tr>
 <tr>
-<td><img src="./README_img/rauschen-20250407-165205-809.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250522-205038-804.png" alt="RAUSCHEN screenshot" height="330"></td>
-<td><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot" height="330"></td>
+<td style="width: 33.33%;"><img src="./README_img/rauschen-20250407-165205-809.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
+<td style="width: 33.33%;"><img src="./README_img/rauschen-20250522-205038-804.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
+<td style="width: 33.33%;"><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
 </tr>
 </table>
 
@@ -149,8 +149,8 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 
 <table>
 <tr>
-<td><img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4"></td>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4" style="height: auto;"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor" style="height: auto;"></td>
 </tr>
 </table>
 
@@ -188,6 +188,8 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 It can also produce a PDF preparing a large set of screenshots in order to print them in batches. The screenshots will have their filename printed on the bottom right in order to provide a unique timestamp as an identifier.
 
 <img src="./README_img/PXL_20250619_113636889_cut.jpg" alt="RAUSCHEN prints">
+
+<br>
 
 # _other
 

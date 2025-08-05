@@ -1,12 +1,12 @@
 # RAUSCHEN
 
-<img src="./README_img/20250620-RAUSCHEN-15-MikaStoerkel-rotated.jpg" alt="RAUSCHEN projection 15">
+<img src="./README_img/20250620-RAUSCHEN-15-MikaStoerkel-rotated_resized.jpg" alt="RAUSCHEN projection 15">
 
 <table>
 <tr>
-<td><img src="./README_img/20250620-RAUSCHEN-3-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 3"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-2-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 2"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-5-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 5"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-3-MikaStoerkel_cut_resized.jpg" alt="RAUSCHEN projection 3"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-2-MikaStoerkel_cut_resized.jpg" alt="RAUSCHEN projection 2"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-5-MikaStoerkel_cut_resized.jpg" alt="RAUSCHEN projection 5"></td>
 </tr>
 </table>
 <em>photos: <a href="https://mikastoerkel.com/">Mika Störkel</a></em>
@@ -118,7 +118,8 @@ In order to map the application to a surface with a projector, the window's menu
 
 *RAUSCHEN* is controlled by another *Processing 4.3.2* application running on *macOS* called *RAUSCHEN_processing_controls*.
 
-![RAUSCHEN_processing_controls](./README_img/250613_control_screenshot.png)
+
+<img src="./README_img/250613_control_screenshot_resized.png" alt="RAUSCHEN controls">
 
 ## screenshots
 
@@ -148,8 +149,8 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 
 <table>
 <tr>
-<td><img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4"></td>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_PBF4_resized.jpg" alt="Intech Studio Grid PBF4"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_1_resized.png" alt="Intech Studio Grid Editor"></td>
 </tr>
 </table>
 
@@ -157,8 +158,8 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2.png" alt="Intech Studio Grid Button"></td>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3.png" alt="Intech Studio Grid Potientometer"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2_resized.png" alt="Intech Studio Grid Button"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3_resized.png" alt="Intech Studio Grid Potientometer"></td>
 </tr>
 </table>
 
@@ -168,8 +169,8 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/20250620-RAUSCHEN-22-MikaStoerkel_cut.jpg" alt="monitoring station"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-14-MikaStoerkel_cut.jpg" alt="midi controller performing"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-22-MikaStoerkel_cut_resized.jpg" alt="monitoring station"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-14-MikaStoerkel_cut_resized.jpg" alt="midi controller performing"></td>
 </tr>
 </table>
 
@@ -179,17 +180,17 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4"></td>
-<td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square"></td>
+<td><img src="./README_img/250605_sharepic34_resized.png" alt="RAUSCHEN poster 3:4"></td>
+<td><img src="./README_img/250605_square_resized.png" alt="RAUSCHEN sharepic square"></td>
 </tr>
 </table>
 
 It can also produce a PDF preparing a large set of screenshots in order to print them in batches. The screenshots will have their filename printed on the bottom right in order to provide a unique timestamp as an identifier.
 
-<img src="./README_img/PXL_20250619_113636889_cut.jpg" alt="RAUSCHEN prints">
+<img src="./README_img/PXL_20250619_113636889_cut_resized.jpg" alt="RAUSCHEN prints">
 
 <br>
 
 # _other
 
-*_other* contains some files from tests, such as the initial *p5.js* version of *RAUSCHEN*
+*_other* contains some files from tests, such as the initial *p5.js* version of *RAUSCHEN*.

@@ -173,6 +173,9 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 <td><img src="./README_img/20250620-RAUSCHEN-14-MikaStoerkel_cut_resized.jpg" alt="midi controller performing"></td>
 </tr>
 </table>
+<em>photos: <a href="https://mikastoerkel.com/">Mika Störkel</a></em>
+
+<br>
 
 # RAUSCHEN_poster
 

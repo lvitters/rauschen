@@ -75,23 +75,25 @@ Each frame, a thread-safe copy is made of the buffer. Using the digital signal p
 
 At a set interval, *RAUSCHEN* will create a new thread in order to save the display buffer as a screenshot, with a timestamp in its file name. If the screenshot folder (**'temp'**) exceeds a set number of screenshot, the oldest one will be deleted.
 
-<table style="width: 100%;">
+<div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+<table style="min-width: 600px; width: auto;">
 <tr>
-<td style="width: 33.33%;"><img src="./README_img/rauschen-20250611-164109-577.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
-<td style="width: 33.33%;"><img src="./README_img/rauschen-20250602-180127-227.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
-<td style="width: 33.33%;"><img src="./README_img/rauschen-20250530-171029-416.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
+<td style="min-width: 200px;"><img src="./README_img/rauschen-20250611-164109-577.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
+<td style="min-width: 200px;"><img src="./README_img/rauschen-20250602-180127-227.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
+<td style="min-width: 200px;"><img src="./README_img/rauschen-20250530-171029-416.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
 </tr>
 <tr>
-<td style="width: 33.33%;"><img src="./README_img/rauschen-20250422-155733-347.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
-<td style="width: 33.33%;"><img src="./README_img/rauschen-20250529-165834-148.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
-<td style="width: 33.33%;"><img src="./README_img/rauschen-20250613-154959-102.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
+<td style="min-width: 200px;"><img src="./README_img/rauschen-20250422-155733-347.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
+<td style="min-width: 200px;"><img src="./README_img/rauschen-20250529-165834-148.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
+<td style="min-width: 200px;"><img src="./README_img/rauschen-20250613-154959-102.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
 </tr>
 <tr>
-<td style="width: 33.33%;"><img src="./README_img/rauschen-20250407-165205-809.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
-<td style="width: 33.33%;"><img src="./README_img/rauschen-20250522-205038-804.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
-<td style="width: 33.33%;"><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot" style="height: 200px; width: 100%; object-fit: contain;"></td>
+<td style="min-width: 200px;"><img src="./README_img/rauschen-20250407-165205-809.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
+<td style="min-width: 200px;"><img src="./README_img/rauschen-20250522-205038-804.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
+<td style="min-width: 200px;"><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
 </tr>
 </table>
+</div>
 
 <br>
 
@@ -108,7 +110,6 @@ Although there is a separate application to control *RAUSCHEN*, there are some r
 - **'S' key:** choose a random event now
 
 - **'N' key:** toggle audio
-
 - **SPACE:** halt the entire application (good for photos)
 
 In order to map the application to a surface with a projector, the window's menu bar can be disabled by the toggle **isUndecorated**. The window can then be resized with the **'+'** and **'-'** keys, and moved around the screen with the **arrow keys**.

@@ -4,9 +4,9 @@
 
 <table>
 <tr>
-<td><img src="./README_img/20250620-RAUSCHEN-3-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 3" height="330"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-2-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 2" height="330"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-5-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 5" height="330"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-3-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 3"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-2-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 2"></td>
+<td><img src="./README_img/20250620-RAUSCHEN-5-MikaStoerkel_cut.jpg" alt="RAUSCHEN projection 5"></td>
 </tr>
 </table>
 <em>photos: <a href="https://mikastoerkel.com/">Mika Störkel</a></em>
@@ -75,25 +75,23 @@ Each frame, a thread-safe copy is made of the buffer. Using the digital signal p
 
 At a set interval, *RAUSCHEN* will create a new thread in order to save the display buffer as a screenshot, with a timestamp in its file name. If the screenshot folder (**'temp'**) exceeds a set number of screenshot, the oldest one will be deleted.
 
-<div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-<table style="min-width: 600px; width: auto;">
+<table>
 <tr>
-<td style="min-width: 200px;"><img src="./README_img/rauschen-20250611-164109-577.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
-<td style="min-width: 200px;"><img src="./README_img/rauschen-20250602-180127-227.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
-<td style="min-width: 200px;"><img src="./README_img/rauschen-20250530-171029-416.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
+<td><img src="./README_img/rauschen-20250611-164109-577.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./README_img/rauschen-20250602-180127-227.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./README_img/rauschen-20250530-171029-416.png" alt="RAUSCHEN screenshot"></td>
 </tr>
 <tr>
-<td style="min-width: 200px;"><img src="./README_img/rauschen-20250422-155733-347.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
-<td style="min-width: 200px;"><img src="./README_img/rauschen-20250529-165834-148.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
-<td style="min-width: 200px;"><img src="./README_img/rauschen-20250613-154959-102.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
+<td><img src="./README_img/rauschen-20250422-155733-347.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./README_img/rauschen-20250529-165834-148.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./README_img/rauschen-20250613-154959-102.png" alt="RAUSCHEN screenshot"></td>
 </tr>
 <tr>
-<td style="min-width: 200px;"><img src="./README_img/rauschen-20250407-165205-809.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
-<td style="min-width: 200px;"><img src="./README_img/rauschen-20250522-205038-804.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
-<td style="min-width: 200px;"><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot" style="height: 200px; width: auto; max-width: none;"></td>
+<td><img src="./README_img/rauschen-20250407-165205-809.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./README_img/rauschen-20250522-205038-804.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot"></td>
 </tr>
 </table>
-</div>
 
 <br>
 
@@ -150,8 +148,8 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 
 <table>
 <tr>
-<td><img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4" style="height: auto;"></td>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor" style="height: auto;"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_PBF4.jpg" alt="Intech Studio Grid PBF4"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_1.png" alt="Intech Studio Grid Editor"></td>
 </tr>
 </table>
 
@@ -159,8 +157,8 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2.png" alt="Intech Studio Grid Button" style="height: auto;"></td>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3.png" alt="Intech Studio Grid Potientometer" style="height: auto;"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2.png" alt="Intech Studio Grid Button"></td>
+<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3.png" alt="Intech Studio Grid Potientometer"></td>
 </tr>
 </table>
 
@@ -181,8 +179,8 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4" style="height: auto;"></td>
-<td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square" style="height: auto;"></td>
+<td><img src="./README_img/250605_sharepic34.png" alt="RAUSCHEN poster 3:4"></td>
+<td><img src="./README_img/250605_square.png" alt="RAUSCHEN sharepic square"></td>
 </tr>
 </table>
 

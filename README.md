@@ -11,7 +11,8 @@
 </table>
 <em>photos: <a href="https://mikastoerkel.com/">Mika Störkel</a></em>
 
-<br><br>
+<br>
+<br>
 
 *RAUSCHEN* is an emergent performance installation exploring the possibility space of a 1000x1000 pixel image. It generates a random, but orderly grid of pixels or cells according to a range of RNG and noise algorithms. These regular textures are fed into a modular shader system, consisting of contributions from conversations with currently popular LLMs.<br>
 *RAUSCHEN* then freely mixes and recursively feeds back their results into emergent textures of visual patterns and auditory noise, flashing by in quick succession. A control application constantly monitors its output in numbers and parameters, is able to save the generated textures to disk and provides the option to influence the pattern generation in order to perform a more curated visual experience.<br>
@@ -27,6 +28,8 @@ While current image generation models denoise their random input textures using 
 
 *RAUSCHEN* is driven by a *Processing 4.3.2* application running on *macOS* that creates a buffer of custom dimensions and fills it with randomly colored cells of pixels each frame, called *Rauschen_processing*.
 
+<br>
+
 ## colors
 
 The color of the cells is determined by a range of pseudo random number generators that determine their RGB values:
@@ -39,9 +42,13 @@ The color of the cells is determined by a range of pseudo random number generato
 
 - the entire grid of cells determined by a random one of the Noise types from [FastNoiseLite](https://github.com/Auburn/FastNoiseLite) lib
 
+<br>
+
 ## cells
 
 The cells can range in dimensions from 1 up to the dimensions of the buffer, and can be either square or rectangular. The dimensions of the cells, called **xStep** and **yStep**, are determined by a custom Noise class. All cells always have the same dimensions in a single frame.
+
+<br>
 
 ## noise class
 
@@ -49,9 +56,13 @@ For many operations, a custom Noise class is used that can return either a Noise
 
 Noises are added to a list of Noises so they can be send to the control application.
 
+<br>
+
 ## shaders
 
 Occasionally, instead of displayed the grid of cells, *RAUSCHEN* will apply a random shader from a list of shaders to the buffer. The shaders take a texture called tempBuffer as an input that is either the last grid of cells OR the last shader output. Depending on which event has fired last, this can be either the same shader multiple consecutive frames in a row, or a random different shader each frame, effectively mixing their outputs together.
+
+<br>
 
 ## events
 
@@ -67,9 +78,13 @@ A random event happens every X seconds if **Auto Mode** **(isAutoMode)** is acti
 
 The time between two events can either be set manually, or be picked at random between each frame and a maximum interval.
 
+<br>
+
 ## sound
 
 Each frame, a thread-safe copy is made of the buffer. Using the digital signal processing in [**Wellen**](https://github.com/dennisppaul/wellen), a sound sample is created from the buffer's pixels. The sample consists of a either horizontal, vertical or diagonal line of pixels, whose average color channel values ((R + G + B) / 3) are mapped to a frequency range. The sample is then passed through a band pass filter, where frequency and bandwidth are determined by - you guessed it - the custom Noise class.
+
+<br>
 
 ## screenshots
 
@@ -121,6 +136,8 @@ In order to map the application to a surface with a projector, the window's menu
 
 <img src="./README_img/250613_control_screenshot_resized.png" alt="RAUSCHEN controls">
 
+<br>
+
 ## screenshots
 
 *RAUSCHEN_processing_controls* scans the folder that *RAUSCHEN* saves screenshots to (**'temp'**) in a set interval. It displays the latest 4 a row of screenshots. When clicked on, it will save the corresponding screenshot to a permanent folder (**'saved'**).
@@ -137,11 +154,15 @@ In order to map the application to a surface with a projector, the window's menu
 
 - **'/shaderChoice'** contains the value determining which shader is currently in use, shown by the corresponding shader being highlighted in the list of available shaders
 
+<br>
+
 ## controls
 
 The variables present in the **'/info'** message can be set by *RAUSCHEN_processing_controls* sending *OSC* messages containing the corresponding key and value pairs back to *RAUSCHEN*. These variables will be overridden by the events from **Auto Mode** if it is active.
 
 The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons to **SOLO** and **MUTE** them, similar to audio tracks in a DAW. This enables to mix and match shaders freely when **isRandomShaderEachFrame** is active, or determine which random shaders can be chosen for consecutive frames when it is not active.
+
+<br>
 
 ## midi-controller
 
@@ -162,6 +183,8 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 <td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3_resized.png" alt="Intech Studio Grid Potientometer"></td>
 </tr>
 </table>
+
+<br>
 
 # setup
 

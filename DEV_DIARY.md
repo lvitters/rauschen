@@ -1,3 +1,4 @@
+<!--
 <style>
 	/* styling for PDF generation */
 	@import url('https://fonts.googleapis.com/css2?family=Commit+Mono:wght@400;700&display=swap');
@@ -13,6 +14,7 @@
 		break-inside: avoid !important;
 	}
 </style>
+-->
 
 # DEV DIARY (top secret - do not read)
 

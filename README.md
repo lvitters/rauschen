@@ -1,3 +1,4 @@
+<!--
 <style>
 	/* styling for PDF generation */
 	@import url('https://fonts.googleapis.com/css2?family=Commit+Mono:wght@400;700&display=swap');
@@ -32,6 +33,7 @@
 		font-weight: 600 !important;
 	}
 </style>
+-->
 
 # RAUSCHEN
 

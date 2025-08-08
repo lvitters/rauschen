@@ -1,4 +1,20 @@
-# DEV DIARY (top secret and private - do not read)
+<style>
+	/* styling for PDF generation */
+	@import url('https://fonts.googleapis.com/css2?family=Commit+Mono:wght@400;700&display=swap');
+
+	* {
+		font-family: 'Commit Mono', monospace !important;
+	}
+
+	h1, h2, h3, h4, h5, h6 {
+		page-break-after: avoid !important;
+		break-after: avoid !important;
+		page-break-inside: avoid !important;
+		break-inside: avoid !important;
+	}
+</style>
+
+# DEV DIARY (top secret - do not read)
 
 ## 2411
 

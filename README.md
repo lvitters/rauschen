@@ -1,12 +1,47 @@
+<style>
+	/* styling for PDF generation */
+	@import url('https://fonts.googleapis.com/css2?family=Commit+Mono:wght@400;700&display=swap');
+
+	* {
+		font-family: 'Commit Mono', monospace !important;
+	}
+
+	h1, h2, h3, h4, h5, h6 {
+		page-break-after: avoid !important;
+		break-after: avoid !important;
+		page-break-inside: avoid !important;
+		break-inside: avoid !important;
+	}
+
+	/* GitHub-style table borders */
+	table {
+		border-collapse: collapse !important;
+		border-spacing: 0 !important;
+		border: 1px solid #d0d7de !important;
+		margin: 1em 0 !important;
+	}
+
+	th, td {
+		border: 1px solid #d0d7de !important;
+		padding: 6px 13px !important;
+		text-align: left !important;
+	}
+
+	th {
+		background-color: #f6f8fa !important;
+		font-weight: 600 !important;
+	}
+</style>
+
 # RAUSCHEN
 
-<img src="./README_img/20250620-RAUSCHEN-15-MikaStoerkel-rotated_resized.jpg" alt="RAUSCHEN projection 15">
+<img src="./markdown_assets/20250620-RAUSCHEN-15-MikaStoerkel-rotated_resized.jpg" alt="RAUSCHEN projection 15">
 
 <table>
 <tr>
-<td><img src="./README_img/20250620-RAUSCHEN-3-MikaStoerkel_cut_resized.jpg" alt="RAUSCHEN projection 3"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-2-MikaStoerkel_cut_resized.jpg" alt="RAUSCHEN projection 2"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-5-MikaStoerkel_cut_resized.jpg" alt="RAUSCHEN projection 5"></td>
+<td><img src="./markdown_assets/20250620-RAUSCHEN-3-MikaStoerkel_cut_resized.jpg" alt="RAUSCHEN projection 3"></td>
+<td><img src="./markdown_assets/20250620-RAUSCHEN-2-MikaStoerkel_cut_resized.jpg" alt="RAUSCHEN projection 2"></td>
+<td><img src="./markdown_assets/20250620-RAUSCHEN-5-MikaStoerkel_cut_resized.jpg" alt="RAUSCHEN projection 5"></td>
 </tr>
 </table>
 <em>photos: <a href="https://mikastoerkel.com/">Mika Störkel</a></em>
@@ -92,19 +127,19 @@ At a set interval, *RAUSCHEN* will create a new thread in order to save the disp
 
 <table>
 <tr>
-<td><img src="./README_img/rauschen-20250611-164109-577.png" alt="RAUSCHEN screenshot"></td>
-<td><img src="./README_img/rauschen-20250602-180127-227.png" alt="RAUSCHEN screenshot"></td>
-<td><img src="./README_img/rauschen-20250530-171029-416.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./markdown_assets/rauschen-20250611-164109-577.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./markdown_assets/rauschen-20250602-180127-227.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./markdown_assets/rauschen-20250530-171029-416.png" alt="RAUSCHEN screenshot"></td>
 </tr>
 <tr>
-<td><img src="./README_img/rauschen-20250422-155733-347.png" alt="RAUSCHEN screenshot"></td>
-<td><img src="./README_img/rauschen-20250529-165834-148.png" alt="RAUSCHEN screenshot"></td>
-<td><img src="./README_img/rauschen-20250613-154959-102.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./markdown_assets/rauschen-20250422-155733-347.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./markdown_assets/rauschen-20250529-165834-148.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./markdown_assets/rauschen-20250613-154959-102.png" alt="RAUSCHEN screenshot"></td>
 </tr>
 <tr>
-<td><img src="./README_img/rauschen-20250407-165205-809.png" alt="RAUSCHEN screenshot"></td>
-<td><img src="./README_img/rauschen-20250522-205038-804.png" alt="RAUSCHEN screenshot"></td>
-<td><img src="./README_img/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./markdown_assets/rauschen-20250407-165205-809.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./markdown_assets/rauschen-20250522-205038-804.png" alt="RAUSCHEN screenshot"></td>
+<td><img src="./markdown_assets/rauschen-20250602-131859-168.png" alt="RAUSCHEN screenshot"></td>
 </tr>
 </table>
 
@@ -127,14 +162,14 @@ Although there is a separate application to control *RAUSCHEN*, there are some r
 
 In order to map the application to a surface with a projector, the window's menu bar can be disabled by the toggle **isUndecorated**. The window can then be resized with the **'+'** and **'-'** keys, and moved around the screen with the **arrow keys**.
 
-<br>
+<br><br>
 
 ## RAUSCHEN_processing_controls
 
 *RAUSCHEN* is controlled by another *Processing 4.3.2* application running on *macOS* called *RAUSCHEN_processing_controls*.
 
 
-<img src="./README_img/250613_control_screenshot_resized.png" alt="RAUSCHEN controls">
+<img src="./markdown_assets/250613_control_screenshot_resized.png" alt="RAUSCHEN controls">
 
 <br>
 
@@ -170,8 +205,8 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 
 <table>
 <tr>
-<td><img src="./README_img/250802_Intech_Studio_Grid_PBF4_resized.jpg" alt="Intech Studio Grid PBF4"></td>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_1_resized.png" alt="Intech Studio Grid Editor"></td>
+<td><img src="./markdown_assets/250802_Intech_Studio_Grid_PBF4_resized.jpg" alt="Intech Studio Grid PBF4"></td>
+<td><img src="./markdown_assets/250802_Intech_Studio_Grid_Editor_1_resized.png" alt="Intech Studio Grid Editor"></td>
 </tr>
 </table>
 
@@ -179,12 +214,12 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_2_resized.png" alt="Intech Studio Grid Button"></td>
-<td><img src="./README_img/250802_Intech_Studio_Grid_Editor_3_resized.png" alt="Intech Studio Grid Potientometer"></td>
+<td><img src="./markdown_assets/250802_Intech_Studio_Grid_Editor_2_resized.png" alt="Intech Studio Grid Button"></td>
+<td><img src="./markdown_assets/250802_Intech_Studio_Grid_Editor_3_resized.png" alt="Intech Studio Grid Potientometer"></td>
 </tr>
 </table>
 
-<br>
+<br><br>
 
 ## setup
 
@@ -192,32 +227,31 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <table>
 <tr>
-<td><img src="./README_img/20250620-RAUSCHEN-22-MikaStoerkel_cut_resized.jpg" alt="monitoring station"></td>
-<td><img src="./README_img/20250620-RAUSCHEN-14-MikaStoerkel_cut_resized.jpg" alt="midi controller performing"></td>
+<td><img src="./markdown_assets/20250620-RAUSCHEN-22-MikaStoerkel_cut_resized.jpg" alt="monitoring station"></td>
+<td><img src="./markdown_assets/20250620-RAUSCHEN-14-MikaStoerkel_cut_resized.jpg" alt="midi controller performing"></td>
 </tr>
 </table>
 <em>photos: <a href="https://mikastoerkel.com/">Mika Störkel</a></em>
 
-<br>
-<br>
+<br><br>
 
-# RAUSCHEN_poster
+## RAUSCHEN_poster
 
 *RAUSCHEN_poster* contains some *SvelteKit* components that produce a poster or sharepic for the opening or future exhibitions from either random or chosen sets of screenshots.
 
 <table>
 <tr>
-<td><img src="./README_img/250605_sharepic34_resized.png" alt="RAUSCHEN poster 3:4"></td>
-<td><img src="./README_img/250605_square_resized.png" alt="RAUSCHEN sharepic square"></td>
+<td><img src="./markdown_assets/250605_sharepic34_resized.png" alt="RAUSCHEN poster 3:4"></td>
+<td><img src="./markdown_assets/250605_square_resized.png" alt="RAUSCHEN sharepic square"></td>
 </tr>
 </table>
 
 It can also produce a PDF preparing a large set of screenshots in order to print them in batches. The screenshots will have their filename printed on the bottom right in order to provide a unique timestamp as an identifier.
 
-<img src="./README_img/PXL_20250619_113636889_cut_resized.jpg" alt="RAUSCHEN prints">
+<img src="./markdown_assets/PXL_20250619_113636889_cut_resized.jpg" alt="RAUSCHEN prints">
 
-<br>
+<br><br>
 
-# _other
+## _other
 
 *_other* contains some files from tests, such as the initial *p5.js* version of *RAUSCHEN*.

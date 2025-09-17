@@ -12,24 +12,37 @@ import processing.opengl.PSurfaceJOGL;				// to set window undecorated
 import com.jogamp.newt.Window;
 import com.jogamp.newt.util.EDTUtil;
 
-// main window
+// buffer
 int width = 1000;
 int height = 1000;
 
+// screenshots
+int screenshotHeight = 1000;
 int screenshotWidth = 1000;
 
-// to set window undecorated
-Boolean isUndecorated = false;
+// display mode: 0 = regular window, 1 = undecorated window with separate dimensions
+int displayMode = 0;
+
+// window for displayMode 1
+int windowWidth = 1920;
+int windowHeight = 1080;
 Window newtWindow = null;
 EDTUtil edtUtil = null;
 volatile boolean isCurrentlyUndecorated = false;
-// to move around window with no title bar
+
+// move around undecorated window 
 boolean upArrowDown = false;
 boolean downArrowDown = false;
 boolean leftArrowDown = false;
 boolean rightArrowDown = false;
 boolean plusKeyDown = false;
 boolean minusKeyDown = false;
+
+// video mapping controls
+boolean showVideoMappingControls = false;
+PVector[] corners = new PVector[4]; // top-left, top-right, bottom-right, bottom-left
+int draggedCorner = -1; // which corner is being dragged (-1 = none)
+int handleSize = 25;
 
 // resolution steps
 int maxStep = width;
@@ -50,6 +63,7 @@ int globalSpeedDivisor = 1;
 // buffer for display
 PGraphics buffer;
 PGraphics tempBuffer;
+PGraphics screenshotBuffer; // for clean screenshots when video mapping is active
 
 // screenshots
 String screensDir = "../rauschen_screens/temp/";
@@ -179,18 +193,25 @@ MidiDevice outputDevice;
 Receiver midiReceiver;
 
 public void settings() {
-	size(width, height, P2D);
+	if (displayMode == 0) {
+		size(width, height, P2D);
+	} else if (displayMode == 1) {
+		size(windowWidth, windowHeight, P2D);
+	}
 }
 
 public void setup() {
 	// set this window title
 	windowTitle("RAUSCHEN");
 
-	// determine this window location on screen
-	if (!isUndecorated) surface.setLocation(0, 40);
-
-	// start sketch without title bar
-	if (isUndecorated) removeTitleBar();
+	// determine this window location on screen and setup based on display mode
+	if (displayMode == 0) {
+		surface.setLocation(0, 40);
+	} else if (displayMode == 1) {
+		// for displayMode 1, remove title bar
+		surface.setLocation(0, 40);
+		removeTitleBar();
+	}
 
 	// can't go in settings for some reason
 	frameRate(120);
@@ -203,6 +224,7 @@ public void setup() {
 	// create buffers
 	buffer = createGraphics((int)width, (int)height, P2D);
 	tempBuffer = createGraphics((int)width, (int)height, P2D);
+	screenshotBuffer = createGraphics(screenshotWidth, screenshotHeight, P2D);
 
 	// init OSC
 	oscP5 = new OscP5(this, 9000); // local port for this sketch
@@ -279,11 +301,14 @@ public void setup() {
 	fastColorNoiseB = new FastNoiseLite();
 	fastColorNoiseB.SetSeed(intRandom(1, 10000));
 	fastColorNoiseB.SetNoiseType(fastNoiseType);
+
+	// initialize video mapping corners
+	initVideoMappingCorners();
 }
 
 public void draw() {
 	// move window around with arrow keys if there is no title bar
-	if (isUndecorated) {
+	if (displayMode == 1) {
 		moveWindow();
 		resizeWindow();
 	}
@@ -334,14 +359,20 @@ public void draw() {
 		applyAudioFilter();
 
 		// display buffer
-		if (isUndecorated) image(buffer, 0, 0, newtWindow.getWidth(), newtWindow.getHeight());
-		else image(buffer, 0, 0, width, height);
+		if (displayMode == 0) {
+			image(buffer, 0, 0, width, height);
+		} else if (displayMode == 1) {
+			// clear background to black first
+			background(0);
+			drawMappedBuffer();
+		}
 
 		// take screenshot every 3 seconds
 		if (isTakingScreenshots && (frameCount % (60 * 3) == 0)) takeScreenshot();
 
 		if (showDebug) showDebug();
 		if (showAudioLine) showAudioLine();
+		if (showVideoMappingControls && displayMode == 1) drawVideoMappingControls();
 	}
 
 	// send information to control sketch
@@ -751,15 +782,22 @@ void takeScreenshot() {
     final String timeStamp = year() + nf(month(), 2) + nf(day(), 2) + "-" + nf(hour(), 2) + nf(minute(), 2) + nf(second(), 2) + "-" + nf(millis() % 1000, 3);
     final String filename = "../rauschen_screens/temp/rauschen-" + timeStamp + ".png";
 
-    // capture current frame to save
-    final PImage frameToSave = get();
-    // final PImage frameToSave = myBuffer.get(); // maybe get the buffer instead?
+    // capture current frame to save - always use clean buffer render in displayMode 1
+	final PImage frameToSave;
+	if (displayMode == 1) {
+		screenshotBuffer.beginDraw();
+		screenshotBuffer.clear();
+		// scale buffer to fill screenshot dimensions
+		screenshotBuffer.image(buffer, 0, 0, screenshotWidth, screenshotHeight);
+		screenshotBuffer.endDraw();
+		frameToSave = screenshotBuffer.get();
+	} else {
+		frameToSave = get();
+	}
 
     // create and start new thread to actually save for performance
     new Thread(new Runnable() {
         public void run() {
-			// resize to screenshotWidth if desired
-			if (width != screenshotWidth) frameToSave.resize(screenshotWidth, screenshotWidth);
             frameToSave.save(filename);
             if (printDebug) println("takeScreenshot(): screenshot saved: " + filename);
         }
@@ -843,7 +881,23 @@ void keyPressed() {
 	if (key == 'n') {
 		if (!isGeneratingSound) toggleSound(true);
 		else toggleSound(false);
-	} 
+	}
+	// toggle video mapping controls (displayMode 1 only)
+	if ((key == 'c' || key == 'C') && displayMode == 1) {
+		showVideoMappingControls = !showVideoMappingControls;
+	}
+	// reset video mapping corners (displayMode 1 only)
+	if ((key == 'x' || key == 'X') && displayMode == 1) {
+		initVideoMappingCorners();
+	}
+	// save current setup to JSON (displayMode 1 only)
+	if ((key == 'k' || key == 'K') && displayMode == 1) {
+		saveSetupToJSON();
+	}
+	// load setup from JSON (displayMode 1 only)
+	if ((key == 'l' || key == 'L') && displayMode == 1) {
+		loadSetupFromJSON();
+	}
 	//stop entire sketch
 	if (key == ' ') {
 		stopped = !stopped;
@@ -1015,5 +1069,175 @@ void removeTitleBar() {
 				}
 			}
 		});
+	}
+}
+
+// initialize video mapping corners to default positions (displayMode 1 only)
+void initVideoMappingCorners() {
+	if (displayMode == 1) {
+		// for displayMode 1, corners are centered in window
+		int offsetX = (windowWidth - width) / 2;
+		int offsetY = (windowHeight - height) / 2;
+		corners[0] = new PVector(offsetX, offsetY); // top-left
+		corners[1] = new PVector(offsetX + width, offsetY); // top-right
+		corners[2] = new PVector(offsetX + width, offsetY + height); // bottom-right
+		corners[3] = new PVector(offsetX, offsetY + height); // bottom-left
+	}
+	// displayMode 0 doesn't use video mapping, so no corners are initialized
+}
+
+// draw video mapping control handles
+void drawVideoMappingControls() {
+	if (corners[0] == null) return; // not initialized yet
+
+	for (int i = 0; i < 4; i++) {
+		// draw handle circle - semi-transparent
+		if (draggedCorner == i) {
+			fill(255, 0, 0, 80); // red when dragged, semi-transparent
+			stroke(255, 0, 0); // red outline when dragged
+		} else {
+			fill(255, 255, 0, 80); // yellow normally, semi-transparent
+			stroke(255, 255, 0); // yellow outline normally
+		}
+		strokeWeight(2);
+		ellipse(corners[i].x, corners[i].y, handleSize, handleSize);
+
+		// draw number - opaque
+		fill(255);
+		textAlign(CENTER, CENTER);
+		textSize(12);
+		text(str(i + 1), corners[i].x, corners[i].y);
+
+		// reset stroke
+		noStroke();
+	}
+}
+
+// draw the mapped buffer using the corner positions
+void drawMappedBuffer() {
+	if (corners[0] == null) return; // not initialized yet
+
+	// draw buffer as textured quad using the corner positions
+	beginShape();
+		texture(buffer);
+		vertex(corners[0].x, corners[0].y, 0, 0); // top-left
+		vertex(corners[1].x, corners[1].y, buffer.width, 0); // top-right
+		vertex(corners[2].x, corners[2].y, buffer.width, buffer.height); // bottom-right
+		vertex(corners[3].x, corners[3].y, 0, buffer.height); // bottom-left
+	endShape();
+}
+
+// mouse events for dragging corners (displayMode 1 only)
+void mousePressed() {
+	if (showVideoMappingControls && corners[0] != null && displayMode == 1) {
+		// check if mouse is over any corner handle
+		for (int i = 0; i < 4; i++) {
+			float distance = dist(mouseX, mouseY, corners[i].x, corners[i].y);
+			if (distance < handleSize / 2) {
+				draggedCorner = i;
+				break;
+			}
+		}
+	}
+}
+
+void mouseDragged() {
+	if (draggedCorner != -1 && displayMode == 1) {
+		corners[draggedCorner].x = mouseX;
+		corners[draggedCorner].y = mouseY;
+	}
+}
+
+void mouseReleased() {
+	draggedCorner = -1;
+}
+
+// save current window position, dimensions and corner positions to JSON
+void saveSetupToJSON() {
+	JSONObject setup = new JSONObject();
+
+	// window information
+	JSONObject window = new JSONObject();
+	if (displayMode == 1 && newtWindow != null) {
+		window.setInt("x", newtWindow.getX());
+		window.setInt("y", newtWindow.getY());
+		window.setInt("width", newtWindow.getWidth());
+		window.setInt("height", newtWindow.getHeight());
+	} else {
+		// for displayMode 0, use surface position and size
+		window.setInt("x", 0); // Processing doesn't easily expose window position
+		window.setInt("y", 40);
+		window.setInt("width", width);
+		window.setInt("height", height);
+	}
+	setup.setJSONObject("window", window);
+
+	// corner positions
+	JSONArray cornersArray = new JSONArray();
+	if (corners[0] != null) {
+		for (int i = 0; i < 4; i++) {
+			JSONObject corner = new JSONObject();
+			corner.setFloat("x", corners[i].x);
+			corner.setFloat("y", corners[i].y);
+			cornersArray.setJSONObject(i, corner);
+		}
+	}
+	setup.setJSONArray("corners", cornersArray);
+
+	// save to file
+	saveJSONObject(setup, "windowSetup.json");
+	if (printDebug) println("saveSetupToJSON(): setup saved to dwindowSetup.json");
+}
+
+// load window position, dimensions and corner positions from JSON
+void loadSetupFromJSON() {
+	JSONObject setup = loadJSONObject("windowSetup.json");
+	if (setup == null) {
+		if (printDebug) println("loadSetupFromJSON(): no windowSetup.json found");
+		return;
+	}
+
+	try {
+		// load window position and dimensions (only for displayMode 1)
+		if (setup.hasKey("window") && displayMode == 1 && newtWindow != null && edtUtil != null) {
+			JSONObject window = setup.getJSONObject("window");
+			final int newX = window.getInt("x");
+			final int newY = window.getInt("y");
+			final int newWidth = window.getInt("width");
+			final int newHeight = window.getInt("height");
+
+			// update window dimensions
+			windowWidth = newWidth;
+			windowHeight = newHeight;
+
+			// dispatch window changes to NEWT EDT
+			edtUtil.invoke(false, new Runnable() {
+				@Override
+				public void run() {
+					try {
+						newtWindow.setPosition(newX, newY);
+						newtWindow.setSize(newWidth, newHeight);
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+				}
+			});
+		}
+
+		// load corner positions
+		if (setup.hasKey("corners")) {
+			JSONArray cornersArray = setup.getJSONArray("corners");
+			if (cornersArray.size() >= 4) {
+				for (int i = 0; i < 4; i++) {
+					JSONObject corner = cornersArray.getJSONObject(i);
+					corners[i] = new PVector(corner.getFloat("x"), corner.getFloat("y"));
+				}
+				if (printDebug) println("loadSetupFromJSON(): corners loaded");
+			}
+		}
+
+		if (printDebug) println("loadSetupFromJSON(): setup loaded from data/setup.json");
+	} catch (Exception e) {
+		if (printDebug) println("loadSetupFromJSON(): error loading setup: " + e.getMessage());
 	}
 }

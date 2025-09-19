@@ -20,6 +20,7 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/fps").add((int)frameRate), controlSketchLocation);
     oscP5.send(new OscMessage("/info/xStep").add(xStep), controlSketchLocation);
     oscP5.send(new OscMessage("/info/yStep").add(yStep), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/isAutoAutoMode").add(isAutoAutoMode ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isAutoMode").add(isAutoMode ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/nextEvent").add(nextEvent), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isRandomSwitchTime").add(isRandomSwitchTime ? 1 : 0), controlSketchLocation);

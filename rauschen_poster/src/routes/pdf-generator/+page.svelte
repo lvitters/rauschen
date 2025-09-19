@@ -38,6 +38,9 @@
                     <div class="filename-label">
                         {getDisplayName(pair[0])}
                     </div>
+                    <div class="author-label">
+                        Lucca Vitters
+                    </div>
                 </div>
             </div>
         </div>
@@ -54,6 +57,9 @@
                         />
                         <div class="filename-label">
                             {getDisplayName(pair[1])}
+                        </div>
+                        <div class="author-label">
+                            Lucca Vitters
                         </div>
                     </div>
                 </div>
@@ -143,16 +149,24 @@
         box-sizing: border-box;
     }
 
+    .author-label {
+        position: absolute;
+        top: 4mm; /* Position above the top edge, closer to image */
+        left: 10mm; /* Align with left edge of image (accounting for padding) */
+        text-align: left;
+        font-family: 'tiny5', monospace;
+        font-size: 4mm;
+        color: #333;
+        font-weight: 500;
+        transform: none; /* Remove rotation */
+        box-sizing: border-box;
+    }
+
     /* Print styles */
     @media print {
         @page {
             size: A2;
             margin: 0;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
         }
 
         .a2-page {
@@ -166,6 +180,12 @@
         }
 
         .filename-label {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color: #333 !important;
+        }
+
+        .author-label {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
             color: #333 !important;

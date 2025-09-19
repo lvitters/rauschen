@@ -24,8 +24,8 @@ int screenshotWidth = 1000;
 int displayMode = 0;
 
 // window for displayMode 1
-int windowWidth = 1920;
-int windowHeight = 1080;
+int windowWidth = 1100;
+int windowHeight = 1100;
 Window newtWindow = null;
 EDTUtil edtUtil = null;
 volatile boolean isCurrentlyUndecorated = false;
@@ -114,6 +114,7 @@ color c;
 
 // standard Perlin noises
 ArrayList<Noise> noises = new ArrayList<Noise>();
+Noise autoAutoNoise;
 Noise xStepNoise;
 Noise yStepNoise;
 Noise stepBiasNoise;
@@ -163,7 +164,8 @@ Boolean showDebug = false;
 boolean stopped = false;
 Boolean showAudioLine = false;
 Boolean printDebug = false;
-Boolean isAutoMode = false;
+Boolean isAutoAutoMode = false;
+Boolean isAutoMode = true;
 Boolean isRandomSwitchTime = false;
 Boolean isNoiseColorRandomOffset = false;
 Boolean isNoiseColorFastNoiseOffset = false;
@@ -253,7 +255,9 @@ public void setup() {
 		audioDebugPixels.add(null); // add placeholder elements
 	}
 
-	// init NoiseInstances with starting value and increment, add to list of noises
+	// init NoiseInstances with starting value and increment, add to list of noises	
+	autoAutoNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(autoAutoNoise);
 	xStepNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(xStepNoise);
 	yStepNoise = new Noise(intRandom(0, 100), .01);
@@ -725,8 +729,19 @@ public void resizeBuffer(float w, float h) {
 // choose a random event after a random interval, or set the time until the next event to switchTime
 void timedEvents() {
 	eventCounter++;
-	if (!isRandomSwitchTime) nextEvent = switchTime + (switchTime * switchTimeMultiplier);
-	if (eventCounter > (nextEvent * 60)) {
+	// if manual switch time
+	if (!isRandomSwitchTime) {
+		if (!isAutoAutoMode) {
+			nextEvent = switchTime + (switchTime * switchTimeMultiplier);
+		// if isAutoAutoMode, make nextEvent be dependant on noise, but use switchtime for controlling amount
+		} else {
+			// println(switchTime * switchTimeMultiplier);
+			nextEvent = autoAutoNoise.getNoiseRange(- (switchTime + switchTimeMultiplier) / 2,  switchTime * switchTimeMultiplier);
+			if (nextEvent < 0) nextEvent = 0;
+		}
+	}
+	// apply
+	if (eventCounter > (nextEvent * frameRate)) {
 		chooseEvent(intRandom(0, 5));
 		if (maxSwitchTime > minSwitchTime) nextEvent = floatRandom(minSwitchTime + (minSwitchTime * switchTimeMultiplier), maxSwitchTime + (maxSwitchTime * switchTimeMultiplier));
 		else nextEvent = 0;
@@ -872,6 +887,10 @@ void keyPressed() {
 	// use auto mode or not
 	if (key == 'a') {
 		isAutoMode = !isAutoMode;
+	}
+	// use auto auto mode or not
+	if (key == 'y') {
+		isAutoAutoMode = !isAutoAutoMode;
 	}
 	// switch to next mode now!
 	if (key == 's') {

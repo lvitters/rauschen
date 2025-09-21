@@ -7,6 +7,16 @@ public void displayInfoTables() {
     if (totalTableWidth < 0) totalTableWidth = 0;
     float internalPadding = padding; // use consistent padding
 
+    // set up bounds for mouse wheel scrolling
+    float availableHeight = height - currentTopY - padding;
+    tablesAreaBounds.setBounds((int)tableStartX, (int)currentTopY, (int)totalTableWidth, (int)availableHeight);
+
+    // store original top for bounds checking
+    float originalTopY = currentTopY;
+
+    // apply scroll offset
+    currentTopY -= tablesScrollOffset;
+
     // debug info table
     if (debugInfo != null && !debugInfo.isEmpty()) {
         // calculate dynamic internal column sizes for Debug Table
@@ -46,19 +56,25 @@ public void displayInfoTables() {
         float actualDebugTableHeight = min(requiredDebugContentHeight, maxPossibleHeightForDebug);
         if (actualDebugTableHeight < 0) actualDebugTableHeight = 0;
 
-        // draw debug table header
-        text("key", round(tableStartX) + internalPadding, headerTextY_debug);
-        text("value", round(dynamicValueX), headerTextY_debug);
-
-        stroke(0);
-        strokeWeight(1);
+        // draw debug table header only if visible
         float headerLineY_debug = headerTextY_debug + 20 + 5; // Y position of the underline
-        line(tableStartX, headerLineY_debug, tableStartX + totalTableWidth, headerLineY_debug);
+        if (headerTextY_debug >= originalTopY && headerTextY_debug <= height) {
+            text("key", round(tableStartX) + internalPadding, headerTextY_debug);
+            text("value", round(dynamicValueX), headerTextY_debug);
+
+            stroke(0);
+            strokeWeight(1);
+            line(tableStartX, headerLineY_debug, tableStartX + totalTableWidth, headerLineY_debug);
+        }
 
         // draw vertical separator line for debug table
         float separatorX = tableStartX + internalPadding + dynamicKeyWidth;
-        if (actualDebugTableHeight > 0) { // only draw if table has height
-            line(separatorX, currentTopY, separatorX, currentTopY + actualDebugTableHeight);
+        if (actualDebugTableHeight > 0 && currentTopY < height && currentTopY + actualDebugTableHeight >= originalTopY) {
+            float lineStartY = max(currentTopY, originalTopY);
+            float lineEndY = min(currentTopY + actualDebugTableHeight, height);
+            if (lineEndY > lineStartY) {
+                line(separatorX, lineStartY, separatorX, lineEndY);
+            }
         }
 
         // draw debug table key/value rows ---
@@ -68,21 +84,27 @@ public void displayInfoTables() {
             String displayValue = formatDisplayValue(value);
 
             float rowTextY = headerLineY_debug + internalPadding + (i * debugRowHeight);
-            // check if the row fits within the calculated actual height of the debug table (inside its border)
-            if (rowTextY + debugRowHeight <= currentTopY + actualDebugTableHeight - internalPadding) {
+            // only draw if row is visible and within table bounds
+            if (rowTextY >= originalTopY && rowTextY <= height &&
+                rowTextY + debugRowHeight <= currentTopY + actualDebugTableHeight - internalPadding) {
                 text(key, round(tableStartX) + internalPadding, rowTextY);
                 text(displayValue, round(dynamicValueX), rowTextY);
-            } else {
-                break; // stop drawing if rows exceed allocated height
+            } else if (rowTextY > height) {
+                break; // stop drawing if we're past the bottom of the screen
             }
         }
 
         // draw debug table border
-        if (actualDebugTableHeight > 0) {
+        if (actualDebugTableHeight > 0 && currentTopY < height && currentTopY + actualDebugTableHeight >= originalTopY) {
             noFill();
             stroke(0);
             strokeWeight(borderWeight);
-            rect(round(tableStartX), currentTopY, totalTableWidth, actualDebugTableHeight);
+            float borderStartY = max(currentTopY, originalTopY);
+            float borderEndY = min(currentTopY + actualDebugTableHeight, height);
+            float borderHeight = borderEndY - borderStartY;
+            if (borderHeight > 0) {
+                rect(round(tableStartX), borderStartY, totalTableWidth, borderHeight);
+            }
         }
 
         // update currentTopY for the next table, adding padding if the debug table was drawn
@@ -184,17 +206,24 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
 
     // draw shader names table header (adapted for two columns)
     float headerTextY_shaders = tableY + internalPadding + 3;
-    text("shaders", tableX + internalPadding, headerTextY_shaders);
-    text("actions", actionsColContentStartX + 2, headerTextY_shaders);
-
-    stroke(0);
-    strokeWeight(1);
     float headerLineY_shaders = headerTextY_shaders + 20 + 5; // Y position of the underline (original comment)
-    line(tableX, headerLineY_shaders, tableX + tableWidth, headerLineY_shaders);
 
-    // draw vertical separator line only if there's height for it
-    if (availableHeightForShaders > (headerLineY_shaders - tableY)) { // ensure separator doesn't draw over header if space is tight
-        line(separatorLineX, tableY, separatorLineX, tableY + availableHeightForShaders);
+    if (headerTextY_shaders >= screenshotAreaBottomY + padding - 20 && headerTextY_shaders <= height) {
+        text("shaders", tableX + internalPadding, headerTextY_shaders);
+        text("actions", actionsColContentStartX + 2, headerTextY_shaders);
+
+        stroke(0);
+        strokeWeight(1);
+        line(tableX, headerLineY_shaders, tableX + tableWidth, headerLineY_shaders);
+    }
+
+    // draw vertical separator line only if there's height for it and visible
+    if (availableHeightForShaders > (headerLineY_shaders - tableY) && tableY < height && tableY + availableHeightForShaders >= screenshotAreaBottomY + padding) {
+        float lineStartY = max(tableY, screenshotAreaBottomY + padding);
+        float lineEndY = min(tableY + availableHeightForShaders, height);
+        if (lineEndY > lineStartY) {
+            line(separatorLineX, lineStartY, separatorLineX, lineEndY);
+        }
     }
 
     // draw shader names rows
@@ -204,8 +233,13 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
         float rowContentY = headerLineY_shaders + internalPadding + (i * debugRowHeight);
         float buttonDrawY_float = rowContentY;
 
-        if (rowContentY + debugRowHeight > tableY + availableHeightForShaders - internalPadding) {
-            break; // stop drawing if rows exceed available height (original comment)
+        // only draw if row is visible
+        if (rowContentY < screenshotAreaBottomY + padding || rowContentY > height) {
+            if (rowContentY > height) break; // stop if past bottom
+            continue; // skip if above visible area
+        }
+        if (rowContentY + debugRowHeight > height - padding/2) {
+            break; // stop drawing if rows exceed screen height with small buffer
         }
 
         // shader name (column 1)
@@ -283,7 +317,14 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
     noFill();
     stroke(0);
     strokeWeight(borderWeight); // borderWeight is a global from your setupUI
-    rect(tableX, tableY, tableWidth, availableHeightForShaders);
+    if (tableY < height && tableY + availableHeightForShaders >= screenshotAreaBottomY + padding) {
+        float borderStartY = max(tableY, screenshotAreaBottomY + padding);
+        float borderEndY = min(tableY + availableHeightForShaders, height);
+        float borderHeight = borderEndY - borderStartY;
+        if (borderHeight > 0) {
+            rect(tableX, borderStartY, tableWidth, borderHeight);
+        }
+    }
 }
 
 // update shader names synchronously with OSC messages

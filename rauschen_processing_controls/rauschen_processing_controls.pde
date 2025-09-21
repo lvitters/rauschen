@@ -13,8 +13,8 @@ import netP5.*;
 
 
 // sketch window
-int manualWidth = 2560;
-int manualHeight = 1440 - 28 - 31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
+int manualWidth = 1920;
+int manualHeight = 1080 - 28 - 31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
 
 // UI changes
 int textSize = 12;
@@ -124,6 +124,10 @@ ArrayList<Rectangle> soloButtonBounds = new ArrayList<Rectangle>();
 ArrayList<Rectangle> muteButtonBounds = new ArrayList<Rectangle>();
 float shaderButtonWidth = 50;
 float shaderButtonSpacing = 12; 	// spacing around buttons
+
+// simple table scrolling
+float tablesScrollOffset = 0;
+Rectangle tablesAreaBounds = new Rectangle();
 
 // midi input
 MidiDevice inputDevice;
@@ -304,5 +308,32 @@ void keyPressed() {
 	// print (more) debug info
 	if (key == 'p') {
 		printDebug = !printDebug;
+	}
+}
+
+// simple mouse wheel scrolling for tables
+void mouseWheel(MouseEvent event) {
+	if (tablesAreaBounds.contains(mouseX, mouseY)) {
+		float scrollAmount = event.getCount() * debugRowHeight;
+		tablesScrollOffset += scrollAmount;
+		if (tablesScrollOffset < 0) tablesScrollOffset = 0;
+
+		// calculate max scroll based on content height
+		float availableHeight = height - (screenshotAreaBottomY + padding) - padding;
+		float debugTableHeight = 0;
+		if (debugInfo != null && !debugInfo.isEmpty()) {
+			float headerHeight = 20 + 5 + padding + 3; // header text + line + padding
+			float rowsHeight = debugInfo.size() * debugRowHeight + padding; // all rows + padding
+			debugTableHeight = headerHeight + rowsHeight + padding; // total debug table + spacing
+		}
+		float shaderTableHeight = 0;
+		if (shaderNames != null && !shaderNames.isEmpty()) {
+			float headerHeight = 20 + 5 + padding + 3; // header text + line + padding
+			float rowsHeight = shaderNames.size() * debugRowHeight + padding; // all rows + padding
+			shaderTableHeight = headerHeight + rowsHeight;
+		}
+		float totalContentHeight = debugTableHeight + shaderTableHeight;
+		float maxScrollOffset = max(0, totalContentHeight - availableHeight);
+		if (tablesScrollOffset > maxScrollOffset) tablesScrollOffset = maxScrollOffset;
 	}
 }

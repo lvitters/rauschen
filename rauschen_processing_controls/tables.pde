@@ -1,15 +1,129 @@
+// display function to show debug info in a table
+public void displayInfoTables() {
+
+    float tableStartX = padding - 1;
+    float currentTopY = screenshotAreaBottomY + padding; // initial Y position for the first table
+    float totalTableWidth = graphAreaX - 2 * padding + 1;
+    if (totalTableWidth < 0) totalTableWidth = 0;
+    float internalPadding = padding; // use consistent padding
+
+    // debug info table
+    if (debugInfo != null && !debugInfo.isEmpty()) {
+        // calculate dynamic internal column sizes for Debug Table
+        float usableWidth = totalTableWidth - 3 * internalPadding; // width available for key/value text
+        float dynamicKeyWidth = usableWidth * 0.6f; // key column gets 60% of usable width
+        float dynamicValueX = tableStartX + internalPadding + dynamicKeyWidth + internalPadding; // x position where value column starts
+        if (usableWidth <= 0) { // handle case where table is too narrow
+            dynamicKeyWidth = 0;
+            dynamicValueX = tableStartX + internalPadding;
+        }
+
+        fill(0);
+        textAlign(LEFT, TOP);
+        textSize(textSize); // adjust text size for better fit
+
+        ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet());
+        java.util.Collections.sort(keys);
+
+        // calculate debug table height
+        float headerTextY_debug = currentTopY + internalPadding + 3;
+        float headerHeight_debug = (headerTextY_debug - currentTopY) + 20 + 5; // height of header text area + line spacing
+
+        float rowsHeight_debug = 0;
+        if (!keys.isEmpty()) {
+            rowsHeight_debug = internalPadding + (keys.size() * debugRowHeight); // padding above rows + all rows
+        }
+
+        // total internal content height + bottom padding
+        float requiredDebugContentHeight = headerHeight_debug + rowsHeight_debug + internalPadding;
+
+        // if no keys, adjust required height to be just header + bottom padding
+        if (keys.isEmpty()) {
+            requiredDebugContentHeight = headerHeight_debug + internalPadding;
+        }
+
+        float maxPossibleHeightForDebug = height - currentTopY - padding; // max space it *could* take from currentTopY
+        float actualDebugTableHeight = min(requiredDebugContentHeight, maxPossibleHeightForDebug);
+        if (actualDebugTableHeight < 0) actualDebugTableHeight = 0;
+
+        // draw debug table header
+        text("key", round(tableStartX) + internalPadding, headerTextY_debug);
+        text("value", round(dynamicValueX), headerTextY_debug);
+
+        stroke(0);
+        strokeWeight(1);
+        float headerLineY_debug = headerTextY_debug + 20 + 5; // Y position of the underline
+        line(tableStartX, headerLineY_debug, tableStartX + totalTableWidth, headerLineY_debug);
+
+        // draw vertical separator line for debug table
+        float separatorX = tableStartX + internalPadding + dynamicKeyWidth;
+        if (actualDebugTableHeight > 0) { // only draw if table has height
+            line(separatorX, currentTopY, separatorX, currentTopY + actualDebugTableHeight);
+        }
+
+        // draw debug table key/value rows ---
+        for (int i = 0; i < keys.size(); i++) {
+            String key = keys.get(i);
+            Object value = debugInfo.get(key);
+            String displayValue = formatDisplayValue(value);
+
+            float rowTextY = headerLineY_debug + internalPadding + (i * debugRowHeight);
+            // check if the row fits within the calculated actual height of the debug table (inside its border)
+            if (rowTextY + debugRowHeight <= currentTopY + actualDebugTableHeight - internalPadding) {
+                text(key, round(tableStartX) + internalPadding, rowTextY);
+                text(displayValue, round(dynamicValueX), rowTextY);
+            } else {
+                break; // stop drawing if rows exceed allocated height
+            }
+        }
+
+        // draw debug table border
+        if (actualDebugTableHeight > 0) {
+            noFill();
+            stroke(0);
+            strokeWeight(borderWeight);
+            rect(round(tableStartX), currentTopY, totalTableWidth, actualDebugTableHeight);
+        }
+
+        // update currentTopY for the next table, adding padding if the debug table was drawn
+        if (actualDebugTableHeight > 0) {
+            currentTopY += actualDebugTableHeight + padding;
+        } else {
+            // if debug table had no height (e.g., no keys and error in calc)
+            // still ensure shader table starts correctly
+            // this case should ideally not happen with correct height calculation
+        }
+
+    }
+
+    // shader names table at `currentTopY` variable
+    displayShaderNamesList(tableStartX, currentTopY, totalTableWidth, internalPadding);
+}
+
+// helper function to format debug values
+String formatDisplayValue(Object value) {
+    if (value == null) return "null";
+    if (value instanceof Boolean) {
+        return (Boolean)value ? "TRUE" : "FALSE";
+    } else if (value instanceof Float) {
+        return nf((Float)value, 0, 2); // round floats
+    } else {
+        return value.toString();
+    }
+}
+
 // drawn shader names table below debug table, or where the debug table would have started
 public void displayShaderNamesList(float tableX, float tableY, float tableWidth, float internalPadding) {
     if (shaderNames == null || shaderNames.isEmpty()) {
         return; // return if there's nothing to show (original comment adapted)
     }
-    
+
     // critical check: soloStates and muteStates should not be null at this point.
     // Their initialization and sizing are handled by initializeShaderControls() in setup()
     // and critically by updateSharedShaderDataFromOSC() when OSC messages arrive.
     if (soloStates == null || muteStates == null) {
         if (printDebug) println("displayShaderNamesList(): FATAL ERROR: soloStates or muteStates are null!");
-        return; 
+        return;
     }
 
     // Critical check: Array lengths must match shaderNames.size().
@@ -30,14 +144,14 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
     }
 
     // define column widths with a simpler proportional approach
-    // usableWidthForShaderList is the total space for the content of both columns, 
+    // usableWidthForShaderList is the total space for the content of both columns,
     // after accounting for the table's side paddings and the padding between columns.
     float usableWidthForShaderList = tableWidth - (2 * internalPadding) - internalPadding; // effectively tableWidth - 3 * internalPadding
     if (usableWidthForShaderList < 0) usableWidthForShaderList = 0;
 
     // define the proportion of the usable width for the "Actions" column.
     float actionsColumnProportion = 0.2f; // example: 20% for the actions column (adjust as needed)
-    
+
     float proposedActionsColContentWidth = usableWidthForShaderList * actionsColumnProportion;
 
     // calculate the minimum width required to just show the buttons + a small bit of padding
@@ -48,35 +162,35 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
     // either what the proportion gives it, or what's minimally needed for buttons.
     // this ensures buttons are never cut off if the proportion is too small.
     float actionsColContentWidth = max(proposedActionsColContentWidth, minWidthForButtonsAndMinimalPadding);
-    
+
     // shader name column takes the remaining usable width
     float shaderNameColContentWidth = usableWidthForShaderList - actionsColContentWidth;
-    
+
     // final safety check: if calculations made shaderNameColContentWidth negative, adjust.
     if (shaderNameColContentWidth < 0) {
         shaderNameColContentWidth = 0;
         // and ensure actions column doesn't exceed total usable width in this edge case
-        actionsColContentWidth = usableWidthForShaderList; 
+        actionsColContentWidth = usableWidthForShaderList;
     }
-    
+
     // X position for the start of the content of the 'Actions' column
     float actionsColContentStartX = tableX + internalPadding + shaderNameColContentWidth + internalPadding;
     // vertical separator line position
     float separatorLineX = actionsColContentStartX - internalPadding / 2;
 
-    fill(0); 
-    textAlign(LEFT, TOP); 
+    fill(0);
+    textAlign(LEFT, TOP);
     textSize(textSize); // consistent text size
 
     // draw shader names table header (adapted for two columns)
     float headerTextY_shaders = tableY + internalPadding + 3;
     text("shaders", tableX + internalPadding, headerTextY_shaders);
     text("actions", actionsColContentStartX + 2, headerTextY_shaders);
-    
+
     stroke(0);
     strokeWeight(1);
     float headerLineY_shaders = headerTextY_shaders + 20 + 5; // Y position of the underline (original comment)
-    line(tableX, headerLineY_shaders, tableX + tableWidth, headerLineY_shaders); 
+    line(tableX, headerLineY_shaders, tableX + tableWidth, headerLineY_shaders);
 
     // draw vertical separator line only if there's height for it
     if (availableHeightForShaders > (headerLineY_shaders - tableY)) { // ensure separator doesn't draw over header if space is tight
@@ -87,17 +201,17 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
     // (shaderNames.size() > 0 is already confirmed by the initial check if we reach here)
     for (int i = 0; i < shaderNames.size(); i++) {
         String displayName = shaderNames.get(i); // Safe due to loop condition
-        float rowContentY = headerLineY_shaders + internalPadding + (i * debugRowHeight); 
-        float buttonDrawY_float = rowContentY; 
+        float rowContentY = headerLineY_shaders + internalPadding + (i * debugRowHeight);
+        float buttonDrawY_float = rowContentY;
 
         if (rowContentY + debugRowHeight > tableY + availableHeightForShaders - internalPadding) {
             break; // stop drawing if rows exceed available height (original comment)
         }
-        
+
         // shader name (column 1)
         float shaderNameTextX = tableX + internalPadding;
-        textAlign(LEFT, CENTER); 
-        float shaderNameCenterY = rowContentY + debugRowHeight / 2; 
+        textAlign(LEFT, CENTER);
+        float shaderNameCenterY = rowContentY + debugRowHeight / 2;
 
         if (i == currentShaderChoice) {
             // highlight the current shader choice with different text color (original comment)
@@ -105,7 +219,7 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
             text("> " + displayName + " <", shaderNameTextX + 5, shaderNameCenterY); // add arrows and indent (original comment)
             fill(0); // reset fill color for subsequent items or tables (original comment)
         } else {
-            fill(0); 
+            fill(0);
             text(displayName, shaderNameTextX, shaderNameCenterY);
         }
         textAlign(LEFT, TOP); // reset textAlign
@@ -119,49 +233,49 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
         float muteButtonActualX_float = soloButtonActualX_float + shaderButtonWidth + shaderButtonSpacing;
 
         int roundedButtonDrawY = Math.round(buttonDrawY_float);
-        int roundedButtonHeight = Math.round(debugRowHeight); 
+        int roundedButtonHeight = Math.round(debugRowHeight);
         int roundedShaderButtonControlWidth = Math.round(shaderButtonWidth);
-        
+
         int roundedSoloButtonActualX = Math.round(soloButtonActualX_float);
         int roundedMuteButtonActualX = Math.round(muteButtonActualX_float);
 
         // solo button
         Rectangle currentSoloBound = new Rectangle(
-            roundedSoloButtonActualX, roundedButtonDrawY, 
-            roundedShaderButtonControlWidth, roundedButtonHeight 
-        );
-        soloButtonBounds.add(currentSoloBound);
-        
-        stroke(0); 
-        strokeWeight(1);
-        // accessing soloStates[i] - safe due to earlier length checks
-        fill(soloStates[i] ? color(0, 150, 50) : color(170, 170, 170)); 
-        rect(currentSoloBound.x, currentSoloBound.y, currentSoloBound.width, currentSoloBound.height); 
-        
-        fill(soloStates[i] ? color(255) : color(0)); // safe
-        textAlign(CENTER, CENTER);
-        textSize(roundedButtonHeight * 0.60f); 
-        text("SOLO", currentSoloBound.x + currentSoloBound.width / 2, currentSoloBound.y + currentSoloBound.height / 2);
-        
-        // mute button
-        Rectangle currentMuteBound = new Rectangle(
-            roundedMuteButtonActualX, roundedButtonDrawY, 
+            roundedSoloButtonActualX, roundedButtonDrawY,
             roundedShaderButtonControlWidth, roundedButtonHeight
         );
-        muteButtonBounds.add(currentMuteBound); 
+        soloButtonBounds.add(currentSoloBound);
 
-        stroke(0); 
+        stroke(0);
+        strokeWeight(1);
+        // accessing soloStates[i] - safe due to earlier length checks
+        fill(soloStates[i] ? color(0, 150, 50) : color(170, 170, 170));
+        rect(currentSoloBound.x, currentSoloBound.y, currentSoloBound.width, currentSoloBound.height);
+
+        fill(soloStates[i] ? color(255) : color(0)); // safe
+        textAlign(CENTER, CENTER);
+        textSize(roundedButtonHeight * 0.60f);
+        text("SOLO", currentSoloBound.x + currentSoloBound.width / 2, currentSoloBound.y + currentSoloBound.height / 2);
+
+        // mute button
+        Rectangle currentMuteBound = new Rectangle(
+            roundedMuteButtonActualX, roundedButtonDrawY,
+            roundedShaderButtonControlWidth, roundedButtonHeight
+        );
+        muteButtonBounds.add(currentMuteBound);
+
+        stroke(0);
         strokeWeight(1);
         // accessing muteStates[i] - safe due to earlier length checks
-        fill(muteStates[i] ? color(255, 100, 100) : color(170, 170, 170)); 
-        rect(currentMuteBound.x, currentMuteBound.y, currentMuteBound.width, currentMuteBound.height); 
-        
+        fill(muteStates[i] ? color(255, 100, 100) : color(170, 170, 170));
+        rect(currentMuteBound.x, currentMuteBound.y, currentMuteBound.width, currentMuteBound.height);
+
         fill(muteStates[i] ? color(255) : color(0)); // safe
         text("MUTE", currentMuteBound.x + currentMuteBound.width / 2, currentMuteBound.y + currentMuteBound.height / 2);
-        
+
         textSize(textSize); // reset global/default textSize
         textAlign(LEFT, TOP); // reset textAlign
-        
+
         fill(0); // reset fill color (original comment adapted)
     }
 
@@ -191,7 +305,7 @@ void updateSharedShaderDataFromOSC() {
             // To ensure atomicity of this update block relative to other uses,
             // we could re-acquire the lock, or ensure this method completes before other uses.
             // For simplicity, this block will update the main data structures.
-            
+
             boolean listStructureChanged = false;
             if (shaderNames.size() != tempNewNames.size()) {
                 listStructureChanged = true;
@@ -226,7 +340,7 @@ void updateSharedShaderDataFromOSC() {
 void initializeShaderControls() {
     synchronized(shaderDataLock) { // lock for consistency if called from multiple places
         if (shaderNames == null) { // should be initialized globally
-            shaderNames = new ArrayList<String>(); 
+            shaderNames = new ArrayList<String>();
         }
 
         int numShaders = shaderNames.size();
@@ -234,7 +348,7 @@ void initializeShaderControls() {
         // initialize or resize state arrays if they don't match.
         // this will typically run to create them based on the initial shaderNames list (e.g. with a placeholder).
         if (soloStates == null || soloStates.length != numShaders) {
-            soloStates = new boolean[numShaders]; 
+            soloStates = new boolean[numShaders];
         }
         if (muteStates == null || muteStates.length != numShaders) {
             muteStates = new boolean[numShaders];
@@ -248,9 +362,9 @@ void initializeShaderControls() {
 // determine active shader indices based on solo/mute states
 ArrayList<Integer> getActiveShaderIndices() {
 	ArrayList<Integer> activeIndices = new ArrayList<Integer>();
-    
+
     synchronized (shaderDataLock) { // lock to ensure consistent read of shaderNames and states
-        if (shaderNames == null || soloStates == null || muteStates == null || 
+        if (shaderNames == null || soloStates == null || muteStates == null ||
             soloStates.length != shaderNames.size() || muteStates.length != shaderNames.size()) {
             if (printDebug) println("getActiveShaderIndices(): error: state arrays not initialized or mismatch with shaderNames size.");
             return activeIndices; // return empty list

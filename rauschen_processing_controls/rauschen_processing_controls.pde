@@ -14,7 +14,7 @@ import netP5.*;
 
 // sketch window
 int manualWidth = 2560;
-int manualHeight = 1440 - 28 -31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
+int manualHeight = 1440 - 28 - 31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
 
 // UI changes
 int textSize = 12;

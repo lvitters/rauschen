@@ -193,7 +193,6 @@ void updateSpecificScaledScreen(int slotIndex) {
 
 // display a set number from the images collected
 void displayRecentScreens() {
-    boolean mouseOverAnyImage = false;
 
 	// iterate through fixed display slots
     for (int i = 0; i < numDisplaySlots; i++) {
@@ -242,7 +241,6 @@ void displayRecentScreens() {
 			// when hovering over
             boolean isOverThisImage = (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h && mouseOver && !slotIsSaved[i]);
             if (isOverThisImage) {
-                mouseOverAnyImage = true;
 
 				// image overlay 
                 noStroke(); 
@@ -289,8 +287,6 @@ void displayRecentScreens() {
             line(x + scaledImageWidth, y, x, y + scaledImageWidth);
         }
     }
-
-    if (mouseOverAnyImage) cursor(handCursor); else cursor(defaultCursor);
 }
 
 // copy a chosen screenshot to another folder

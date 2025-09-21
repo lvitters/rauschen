@@ -14,7 +14,7 @@ import netP5.*;
 
 // sketch window
 int manualWidth = 2560;
-int manualHeight = 1440 - 28; // -31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
+int manualHeight = 1440 - 28 -31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
 
 // UI changes
 int textSize = 12;
@@ -106,8 +106,8 @@ volatile boolean newScreensReady = false; // flag to signal completion (volatile
 volatile boolean isLoadingScreens = false; // flag to prevent starting multiple loads
 
 // UI
-final int GLOBAL_MOUSE_OFFSET_X = 6;
-final int GLOBAL_MOUSE_OFFSET_Y = 9;
+// final int GLOBAL_MOUSE_OFFSET_X = 6;
+// final int GLOBAL_MOUSE_OFFSET_Y = 9;
 float padding = 10;
 float borderWeight = 1;
 // bounds for the graph display area determined at runtime
@@ -124,9 +124,6 @@ ArrayList<Rectangle> soloButtonBounds = new ArrayList<Rectangle>();
 ArrayList<Rectangle> muteButtonBounds = new ArrayList<Rectangle>();
 float shaderButtonWidth = 50;
 float shaderButtonSpacing = 12; 	// spacing around buttons
-
-// macOS cursors (P2D renderer's look awful)
-PImage defaultCursor, handCursor;
 
 // midi input
 MidiDevice inputDevice;
@@ -170,10 +167,6 @@ public void setup() {
 
 	// prepare the UI for the given resolution
 	setupUI();
-
-	// load default macOS cursor PNGs
-	defaultCursor = loadImage("assets/default.png");
-	handCursor = loadImage("assets/pointer.png");
 
 	// init shader controls
 	if (shaderNames.isEmpty()) {
@@ -243,8 +236,8 @@ public void setupUI() {
 // fire if mouse was pressed
 void mousePressed() {
     // adjust mouse coordinates for global offset
-    int adjustedMouseX = mouseX - GLOBAL_MOUSE_OFFSET_X;
-    int adjustedMouseY = mouseY - GLOBAL_MOUSE_OFFSET_Y;
+    int adjustedMouseX = mouseX;
+    int adjustedMouseY = mouseY;
 
     boolean stateChanged = false; 
 
@@ -299,7 +292,6 @@ void mousePressed() {
 // when the mouse exits the window
 public void mouseExited() {
 	mouseOver = false;
-	cursor(defaultCursor);
 }
 
 // when the mouse enters the window

@@ -432,3 +432,15 @@ Just experimenting with more shaders at this point. Added one called "GradientCe
 ## 250620
 
 Second exhibition day. Photographer asked me if I could stop the sketch so he can take a photo. I never thought about that previously, but it was easy enough to implement quickly.
+
+## 250911
+
+Add some preliminary licenses. Thought about some other common licensing allowing use while mentioning me as an author, but for now I just wanted to secure my work at all.
+
+## 250917
+
+Separated into two display modes: one windowed, and one where the main sketch will be undecorated and movable like before, but also have some mapping handles for corner correction, and save all these parameters on a JSON so that on the same setup, even somebody else could start the program and just hit a button to reenable the mapping.
+
+## 250921
+
+Made the two tables on the bottom left be scrollable as one combined table, in case the window height is too small or there are more shaders in the future (need to test this with actually more shaders).

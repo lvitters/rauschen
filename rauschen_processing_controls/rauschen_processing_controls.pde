@@ -14,12 +14,12 @@ import netP5.*;
 
 // sketch window
 int manualWidth = 2560;
-int manualHeight = 1440 - 28; //- 24;	// minus menu bar minus window bar
+int manualHeight = 1440 - 28; // -31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
 
 // UI changes
 int textSize = 12;
 // debug table
-float debugRowHeight = 17;
+float debugRowHeight = textSize + 5;
 
 // main sketch communication
 OscP5 oscP5;

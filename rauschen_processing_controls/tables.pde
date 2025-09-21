@@ -238,8 +238,8 @@ public void displayShaderNamesList(float tableX, float tableY, float tableWidth,
             if (rowContentY > height) break; // stop if past bottom
             continue; // skip if above visible area
         }
-        if (rowContentY + debugRowHeight > height - padding/2) {
-            break; // stop drawing if rows exceed screen height with small buffer
+        if (rowContentY + debugRowHeight > tableY + availableHeightForShaders) {
+            break; // stop drawing if rows exceed table boundary
         }
 
         // shader name (column 1)

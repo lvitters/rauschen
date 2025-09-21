@@ -13,8 +13,8 @@ import netP5.*;
 
 
 // sketch window
-int manualWidth = 1920;
-int manualHeight = 1080 - 28 - 31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
+int manualWidth = 2560;
+int manualHeight = 1440 - 28 - 31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
 
 // UI changes
 int textSize = 12;
@@ -333,7 +333,7 @@ void mouseWheel(MouseEvent event) {
 			shaderTableHeight = headerHeight + rowsHeight;
 		}
 		float totalContentHeight = debugTableHeight + shaderTableHeight;
-		float maxScrollOffset = max(0, totalContentHeight - availableHeight);
+		float maxScrollOffset = max(0, totalContentHeight - availableHeight + debugRowHeight * 2); // add extra room for last rows
 		if (tablesScrollOffset > maxScrollOffset) tablesScrollOffset = maxScrollOffset;
 	}
 }

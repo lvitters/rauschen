@@ -47,12 +47,13 @@ int meshResolution = 20; // subdivision for perspective-correct rendering
 
 // resolution steps
 int maxStep = width;
+int minStep = 1;									// minimum step size to mitigate moiré
 int xStep = 1;
 int yStep = 1;
 int nextX = 1;
 int nextY = 1;
-float xStepMultiplier = 1;							// has to start at 1 
-float yStepMultiplier = 1;							// has to start at 1 
+float xStepMultiplier = 1;							// has to start at 1
+float yStepMultiplier = 1;							// has to start at 1
 Boolean stepUpdatedManually = false;
 int xOffset = 0;
 int xOffsetRecord = 0;
@@ -503,9 +504,9 @@ void setNewGridWithNoise() {
 	xStep = (int)xStepNoise.getVariableNoiseRange(-maxStep/2, 0, maxStep/2, maxStep, 2);
 	yStep = (int)yStepNoise.getVariableNoiseRange(-maxStep/2, 0, maxStep/2, maxStep, 2);
 
-	// cutoff over one and apply
-	if (xStep < 1) xStep = 1;
-	if (yStep < 1) yStep = 1;
+	// cutoff at minimum step size and apply
+	if (xStep < minStep) xStep = minStep;
+	if (yStep < minStep) yStep = minStep;
 
 	if (printDebug) println("setNewGridWithNoise(): xStep: " + xStep + " yStep: " + yStep);
 

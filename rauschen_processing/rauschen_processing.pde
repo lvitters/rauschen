@@ -21,7 +21,7 @@ int screenshotHeight = 1000;
 int screenshotWidth = 1000;
 
 // display mode: 0 = regular window, 1 = undecorated window with separate dimensions
-int displayMode = 0;
+int displayMode = 1;
 
 // window for displayMode 1
 int windowWidth = 1100;
@@ -43,6 +43,7 @@ boolean showVideoMappingControls = false;
 PVector[] corners = new PVector[4]; // top-left, top-right, bottom-right, bottom-left
 int draggedCorner = -1; // which corner is being dragged (-1 = none)
 int handleSize = 25;
+int meshResolution = 20; // subdivision for perspective-correct rendering
 
 // resolution steps
 int maxStep = width;
@@ -1132,18 +1133,51 @@ void drawVideoMappingControls() {
 	}
 }
 
-// draw the mapped buffer using the corner positions
+// draw the mapped buffer using the corner positions with perspective-correct subdivision
 void drawMappedBuffer() {
 	if (corners[0] == null) return; // not initialized yet
 
-	// draw buffer as textured quad using the corner positions
-	beginShape();
+	// create a subdivided mesh for better perspective approximation
+	// the more subdivisions, the more accurate the perspective transformation
+	noStroke(); // disable stroke to avoid black lines between triangles
+	textureMode(NORMAL); // use normalized texture coordinates (0.0 to 1.0)
+
+	for (int row = 0; row < meshResolution; row++) {
+		beginShape(TRIANGLE_STRIP);
 		texture(buffer);
-		vertex(corners[0].x, corners[0].y, 0, 0); // top-left
-		vertex(corners[1].x, corners[1].y, buffer.width, 0); // top-right
-		vertex(corners[2].x, corners[2].y, buffer.width, buffer.height); // bottom-right
-		vertex(corners[3].x, corners[3].y, 0, buffer.height); // bottom-left
-	endShape();
+
+		for (int col = 0; col <= meshResolution; col++) {
+			// calculate normalized coordinates in the grid (0.0 to 1.0)
+			float u1 = (float) col / meshResolution;
+			float v1 = (float) row / meshResolution;
+			float u2 = (float) col / meshResolution;
+			float v2 = (float) (row + 1) / meshResolution;
+
+			// interpolate position on the destination quadrilateral using bilinear interpolation
+			// this creates the perspective effect when the quad is not rectangular
+			PVector pos1 = bilinearInterpolation(corners, u1, v1);
+			PVector pos2 = bilinearInterpolation(corners, u2, v2);
+
+			// draw vertices with texture coordinates
+			vertex(pos1.x, pos1.y, u1, v1);
+			vertex(pos2.x, pos2.y, u2, v2);
+		}
+
+		endShape();
+	}
+
+	textureMode(IMAGE); // reset to default
+}
+
+// bilinear interpolation for mapping normalized (u,v) coordinates to the quadrilateral
+PVector bilinearInterpolation(PVector[] quad, float u, float v) {
+	// quad[0] = top-left, quad[1] = top-right, quad[2] = bottom-right, quad[3] = bottom-left
+	// interpolate along top edge
+	PVector top = PVector.lerp(quad[0], quad[1], u);
+	// interpolate along bottom edge
+	PVector bottom = PVector.lerp(quad[3], quad[2], u);
+	// interpolate between top and bottom
+	return PVector.lerp(top, bottom, v);
 }
 
 // mouse events for dragging corners (displayMode 1 only)

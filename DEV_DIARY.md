@@ -444,3 +444,7 @@ Separated into two display modes: one windowed, and one where the main sketch wi
 ## 250921
 
 Made the two tables on the bottom left be scrollable as one combined table, in case the window height is too small or there are more shaders in the future (need to test this with actually more shaders).
+
+## 251009
+
+The previous attempts at mapping controls where not correct. Now, the 4 corner handles are correct pins, and the buffer is now subdivided to apply bilinear interpolation.

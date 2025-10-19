@@ -51,13 +51,12 @@
 <br>
 <br>
 
-*RAUSCHEN* is an emergent performance installation exploring the possibility space of a 1000x1000 pixel image. It generates a random, but orderly grid of pixels or cells according to a range of RNG and noise algorithms. These regular textures are fed into a modular shader system, consisting of contributions from conversations with currently popular LLMs.<br>
-*RAUSCHEN* then freely mixes and recursively feeds back their results into emergent textures of visual patterns and auditory noise, flashing by in quick succession. A control application constantly monitors its output in numbers and parameters, is able to save the generated textures to disk and provides the option to influence the pattern generation in order to perform a more curated visual experience.<br>
-While current image generation models denoise their random input textures using techniques under the broad term diffusion, *RAUSCHEN* uses procedural generation methods in order to achieve the opposite effect, infusing its fundamental noise textures with structural patterns for now only recognisable by the viewer.
+RAUSCHEN is a generative media system exploring the probability space of a 1000x1000 image. At first, it produces orderly grids of pixels according to a range of RNG and noise algorithms. These regular textures supply a modular palette of shader programs that recursively feed their combined results into ever emergent patterns, flashing by in quick succession. Its parameters are constantly monitored and provide the option to be manually influenced, enabling an operator to affect RAUSCHEN's output and save the generated outcomes to disk.
+While current image generation models de-noise their input textures into something coherent using techniques under the broad term diffusion, RAUSCHEN uses procedural generation methods in order to achieve the opposite effect, infusing its fundamental noise textures into structures of exponential randomness. In the end, a human decides what to keep.
 
 <br>
 
-*Is this what being trained must feel like to an AI?*
+*How do we find our way through all this noise?*
 
 <br>
 
@@ -256,4 +255,4 @@ It can also produce a PDF preparing a large set of screenshots in order to print
 
 ## _other
 
-*_other* contains some files from tests, such as the initial *p5.js* version of *RAUSCHEN*.
+*_other* contains some files from early tests, such as the initial *p5.js* version of *RAUSCHEN*.

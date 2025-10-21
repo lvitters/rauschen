@@ -155,6 +155,8 @@ Although there is a separate application to control *RAUSCHEN*, there are some r
 - **'P' key:** print debug info to console
 
 - **'A' key:** toggle *Auto Mode* (enable/disable automatic events)
+  
+- **'Y' key:** toggle *Auto Auto Mode* (like *Auto Mode*, but with an event interval determined by Noise)
 
 - **'S' key:** choose a random event now
 

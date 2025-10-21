@@ -164,15 +164,15 @@ Although there is a separate application to control *RAUSCHEN*, there are some r
   
 <br>
 
-In order to map the application to a surface with a projector, the window's menu bar can be disabled by setting the **displayMode** to 1. The buffer can then be resized with the **'+'** and **'-'** keys, and moved around the screen with the **arrow keys**. 
+In order to map the application to a surface with a projector, the window's menu bar can be disabled by setting the **displayMode** to 1. The buffer can then be resized with the **'+'** and **'-' keys**, and moved around the screen with the **arrow keys**. 
 <br><br>
-The **'C'** key will enable corner pins that can be moved around with the mouse to transform the buffer's edges. 
+The **'C' key** will enable corner pins that can be moved around with the mouse to transform the buffer's edges. 
 <br><br>
-The **'X'** key will reset the current corners to their default positions. 
+The **'X' key** will reset the current corners to their default positions. 
 <br><br>
-The corner pin positions, as well as the buffer's dimensions and position on the screen can be saved to a JSON using the **'K'** key. 
+The corner pin positions, as well as the buffer's dimensions and position on the screen can be saved to a JSON using the **'K' key**. 
 <br><br>
-The last saved setup can be loaded via the **'L'** key.
+The last saved setup can be loaded via the **'L' key**.
 
 <br><br>
 

@@ -170,7 +170,7 @@ The **'C' key** will enable corner pins that can be moved around with the mouse 
 <br><br>
 The **'X' key** will reset the current corners to their default positions. 
 <br><br>
-The corner pin positions, as well as the buffer's dimensions and position on the screen can be saved to a JSON using the **'K' key**. 
+The corner pin positions, as well as the buffer's dimensions and position on the screen can be saved to a *JSON* using the **'K' key**. 
 <br><br>
 The last saved setup can be loaded via the **'L' key**.
 

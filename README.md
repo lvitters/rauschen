@@ -56,7 +56,7 @@ While current image generation models de-noise their input textures into somethi
 
 <br>
 
-*How do we find our way through all this noise?*
+*How can we find our way through all this noise?*
 
 <br>
 

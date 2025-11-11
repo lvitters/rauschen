@@ -448,3 +448,7 @@ Made the two tables on the bottom left be scrollable as one combined table, in c
 ## 251009
 
 The previous attempts at mapping controls where not correct. Now, the 4 corner handles are correct pins, and the buffer is now subdivided to apply bilinear interpolation.
+
+## 251111
+
+Was recently contemplating why all shaders kind of sound the same. The solution was that whenever a shader runs, the audio comes from the last buffer draw before switching to the shader. Added a method where the audio buffer will actually be updated with what the shaders are drawing in the main buffer every time a shader runs. Now the sound is corresponding to what is happening on screen at all times, which is incredibly noticable.

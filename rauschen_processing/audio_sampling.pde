@@ -13,16 +13,15 @@ class AudioFrame {
 
 volatile AudioFrame audioFrame;
 
-
 // make a thread-safe copy for the audio sampler to use
 void makeBufferCopyForAudio() {
 	if (buffer != null && buffer.pixels != null && buffer.pixels.length > 0) {
-    // create a new pixel array and copy the data into it.
-    int[] pixelsCopy = new int[buffer.pixels.length];
-		System.arraycopy(buffer.pixels, 0, pixelsCopy, 0, buffer.pixels.length);
-    
-    // create a new, immutable AudioFrame and swap it in atomically.
-    audioFrame = new AudioFrame(pixelsCopy, buffer.width, buffer.height);
+		// create a new pixel array and copy the data into it.
+		int[] pixelsCopy = new int[buffer.pixels.length];
+			System.arraycopy(buffer.pixels, 0, pixelsCopy, 0, buffer.pixels.length);
+		
+		// create a new, immutable AudioFrame and swap it in atomically.
+		audioFrame = new AudioFrame(pixelsCopy, buffer.width, buffer.height);
 	}
 }
 

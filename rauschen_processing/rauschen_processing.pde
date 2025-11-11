@@ -166,7 +166,7 @@ Boolean showDebug = false;
 boolean stopped = false;
 Boolean showAudioLine = false;
 Boolean printDebug = false;
-Boolean isAutoAutoMode = true;
+Boolean isAutoAutoMode = false;
 Boolean isAutoMode = true;
 Boolean isRandomSwitchTime = false;
 Boolean isNoiseColorRandomOffset = false;
@@ -348,7 +348,6 @@ public void draw() {
 					int rand = pickRandomActiveShader();
 					if (!activeShaders.isEmpty()) {
 						applyShader(rand);
-						buffer.loadPixels();
 					}
 					// set to shaderChoice for display
 					shaderChoice = rand;
@@ -357,7 +356,6 @@ public void draw() {
 					if (shaderChoice == -1) shaderChoice = lastShaderChoice;
 					if (!activeShaders.isEmpty()) {
 						applyShader(shaderChoice);
-						buffer.loadPixels();
 					}
 				}
 			} else {
@@ -589,6 +587,9 @@ void applyShader(int shader) {
     } else {
         println("applyShader(): cannot copy buffer to tempBuffer - one of them is null.");
     }
+
+	// copy shader output to buffer so audioSampling can use it
+	buffer.loadPixels();
 }
 
 // pick new shader according to activeShaders, returns -1 if no shader can be picked

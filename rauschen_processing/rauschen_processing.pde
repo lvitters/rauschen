@@ -21,7 +21,7 @@ int screenshotHeight = 1000;
 int screenshotWidth = 1000;
 
 // display mode: 0 = regular window, 1 = undecorated window with separate dimensions
-int displayMode = 1;
+int displayMode = 0;
 
 // window for displayMode 1
 int windowWidth = 1100;
@@ -166,7 +166,7 @@ Boolean showDebug = false;
 boolean stopped = false;
 Boolean showAudioLine = false;
 Boolean printDebug = false;
-Boolean isAutoAutoMode = false;
+Boolean isAutoAutoMode = true;
 Boolean isAutoMode = true;
 Boolean isRandomSwitchTime = false;
 Boolean isNoiseColorRandomOffset = false;
@@ -187,6 +187,7 @@ float maxSwitchTime = 1;
 float switchTimeMultiplier = 0;
 float nextEvent = 1;		// init with 1 second
 float eventCounter = 0;
+long lastAudioBufferUpdateTime = 0;
 
 // communication with control sketch
 OscP5 oscP5;
@@ -345,13 +346,19 @@ public void draw() {
 				// apply shaders
 				if (isRandomShaderEachFrame) {
 					int rand = pickRandomActiveShader();
-					if (!activeShaders.isEmpty()) applyShader(rand);
+					if (!activeShaders.isEmpty()) {
+						applyShader(rand);
+						buffer.loadPixels();
+					}
 					// set to shaderChoice for display
 					shaderChoice = rand;
 				} else {
 					// use last choice to apply in case currently no shader is set
 					if (shaderChoice == -1) shaderChoice = lastShaderChoice;
-					if (!activeShaders.isEmpty()) applyShader(shaderChoice);
+					if (!activeShaders.isEmpty()) {
+						applyShader(shaderChoice);
+						buffer.loadPixels();
+					}
 				}
 			} else {
 				manipulatePixelArray();

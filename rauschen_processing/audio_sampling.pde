@@ -1,23 +1,40 @@
-// sample pixels for audio using Wellen's DSP
+// a thread-safe container for audio pixel data and its dimensions.
+class AudioFrame {
+  final int[] pixels;
+  final int width;
+  final int height;
+
+  AudioFrame(int[] p, int w, int h) {
+    this.pixels = p;
+    this.width = w;
+    this.height = h;
+  }
+}
+
+volatile AudioFrame audioFrame;
+
 
 // make a thread-safe copy for the audio sampler to use
 void makeBufferCopyForAudio() {
-	if (buffer != null) {
-		if (buffer.pixels != null) {
-			if (audioPixels == null || audioPixels.length != buffer.pixels.length) {
-				audioPixels = new int[buffer.pixels.length];
-			}
-			System.arraycopy(buffer.pixels, 0, audioPixels, 0, buffer.pixels.length);
-		}
+	if (buffer != null && buffer.pixels != null && buffer.pixels.length > 0) {
+    // create a new pixel array and copy the data into it.
+    int[] pixelsCopy = new int[buffer.pixels.length];
+		System.arraycopy(buffer.pixels, 0, pixelsCopy, 0, buffer.pixels.length);
+    
+    // create a new, immutable AudioFrame and swap it in atomically.
+    audioFrame = new AudioFrame(pixelsCopy, buffer.width, buffer.height);
 	}
 }
 
 // this gets called by wellen's digital signal processing (DSP) and takes an array of samples for playback
 // creates audio samples from a diagonal line through the buffer's pixels
 void audioblock(float[] pSamples) {
-	if (audioPixels != null) {
-		int bufferWidth = buffer.width;
-		int bufferHeight = buffer.height;
+  // grab a local, stable reference to the current frame. this should be thread-safe
+  AudioFrame frame = audioFrame;
+
+	if (frame != null) {
+		int bufferWidth = frame.width;
+		int bufferHeight = frame.height;
 		
 		// map samples to pixels along line
 		for (int i = 0; i < pSamples.length; i++) {
@@ -56,26 +73,31 @@ void audioblock(float[] pSamples) {
 			// calculate pixel index
 			int pixelIndex = y * bufferWidth + x;
 			
-			// extract RGB components - no need for bounds check as we've mapped directly to buffer dimensions
-			float red = red(audioPixels[pixelIndex]);
-			float green = green(audioPixels[pixelIndex]);
-			float blue = blue(audioPixels[pixelIndex]);
-			
-			// calculate the average
-			float average = (red + green + blue) / 3.0;
+      // check bounds explicitly for safety.
+      if (pixelIndex >= 0 && pixelIndex < frame.pixels.length) {
+        // extract RGB components
+        float red = red(frame.pixels[pixelIndex]);
+        float green = green(frame.pixels[pixelIndex]);
+        float blue = blue(frame.pixels[pixelIndex]);
+        
+        // calculate the average
+        float average = (red + green + blue) / 3.0;
 
-			// map to audio sample range, at half volume
-			pSamples[i] = map(average, 0, 255, -0.5, 0.5);
+        // map to audio sample range, at half volume
+        pSamples[i] = map(average, 0, 255, -0.5, 0.5);
 
-			// apply audio filter
-			// if (isApplyingAudioFilter) pSamples[i] = bandPassFilter.process(pSamples[i]);
-			pSamples[i] = bandPassFilter.process(pSamples[i]);
+        // apply audio filter
+        pSamples[i] = bandPassFilter.process(pSamples[i]);
+      } else {
+        // if something is wrong, produce silence.
+        pSamples[i] = 0;
+      }
 		}
 	} else {
-		// fill with silence if no pixels
+		// fill with silence if no frame is available
 		for (int i = 0; i < pSamples.length; i++) {
 			pSamples[i] = 0;
-			if (printDebug) println("audioblock(): buffer empty");
+			if (printDebug) println("audioblock(): audioFrame is null");
 		}
 	}
 }

@@ -2,4 +2,4 @@
 
 All rights reserved.
 
-*Copyright (c) 2025 Lucca Vitters*
+*Copyright (c) 2026 Lucca Vitters*

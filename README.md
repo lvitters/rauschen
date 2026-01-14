@@ -249,9 +249,14 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 
 <br><br>
 
-## RAUSCHEN_poster
+## RAUSCHEN_prints
 
-*RAUSCHEN_poster* contains some *SvelteKit* components that produce a poster or sharepic for the opening or future exhibitions from either random or chosen sets of screenshots.
+*RAUSCHEN_prints* contains some *SvelteKit* components that produce a multi-page PDF for printing screenshots in batches. The screenshots will have their filenames printed on the bottom right in order to provide a unique timestamp as an identifier.
+
+
+<img src="./markdown_assets/PXL_20250619_113636889_cut_resized.jpg" alt="RAUSCHEN prints">
+
+A similar technique was used to produce the following graphics:
 
 <table>
 <tr>
@@ -259,10 +264,6 @@ Some logic, mainly for enabling short and long presses, as well as saving variab
 <td><img src="./markdown_assets/250605_square_resized.png" alt="RAUSCHEN sharepic square"></td>
 </tr>
 </table>
-
-It can also produce a PDF preparing a large set of screenshots in order to print them in batches. The screenshots will have their filename printed on the bottom right in order to provide a unique timestamp as an identifier.
-
-<img src="./markdown_assets/PXL_20250619_113636889_cut_resized.jpg" alt="RAUSCHEN prints">
 
 <br><br>
 

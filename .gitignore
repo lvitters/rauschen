@@ -3,9 +3,7 @@ rauschen.code-workspace
 /rauschen_processing/out
 /rauschen_processing_controls/out
 /_other/rauschen_processing_shader_test/out
-/rauschen_poster/static/saved
-/rauschen_poster/static/prints
-/rauschen_poster/static/background.png
+/rauschen_prints/static/prints
 dev_diary.html
 dev_diary.pdf
 README.html

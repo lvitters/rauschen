@@ -50,13 +50,18 @@
 
 <br>
 <br>
+<br>
+<br>
 
-RAUSCHEN is a generative media system exploring the probability space of a 1000x1000 image. At first, it produces orderly grids of pixels according to a range of RNG and noise algorithms. These regular textures supply a modular palette of shader programs that recursively feed their combined results into ever emergent patterns, flashing by in quick succession. Its parameters are constantly monitored and provide the option to be manually influenced, enabling an operator to affect RAUSCHEN's output and save the generated outcomes to disk.
-While current image generation models de-noise their input textures into something coherent using techniques under the broad term diffusion, RAUSCHEN uses procedural generation methods in order to achieve the opposite effect, infusing its fundamental noise textures into structures of exponential randomness. In the end, a human decides what to keep.
+RAUSCHEN ("noise") is a real-time generative media system exploring the probability space of a 1,000×1,000 image. It generates textures with a variety of techniques such as white or Perlin noise and recursively feeds them into a modular palette of pixel shaders. They each represent visual effects that, running in succession through a ping pong buffer setup, synthesise exponentially random emergent patterns. While contemporary image generation models try to impose meaning onto the noise based on their training data, RAUSCHEN aims to chart new areas hidden within the noise itself. In the end, a human decides what is worth keeping.
 
 <br>
 
-*How can we find our way through all this noise?*
+*How can we find meaning within all this noise?*
+
+<br>
+
+[luccavitters.de/works/rauschen](https://luccavitters.de/works/rauschen)
 
 <br>
 

@@ -897,6 +897,7 @@ void keyPressed() {
 	// use auto mode or not
 	if (key == 'a') {
 		isAutoMode = !isAutoMode;
+		if (isAutoMode == false) setControllerLEDs(); 	// set controller LEDs when auto mode is turned off
 	}
 	// use auto auto mode or not
 	if (key == 'y') {

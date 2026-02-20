@@ -76,7 +76,10 @@ void oscEvent(OscMessage message) {
 	else if (message.checkAddrPattern("/isAutoMode")) {
 		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isAutoMode = false;
+		if (value == 0) {
+			isAutoMode = false;
+			setControllerLEDs();								// set controller LEDs when auto mode is turned off
+		}
 		if (value == 1) isAutoMode = true;
 	}
 	else if (message.checkAddrPattern("/isRandomSwitchTime")) {

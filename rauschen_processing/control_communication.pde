@@ -126,6 +126,10 @@ void oscEvent(OscMessage message) {
 		if (value == 0) isFastNoiseColor = false;
 		if (value == 1) isFastNoiseColor = true;
 	}
+	else if (message.checkAddrPattern("/globalBrightnessAndVolume")) {
+		float value = message.get(0).floatValue();
+		globalBrightnessAndVolume = map(value, 0, 127, 1, 0);	// go from 1 to 0 to "fade out" image and sound
+	}
 	else if (message.checkAddrPattern("/resetFastNoiseType")) {
 		resetFastNoiseType();
 	}

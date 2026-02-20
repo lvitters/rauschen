@@ -179,6 +179,7 @@ Boolean isGeneratingSound = true;
 Boolean isApplyingAudioFilter = true;
 Boolean isTakingScreenshots = true;
 Boolean isEvenOffset = false;
+float globalBrightnessAndVolume = 1.0f;
 
 // timed events
 float switchTime = 1;
@@ -370,6 +371,7 @@ public void draw() {
 		applyAudioFilter();
 
 		// display buffer
+		tint(255 * globalBrightnessAndVolume);
 		if (displayMode == 0) {
 			image(buffer, 0, 0, width, height);
 		} else if (displayMode == 1) {
@@ -377,6 +379,7 @@ public void draw() {
 			background(0);
 			drawMappedBuffer();
 		}
+		noTint();
 
 		// take screenshot every 3 seconds
 		if (isTakingScreenshots && (frameCount % (60 * 3) == 0)) takeScreenshot();

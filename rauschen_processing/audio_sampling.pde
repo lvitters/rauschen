@@ -83,7 +83,7 @@ void audioblock(float[] pSamples) {
         float average = (red + green + blue) / 3.0;
 
         // map to audio sample range, at half volume
-        pSamples[i] = map(average, 0, 255, -0.5, 0.5);
+        pSamples[i] = map(average, 0, 255, -0.5, 0.5) * globalBrightnessAndVolume;
 
         // apply audio filter
         pSamples[i] = bandPassFilter.process(pSamples[i]);

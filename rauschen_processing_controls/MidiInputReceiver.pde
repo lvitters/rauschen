@@ -76,6 +76,9 @@ class MidiInputReceiver implements Receiver {
 						case 17: 
 							name = "/globalSpeedDivisor";
 						break;
+						case 21:
+							name = "/globalBrightnessAndVolume";
+						break;
 						case 18:
 							name = "/audioFrequency";
 						break;

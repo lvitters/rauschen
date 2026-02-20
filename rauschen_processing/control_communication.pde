@@ -123,6 +123,9 @@ void oscEvent(OscMessage message) {
 		if (value == 0) isFastNoiseColor = false;
 		if (value == 1) isFastNoiseColor = true;
 	}
+	else if (message.checkAddrPattern("/resetFastNoiseType")) {
+		resetFastNoiseType();
+	}
 	else if (message.checkAddrPattern("/yStep")) {
 		float value = message.get(0).floatValue();
 		nextY = (int) map(value, 0, 127, 1, height/10);			// cannot be 0, should depend on the res
@@ -139,11 +142,11 @@ void oscEvent(OscMessage message) {
 		if (value == 0) isRandomShaderEachFrame = false;
 		if (value == 1) isRandomShaderEachFrame = true;
 	}
-	else if (message.checkAddrPattern("/isEvenOffset")) {
+	else if (message.checkAddrPattern("/isShadersOnly")) {
 		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isEvenOffset = false;
-		if (value == 1) isEvenOffset = true;
+		if (value == 0) isShadersOnly = false;
+		if (value == 1) isShadersOnly = true;
 	}
 	else if (message.checkAddrPattern("/shaderTimeMultiplier")) {
 		float value = message.get(0).floatValue();
@@ -153,11 +156,11 @@ void oscEvent(OscMessage message) {
 		float value = message.get(0).floatValue();
 		shaderTimeDivisor = map(value, 0, 127, 1, 0.001);			// cannot be 0
 	}
-	else if (message.checkAddrPattern("/isShadersOnly")) {
+	else if (message.checkAddrPattern("/isEvenOffset")) {
 		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isShadersOnly = false;
-		if (value == 1) isShadersOnly = true;
+		if (value == 0) isEvenOffset = false;
+		if (value == 1) isEvenOffset = true;
 	}
 	else if (message.checkAddrPattern("/globalSpeedDivisor")) {
 		float value = message.get(0).floatValue();

@@ -49,6 +49,9 @@ class MidiInputReceiver implements Receiver {
 						case 10:
 							name = "/isFastNoiseColor";
 						break;
+						case 14:
+							name = "/resetFastNoiseType";
+						break;
 						case 3:
 							name = "/yStep";
 						break;
@@ -59,7 +62,7 @@ class MidiInputReceiver implements Receiver {
 							name = "/isRandomShaderEachFrame";
 						break;
 						case 15:
-							name = "/isEvenOffset";
+							name = "/isShadersOnly";
 						break;
 						case 16:
 							name = "/shaderTimeMultiplier";
@@ -68,7 +71,7 @@ class MidiInputReceiver implements Receiver {
 							name = "/shaderTimeDivisor";
 						break;
 						case 24:
-							name = "/isShadersOnly";
+							name = "/isEvenOffset";
 						break;
 						case 17: 
 							name = "/globalSpeedDivisor";

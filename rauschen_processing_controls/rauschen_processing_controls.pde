@@ -13,8 +13,8 @@ import netP5.*;
 
 
 // sketch window
-int manualWidth = 2560;
-int manualHeight = 1440 - 28 - 31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
+int manualWidth = 1800;
+int manualHeight = 1100 - 28 - 31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
 
 // UI changes
 int textSize = 12;
@@ -281,7 +281,7 @@ void mousePressed() {
     if (!stateChanged && slotBounds != null && slotImageFiles != null) {
         for (int i = 0; i < numDisplaySlots; i++) {
             // adjusted coordinates for checking screenshot slot bounds
-            if (slotBounds[i] != null && slotBounds[i].width > 0 && slotBounds[i].contains(adjustedMouseX, adjustedMouseY)) { // MODIFIED
+            if (slotBounds[i] != null && slotBounds[i].width > 0 && slotBounds[i].contains(adjustedMouseX, adjustedMouseY)) {
                 File fileToSave = slotImageFiles[i];
                 if (fileToSave != null) {
                     saveScreenshot(fileToSave);

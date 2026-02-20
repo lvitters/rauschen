@@ -63,7 +63,7 @@ void setControllerLEDs() {
 						value = isRandomShaderEachFrame ? 127 : 0;
 					break;
 					case 15:
-						value = isEvenOffset ? 127 : 0;
+						value = isShadersOnly ? 127 : 0;
 					break;
 				}
 
@@ -81,7 +81,7 @@ void setControllerLEDs() {
 			for (int control = 24; control < 32; control++) {
 				switch (control) {
 					case 24:
-						value = isShadersOnly ? 127 : 0;
+						value = isEvenOffset ? 127 : 0;
 					break;
 					case 28:
 						value = 0;

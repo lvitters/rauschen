@@ -26,7 +26,7 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/isRandomSwitchTime").add(isRandomSwitchTime ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isNoiseColorRandomOffset").add(isNoiseColorRandomOffset ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isNoiseColorFastNoiseOffset").add(isNoiseColorFastNoiseOffset ? 1 : 0), controlSketchLocation);
-    if (!isNoiseColorFastNoiseOffset || !isNoiseColorRandomOffset|| isApplyingShader) oscP5.send(new OscMessage("/info/fastNoiseType").add("none"), controlSketchLocation);
+    if ((!isNoiseColorFastNoiseOffset && !isFastNoiseColor) || isApplyingShader) oscP5.send(new OscMessage("/info/fastNoiseType").add("none"), controlSketchLocation);
 	else oscP5.send(new OscMessage("/info/fastNoiseType").add(fastNoiseType.toString()), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isFastNoiseColor").add(isFastNoiseColor ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isApplyingShader").add(isApplyingShader ? 1 : 0), controlSketchLocation);

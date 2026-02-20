@@ -452,3 +452,7 @@ The previous attempts at mapping controls where not correct. Now, the 4 corner h
 ## 251111
 
 Was recently contemplating why all shaders kind of sound the same, or why their sound does not seem to change over the time they are running. The solution was that whenever a shader runs, the audio comes from the last buffer drawn before switching to the shader, because they shader ouputs are never considered where the audio is generated. While copying the buffer is such an expensive operation that it slows the program down too much when it is done where the audio is generated, doing it right after applying the shaders does not affect performance at all, apparently because the compiler knows how to optimize it when it is in the same code block.
+
+## 260220
+
+Changed up some of the controls in preparation for a performance. There is now a global variable controlling the brightness and volume of the main sketch in order to fade it in and out for a performance.

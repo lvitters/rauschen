@@ -59,10 +59,10 @@ class MidiInputReceiver implements Receiver {
 							name = "/yStepMultiplier";
 						break;
 						case 11:
-							name = "/isRandomShaderEachFrame";
+							name = "/isShadersOnly";
 						break;
 						case 15:
-							name = "/isShadersOnly";
+							name = "/isRandomShaderEachFrame";
 						break;
 						case 16:
 							name = "/shaderTimeMultiplier";
@@ -71,7 +71,10 @@ class MidiInputReceiver implements Receiver {
 							name = "/shaderTimeDivisor";
 						break;
 						case 24:
-							name = "/isEvenOffset";
+							name = "/isShadersOnly";
+						break;
+						case 28:
+							name = "/isRandomShaderEachFrame";
 						break;
 						case 17: 
 							name = "/globalSpeedDivisor";

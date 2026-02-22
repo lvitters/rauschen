@@ -93,11 +93,17 @@ void setControllerLEDs() {
 						value = 0;
 					break;
 					case 26:
-						value = isGeneratingSound ? 127 : 0;
+						value = isCornerNoiseWalk ? 127 : 0;
 					break;
 					case 30:
-						value = isApplyingAudioFilter ? 127 : 0;
+						value = 0;
 					break;
+					// case 26:
+					// 	value = isGeneratingSound ? 127 : 0;
+					// break;
+					// case 30:
+					// 	value = isApplyingAudioFilter ? 127 : 0;
+					// break;
 					case 27:
 						value = showDebug ? 127 : 0;
 					break;

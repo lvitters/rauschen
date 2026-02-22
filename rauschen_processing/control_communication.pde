@@ -35,10 +35,12 @@ void sendDebugOSC() {
 	oscP5.send(new OscMessage("/info/isShadersOnly").add(isShadersOnly ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isEvenOffset").add(isEvenOffset ? 1 : 0), controlSketchLocation);
 	// oscP5.send(new OscMessage("/info/isTakingScreenshots").add(isTakingScreenshots ? 1 : 0), controlSketchLocation);
-	oscP5.send(new OscMessage("/info/isGeneratingSound").add(isGeneratingSound ? 1 : 0), controlSketchLocation);
-	oscP5.send(new OscMessage("/info/isApplyingAudioFilter").add(isApplyingAudioFilter ? 1 : 0), controlSketchLocation);
+	// oscP5.send(new OscMessage("/info/cornerNoiseWalkAmt").add(cornerNoiseWalkAmt), controlSketchLocation);
+	// oscP5.send(new OscMessage("/info/cornerNoiseWalkSpeed").add(cornerNoiseWalkSpeed), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/isCornerNoiseWalk").add(isCornerNoiseWalk ? 1 : 0), controlSketchLocation);
 	// oscP5.send(new OscMessage("/info/audioFrequency").add(audioFrequency), controlSketchLocation);
 	// oscP5.send(new OscMessage("/info/audioBandwidth").add(audioBandwidth), controlSketchLocation);
+	// oscP5.send(new OscMessage("/info/isApplyingAudioFilter").add(isApplyingAudioFilter ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/globalSpeedDivisor").add(globalSpeedDivisor), controlSketchLocation);
 }
 
@@ -173,26 +175,40 @@ void oscEvent(OscMessage message) {
 		float value = message.get(0).floatValue();
 		globalSpeedDivisor = (int) map(value, 0, 127, 1, 20);				// cannot be 0
 	}
-	else if (message.checkAddrPattern("/audioFrequency")) {
+	else if (message.checkAddrPattern("/isCornerNoiseWalk")) {
 		float value = message.get(0).floatValue();
-		audioFrequency = map(value, 0, 127, 100, 18000);				// cannot be 0
+		value = map(value, 0, 127, 0, 1);
+		if (value == 0) isCornerNoiseWalk = false;
+		if (value == 1) isCornerNoiseWalk = true;
 	}
-	else if (message.checkAddrPattern("/audioBandwidth")) {
+	else if (message.checkAddrPattern("/cornerNoiseWalkAmt")) {
 		float value = message.get(0).floatValue();
-		audioBandwidth = map(value, 0, 127, 100, 18000);				// cannot be 0
+		cornerNoiseWalkAmt = map(value, 0, 127, 0, max(windowWidth, windowHeight));
 	}
-	else if (message.checkAddrPattern("/isGeneratingSound")) {
+	else if (message.checkAddrPattern("/cornerNoiseWalkSpeed")) {
 		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) toggleSound(false);						// turn DSP on
-		if (value == 1) toggleSound(true);						// or off
+		cornerNoiseWalkSpeed = map(value, 0, 127, 0, 0.02); // range 0 to 0.01
 	}
-	else if (message.checkAddrPattern("/isApplyingAudioFilter")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isApplyingAudioFilter = false;
-		if (value == 1) isApplyingAudioFilter = true;
-	}
+	// else if (message.checkAddrPattern("/audioFrequency")) {
+	// 	float value = message.get(0).floatValue();
+	// 	audioFrequency = map(value, 0, 127, 100, 18000);				// cannot be 0
+	// }
+	// else if (message.checkAddrPattern("/audioBandwidth")) {
+	// 	float value = message.get(0).floatValue();
+	// 	audioBandwidth = map(value, 0, 127, 100, 18000);				// cannot be 0
+	// }
+	// else if (message.checkAddrPattern("/isGeneratingSound")) {
+	// 	float value = message.get(0).floatValue();
+	// 	value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+	// 	if (value == 0) toggleSound(false);						// turn DSP on
+	// 	if (value == 1) toggleSound(true);						// or off
+	// }
+	// else if (message.checkAddrPattern("/isApplyingAudioFilter")) {
+	// 	float value = message.get(0).floatValue();
+	// 	value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
+	// 	if (value == 0) isApplyingAudioFilter = false;
+	// 	if (value == 1) isApplyingAudioFilter = true;
+	// }
 	else if (message.checkAddrPattern("/showDebug")) {
 		float value = message.get(0).floatValue();
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value

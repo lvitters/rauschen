@@ -21,11 +21,11 @@ int screenshotHeight = 1000;
 int screenshotWidth = 1000;
 
 // display mode: 0 = regular window, 1 = undecorated window with separate dimensions
-int displayMode = 0;
+int displayMode = 1;
 
 // window for displayMode 1
-int windowWidth = 1100;
-int windowHeight = 1100;
+int windowWidth = 2500;
+int windowHeight = 1400;
 Window newtWindow = null;
 EDTUtil edtUtil = null;
 volatile boolean isCurrentlyUndecorated = false;
@@ -41,6 +41,13 @@ boolean minusKeyDown = false;
 // video mapping controls
 boolean showVideoMappingControls = false;
 PVector[] corners = new PVector[4]; // top-left, top-right, bottom-right, bottom-left
+// corner noise walk
+boolean isCornerNoiseWalk = false;
+float cornerNoiseWalkAmt = 0;
+float cornerNoiseWalkSpeed = 0.005;
+Noise[] cornerNoises = new Noise[8]; // 4 corners * 2 (x, y)
+PVector[] baseCorners = new PVector[4]; // to store original position before noise
+
 int draggedCorner = -1; // which corner is being dragged (-1 = none)
 int handleSize = 25;
 int meshResolution = 20; // subdivision for perspective-correct rendering
@@ -310,6 +317,12 @@ public void setup() {
 	fastColorNoiseB.SetSeed(intRandom(1, 10000));
 	fastColorNoiseB.SetNoiseType(fastNoiseType);
 
+	// init corner noises
+	for (int i = 0; i < 8; i++) {
+		cornerNoises[i] = new Noise(random(100), 0.005);
+		noises.add(cornerNoises[i]);
+	}
+
 	// initialize video mapping corners
 	initVideoMappingCorners();
 }
@@ -319,6 +332,7 @@ public void draw() {
 	if (displayMode == 1) {
 		moveWindow();
 		resizeWindow();
+		updateCornerNoises();
 	}
 
 	// stop (almost) everything
@@ -1115,6 +1129,11 @@ void initVideoMappingCorners() {
 		corners[1] = new PVector(offsetX + width, offsetY); // top-right
 		corners[2] = new PVector(offsetX + width, offsetY + height); // bottom-right
 		corners[3] = new PVector(offsetX, offsetY + height); // bottom-left
+
+		// init baseCorners
+		for (int i = 0; i < 4; i++) {
+			baseCorners[i] = corners[i].copy();
+		}
 	}
 	// displayMode 0 doesn't use video mapping, so no corners are initialized
 }
@@ -1193,6 +1212,79 @@ PVector bilinearInterpolation(PVector[] quad, float u, float v) {
 	return PVector.lerp(top, bottom, v);
 }
 
+// update corner positions with noise
+void updateCornerNoises() {
+	// only if mode is active
+	if (!isCornerNoiseWalk || corners[0] == null) {
+		// restore base corners if inactive (but only if we have baseCorners)
+		if (!isCornerNoiseWalk && corners[0] != null && baseCorners[0] != null) {
+			// restore if needed (simple check to avoid setting every frame if not needed)
+			if (corners[0].dist(baseCorners[0]) > 0.1) {
+				for (int i = 0; i < 4; i++) {
+					corners[i].set(baseCorners[i]);
+				}
+			}
+		}
+		return;
+	}
+	
+	for (int i = 0; i < 4; i++) {
+		// don't apply noise to dragged corner
+		if (draggedCorner == i) {
+			// keep base corners up to date while dragging so noise doesn't accumulate
+			if (baseCorners[i] != null) baseCorners[i].set(corners[i]);
+			continue; 
+		}
+
+		// update base if needed (sanity check)
+		if (baseCorners[i] == null) baseCorners[i] = corners[i].copy();
+
+		// update noise increment
+		// use x and y noise per corner
+		cornerNoises[i*2].changeInc(cornerNoiseWalkSpeed);
+		cornerNoises[i*2+1].changeInc(cornerNoiseWalkSpeed);
+
+		// calculate valid offset range to stay within window
+		// X axis
+		float minOffsetX = -cornerNoiseWalkAmt;
+		float maxOffsetX = cornerNoiseWalkAmt;
+		// constrain range so base + offset is within 0..windowWidth
+		minOffsetX = max(minOffsetX, -baseCorners[i].x);
+		maxOffsetX = min(maxOffsetX, windowWidth - baseCorners[i].x);
+		
+		// expand range slightly to encourage reaching bounds
+		float spanX = maxOffsetX - minOffsetX;
+		float targetMinOffsetX = minOffsetX - spanX * 0.15;
+		float targetMaxOffsetX = maxOffsetX + spanX * 0.15;
+
+		// Y axis
+		float minOffsetY = -cornerNoiseWalkAmt;
+		float maxOffsetY = cornerNoiseWalkAmt;
+		// constrain range so base + offset is within 0..windowHeight
+		minOffsetY = max(minOffsetY, -baseCorners[i].y);
+		maxOffsetY = min(maxOffsetY, windowHeight - baseCorners[i].y);
+
+		// expand range slightly to encourage reaching bounds
+		float spanY = maxOffsetY - minOffsetY;
+		float targetMinOffsetY = minOffsetY - spanY * 0.5;
+		float targetMaxOffsetY = maxOffsetY + spanY * 0.5;
+
+		// get noise offset within expanded range and constrain
+		float rawOffsetX = cornerNoises[i*2].getNoiseRange(targetMinOffsetX, targetMaxOffsetX);
+		float offsetX = constrain(rawOffsetX, minOffsetX, maxOffsetX);
+		
+		float rawOffsetY = cornerNoises[i*2+1].getNoiseRange(targetMinOffsetY, targetMaxOffsetY);
+		float offsetY = constrain(rawOffsetY, minOffsetY, maxOffsetY);
+		
+		// calculate new position
+		float newX = baseCorners[i].x + offsetX;
+		float newY = baseCorners[i].y + offsetY;
+		
+		// update corners
+		corners[i].set(newX, newY);
+	}
+}
+
 // mouse events for dragging corners (displayMode 1 only)
 void mousePressed() {
 	if (showVideoMappingControls && corners[0] != null && displayMode == 1) {
@@ -1211,6 +1303,11 @@ void mouseDragged() {
 	if (draggedCorner != -1 && displayMode == 1) {
 		corners[draggedCorner].x = mouseX;
 		corners[draggedCorner].y = mouseY;
+		// update base corner as well so it doesn't jump back when noise is toggled off or on
+		if (baseCorners[draggedCorner] != null) {
+			baseCorners[draggedCorner].x = mouseX;
+			baseCorners[draggedCorner].y = mouseY;
+		}
 	}
 }
 
@@ -1297,6 +1394,7 @@ void loadSetupFromJSON() {
 				for (int i = 0; i < 4; i++) {
 					JSONObject corner = cornersArray.getJSONObject(i);
 					corners[i] = new PVector(corner.getFloat("x"), corner.getFloat("y"));
+					baseCorners[i] = corners[i].copy();
 				}
 				if (printDebug) println("loadSetupFromJSON(): corners loaded");
 			}

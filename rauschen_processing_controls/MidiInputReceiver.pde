@@ -81,19 +81,28 @@ class MidiInputReceiver implements Receiver {
 						break;
 						case 21:
 							name = "/globalBrightnessAndVolume";
-						break;
+						break;						
 						case 18:
-							name = "/audioFrequency";
+							name = "/cornerNoiseWalkAmt";
 						break;
 						case 22:
-							name = "/audioBandwidth";
+							name = "/cornerNoiseWalkSpeed";
 						break;
 						case 26:
-							name = "/isGeneratingSound";
+							name = "/isCornerNoiseWalk";
 						break;
-						case 30:
-							name = "/isApplyingAudioFilter";
-						break;
+						// case 18:
+						// 	name = "/audioFrequency";
+						// break;
+						// case 22:
+						// 	name = "/audioBandwidth";
+						// break;
+						// case 26:
+						// 	name = "/isGeneratingSound";
+						// break;
+						// case 30:
+						// 	name = "/isApplyingAudioFilter";
+						// break;
 						case 27:
 							name = "/showDebug";
 						break;

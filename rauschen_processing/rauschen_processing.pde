@@ -21,11 +21,11 @@ int screenshotHeight = 1000;
 int screenshotWidth = 1000;
 
 // display mode: 0 = regular window, 1 = undecorated window with separate dimensions
-int displayMode = 1;
+int displayMode = 0;
 
 // window for displayMode 1
-int windowWidth = 2500;
-int windowHeight = 1400;
+int windowWidth = 1000;
+int windowHeight = 1000;
 Window newtWindow = null;
 EDTUtil edtUtil = null;
 volatile boolean isCurrentlyUndecorated = false;

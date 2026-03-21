@@ -62,12 +62,11 @@ void resetControllerLEDs() {
 		if (midiReceiver != null) {
 			// turn of corresponding LEDs
 
-			// LEDs are numbered 9 to 12, only needs to be done for one page because this gets translated
-			// to the "element" numbers, which is the same for the buttons on all pages of the controller
-			for (int control = 9; control <= 12; control++) {
+			// LEDs are numbered 9 to 16
+			for (int control = 9; control <= 16; control++) {
 				ShortMessage message = new ShortMessage();
 				// channel, CC number, value (0 = off)
-				message.setMessage(ShortMessage.CONTROL_CHANGE, 0, control, 0);
+				message.setMessage(ShortMessage.CONTROL_CHANGE, 1, control, 0);
 				midiReceiver.send(message, -1);
 			}
 

@@ -16,100 +16,88 @@ class MidiInputReceiver implements Receiver {
 				if (number >= 0) {
 					String name = "";
 					switch(number) {
-						case 0:
+						case 1:
 							name = "/switchTime";
 						break;
-						case 4:
+						case 5:
 							name = "/switchTimeMultiplier";
 						break;
-						case 8:
+						case 9:
 							name = "/isAutoMode";
 						break;
-						case 12:
+						case 10:
 							name = "/isRandomSwitchTime";
 						break;
-						case 1:
+						case 2:
 							name = "/sameStep";
 						break;
-						case 5:
+						case 6:
 							name = "/sameStepMultiplier";
 						break;
-						case 9:
+						case 11:
 							name = "/isNoiseColorRandomOffset";
 						break;
-						case 13:
+						case 12:
 							name = "/isNoiseColorFastNoiseOffset";
 						break;
-						case 2:
+						case 3:
 							name = "/xStep";
 						break;
-						case 6:
+						case 7:
 							name = "/xStepMultiplier";
 						break;
-						case 10:
+						case 13:
 							name = "/isFastNoiseColor";
 						break;
 						case 14:
 							name = "/resetFastNoiseType";
 						break;
-						case 3:
+						case 4:
 							name = "/yStep";
 						break;
-						case 7:
+						case 8:
 							name = "/yStepMultiplier";
 						break;
-						case 11:
-							name = "/isShadersOnly";
-						break;
 						case 15:
-							name = "/isRandomShaderEachFrame";
+							name = "/isShadersOnly";
 						break;
 						case 16:
-							name = "/shaderTimeMultiplier";
-						break;
-						case 20:
-							name = "/shaderTimeDivisor";
-						break;
-						case 24:
-							name = "/isShadersOnly";
-						break;
-						case 28:
 							name = "/isRandomShaderEachFrame";
 						break;
-						case 17: 
-							name = "/globalSpeedDivisor";
+						case 17:
+							name = "/shaderTimeMultiplier";
 						break;
 						case 21:
-							name = "/globalBrightnessAndVolume";
-						break;						
-						case 18:
-							name = "/cornerNoiseWalkAmt";
+							name = "/shaderTimeDivisor";
 						break;
-						case 22:
-							name = "/cornerNoiseWalkSpeed";
+						case 25:
+							name = "/isShadersOnly";
 						break;
 						case 26:
+							name = "/isRandomShaderEachFrame";
+						break;
+						case 18: 
+							name = "/globalSpeedDivisor";
+						break;
+						case 22:
+							name = "/globalBrightnessAndVolume";
+						break;						
+						case 19:
+							name = "/cornerNoiseWalkAmt";
+						break;
+						case 23:
+							name = "/cornerNoiseWalkSpeed";
+						break;
+						case 29:
 							name = "/isCornerNoiseWalk";
 						break;
-						// case 18:
-						// 	name = "/audioFrequency";
-						// break;
-						// case 22:
-						// 	name = "/audioBandwidth";
-						// break;
-						// case 26:
-						// 	name = "/isGeneratingSound";
-						// break;
-						// case 30:
-						// 	name = "/isApplyingAudioFilter";
-						// break;
-						case 27:
+						case 31:
 							name = "/showDebug";
 						break;
-						case 31:
+						case 32:
 							name = "/showAudioLine";
 						break;
-						case 32:
+						case 33:
 							name = "/setControllerLEDs";
 						break;
 					}

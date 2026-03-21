@@ -37,84 +37,72 @@ void setControllerLEDs() {
 			// default off
 			int value = 0;
 
-			// LEDs values 8 to 15
+			// LEDs values 9 to 16
 			// short press / long press are spaced apart 4 CCs
-			for (int control = 8; control < 16; control++) {
+			for (int control = 9; control < 17; control++) {
 				switch (control) {
-					case 8: 
+					case 9: 
 						value = isAutoMode ? 127 : 0;
 					break;
-					case 12:
+					case 10:
 						value = isRandomSwitchTime ? 127 : 0;
 					break;
-					case 9:
+					case 11:
 						value = isNoiseColorRandomOffset ? 127 : 0;
 					break;
-					case 13:
+					case 12:
 						value = isNoiseColorFastNoiseOffset ? 127 : 0;
 					break;
-					case 10:
+					case 13:
 						value = isFastNoiseColor ? 127 : 0;
 					break;
 					case 14:
-						value = 0;
-					break;
-					case 11:
-						value = isShadersOnly ? 127 : 0;
+						value = 0; // resetFastNoiseType
 					break;
 					case 15:
+						value = isShadersOnly ? 127 : 0;
+					break;
+					case 16:
 						value = isRandomShaderEachFrame ? 127 : 0;
 					break;
 				}
 
 				ShortMessage message = new ShortMessage();
 				// channel, CC number, value (127 = on / 0 = off)
-				message.setMessage(ShortMessage.CONTROL_CHANGE, 0, control, value);
+				message.setMessage(ShortMessage.CONTROL_CHANGE, 1, control, value);
 				midiReceiver.send(message, -1);
 			}
 			
 			// reset
 			value = 0;			
 			
-			// LEDs values 24 to 31 (32 is debug in controls) 
+			// LEDs values 25 to 32 (33 is debug in controls) 
 			// short press / long press are spaced apart 4 CCs
-			for (int control = 24; control < 32; control++) {
+			for (int control = 25; control < 33; control++) {
 				switch (control) {
-					case 24:
+					case 25:
 						value = isShadersOnly ? 127 : 0;
 					break;
-					case 28:
+					case 26:
 						value = isRandomShaderEachFrame ? 127 : 0;
 					break;
-					case 25:
-						value = 0;
-					break;
 					case 29:
-						value = 0;
-					break;
-					case 26:
 						value = isCornerNoiseWalk ? 127 : 0;
 					break;
-					case 30:
-						value = 0;
-					break;
-					// case 26:
-					// 	value = isGeneratingSound ? 127 : 0;
-					// break;
-					// case 30:
-					// 	value = isApplyingAudioFilter ? 127 : 0;
-					// break;
-					case 27:
+					case 31:
 						value = showDebug ? 127 : 0;
 					break;
-					case 31:
+					case 32:
 						value = showAudioLine ? 127 : 0;
+					break;
+					default:
+						value = 0;
 					break;
 				}
 
 				ShortMessage message = new ShortMessage();
 				// channel, CC number, value (127 = on / 0 = off)
-				message.setMessage(ShortMessage.CONTROL_CHANGE, 0, control, value);
+				message.setMessage(ShortMessage.CONTROL_CHANGE, 1, control, value);
 				midiReceiver.send(message, -1);
 			}
 		}
@@ -130,12 +118,11 @@ void resetControllerLEDs() {
 		if (midiReceiver != null) {
 			// turn of corresponding LEDs
 
-			// LEDs are numbered 9 to 12, only needs to be done for one page because this gets translated
-			// to the "element" numbers, which is the same for the buttons on all pages of the controller
-			for (int control = 9; control <= 12; control++) {
+			// LEDs are numbered 9 to 16
+			for (int control = 9; control <= 16; control++) {
 				ShortMessage message = new ShortMessage();
 				// channel, CC number, value (0 = off)
-				message.setMessage(ShortMessage.CONTROL_CHANGE, 0, control, 0);
+				message.setMessage(ShortMessage.CONTROL_CHANGE, 1, control, 0);
 				midiReceiver.send(message, -1);
 			}
 

@@ -131,8 +131,6 @@ Rectangle tablesAreaBounds = new Rectangle();
 
 // midi input
 MidiDevice inputDevice;
-MidiDevice outputDevice;
-Receiver midiReceiver;
 
 // variables to change with Midi to send over to main sketch
 float minSwitchTime;
@@ -166,7 +164,6 @@ public void setup() {
 
 	// midi controls
 	//listMidiControllers();
-	setupMidiOutput();
 	setupMidiInput();
 
 	// prepare the UI for the given resolution

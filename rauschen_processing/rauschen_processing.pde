@@ -201,10 +201,6 @@ long lastAudioBufferUpdateTime = 0;
 OscP5 oscP5;
 NetAddress controlSketchLocation;
 
-// midi input
-MidiDevice outputDevice;
-Receiver midiReceiver;
-
 public void settings() {
 	if (displayMode == 0) {
 		size(width, height, P2D);
@@ -229,10 +225,6 @@ public void setup() {
 	// can't go in settings for some reason
 	frameRate(120);
 	colorMode(RGB, 255, 255, 255);
-
-	// midi controls
-	//listMidiControllers();
-	setupMidiOutput();
 
 	// create buffers
 	buffer = createGraphics((int)width, (int)height, P2D);
@@ -259,7 +251,7 @@ public void setup() {
 	DSP.pause(true);
 
 	// turn on by default
-	toggleSound(true);
+	toggleSound(false);
 	
 	// fill audioDebugPixels with empty pixels to ensure correct size
 	while (audioDebugPixels.size() < 1024) {
@@ -906,6 +898,7 @@ void keyPressed() {
 	// show debug / fps
 	if (key == 'f') {
 		showDebug = !showDebug;
+		showAudioLine = !showAudioLine;
 	}
 	// print (more) debug info
 	if (key == 'p') {
@@ -914,7 +907,6 @@ void keyPressed() {
 	// use auto mode or not
 	if (key == 'a') {
 		isAutoMode = !isAutoMode;
-		if (isAutoMode == false) setControllerLEDs(); 	// set controller LEDs when auto mode is turned off
 	}
 	// use auto auto mode or not
 	if (key == 'y') {

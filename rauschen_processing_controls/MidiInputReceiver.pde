@@ -91,15 +91,6 @@ class MidiInputReceiver implements Receiver {
 						case 29:
 							name = "/isCornerNoiseWalk";
 						break;
-						case 31:
-							name = "/showDebug";
-						break;
-						case 32:
-							name = "/showAudioLine";
-						break;
-						case 33:
-							name = "/setControllerLEDs";
-						break;
 					}
 					
 					// send OSC message with the calculated value

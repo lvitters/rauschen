@@ -27,57 +27,6 @@ void setupMidiInput() {
     }
 }
 
-// get info from device list and set controller as output device
-void setupMidiOutput() {
-	try {
-		// get all MIDI devices
-		MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
-		
-		// look for Intech Studio Grid with receiver capability
-		for (int i = 0; i < infos.length; i++) {
-			MidiDevice device = MidiSystem.getMidiDevice(infos[i]);
-			if (infos[i].getName().equals("Grid") && device.getMaxReceivers() != 0) {
-				outputDevice = device;
-				outputDevice.open();
-				midiReceiver = outputDevice.getReceiver();
-				if (printDebug) println("setupMidiOutput(): successfully opened Grid for output");
-				break;
-			}
-		}
-		if (outputDevice == null) {
-			if (printDebug) println("setupMidiOutput(): could not find Grid with output capability");
-		} else {
-			// reset all controller LEDs
-			//resetControllerLEDs();
-		}
-	} catch (Exception e) {
-		if (printDebug) println("setupMidiOutput(): error setting up MIDI output: " + e.getMessage());
-		e.printStackTrace();
-	}
-}
-
-// reset all controller LEDs
-void resetControllerLEDs() {
-	try {
-		if (midiReceiver != null) {
-			// turn of corresponding LEDs
-
-			// LEDs are numbered 9 to 16
-			for (int control = 9; control <= 16; control++) {
-				ShortMessage message = new ShortMessage();
-				// channel, CC number, value (0 = off)
-				message.setMessage(ShortMessage.CONTROL_CHANGE, 1, control, 0);
-				midiReceiver.send(message, -1);
-			}
-
-			if (printDebug) println("resetControllerLEDs(): reset all controller LEDs");
-		}
-	} catch (Exception e) {
-		if (printDebug) println("resetControllerLEDs(): error resetting controller: " + e.getMessage());
-		e.printStackTrace();
-	}
-}
-
 // detect and list all available MIDI devices
 void listMidiControllers() {
 	try {
@@ -108,9 +57,6 @@ void stop() {
 	// close MIDI devices
 	if (inputDevice != null) {
 		inputDevice.close();
-	}
-	if (outputDevice != null) {
-		outputDevice.close();
 	}
 	super.stop();
 }

@@ -80,7 +80,6 @@ void oscEvent(OscMessage message) {
 		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
 		if (value == 0) {
 			isAutoMode = false;
-			setControllerLEDs();								// set controller LEDs when auto mode is turned off
 		}
 		if (value == 1) isAutoMode = true;
 	}
@@ -223,9 +222,6 @@ void oscEvent(OscMessage message) {
 	}
 
 	// other
-	else if (message.checkAddrPattern("/setControllerLEDs")) {
-		setControllerLEDs();
-	}	
 	else if (message.checkAddrPattern("/activeShaderIndices")) {
 		// clear shader states
 		activeShaders.clear();

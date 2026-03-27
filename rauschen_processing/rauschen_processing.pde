@@ -197,6 +197,11 @@ float nextEvent = 1;		// init with 1 second
 float eventCounter = 0;
 long lastAudioBufferUpdateTime = 0;
 
+// chances
+float stepChance = 0;
+float noiseColorChance = 0;
+float shaderChance = 0;
+
 // communication with control sketch
 OscP5 oscP5;
 NetAddress controlSketchLocation;
@@ -809,6 +814,8 @@ void chooseEvent(int event) {
 		break;
 	}
 }
+
+void chanceEvents() {}
 
 // take a screenshot with date and time to special path
 void takeScreenshot() {

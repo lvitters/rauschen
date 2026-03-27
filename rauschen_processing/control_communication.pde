@@ -66,159 +66,51 @@ void sendShaderInfoOSC() {
 // handle incoming OSC messages from control sketch
 void oscEvent(OscMessage message) {
 	// handle parameter updates according to names given in "MidiInputReceiver" which should correspond to variables here
-	if (message.checkAddrPattern("/switchTime")) {
+	if (message.checkAddrPattern("/stepChance")) {
 		float value = message.get(0).floatValue();
-		if (isRandomSwitchTime) maxSwitchTime = map(value, 0, 127, 0, 5);
-		else switchTime = map(value, 0, 127, 0, 5);				// 0 means switch every frame
+		stepChance = map(value, 0, 127, 0, 1);
 	}
-	else if (message.checkAddrPattern("/switchTimeMultiplier")) {
+	else if (message.checkAddrPattern("/stepNoiseInc")) {
 		float value = message.get(0).floatValue();
-		switchTimeMultiplier = map(value, 0, 127, 1, 5);		// should be 0 most of the time
+		stepNoiseInc = map(value, 0, 127, 0, 1);
 	}
-	else if (message.checkAddrPattern("/isAutoMode")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) {
-			isAutoMode = false;
+	else if (message.checkAddrPattern("/stepDims")) {
+		stepDims += 1;
+		if (stepDims > 2) {
+			stepDims = 0;
 		}
-		if (value == 1) isAutoMode = true;
 	}
-	else if (message.checkAddrPattern("/isRandomSwitchTime")) {
+	else if (message.checkAddrPattern("/noiseColorChance")) {
 		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isRandomSwitchTime = false;
-		if (value == 1) isRandomSwitchTime = true;
+		noiseColorChance = map(value, 0, 127, 0, 1);
 	}
-	else if (message.checkAddrPattern("/sameStep")) {
+	else if (message.checkAddrPattern("/noiseColorInc")) {
 		float value = message.get(0).floatValue();
-		nextX = nextY = (int) map(value, 0, 127, 1, width/10);	// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
+		noiseColorChance = map(value, 0, 127, 0, 1);
 	}
-	else if (message.checkAddrPattern("/sameStepMultiplier")) {
-		float value = message.get(0).floatValue();
-		xStepMultiplier = yStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
-	}
-	else if (message.checkAddrPattern("/isNoiseColorRandomOffset")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isNoiseColorRandomOffset = false;
-		if (value == 1) isNoiseColorRandomOffset = true;
-	}
-	else if (message.checkAddrPattern("/isNoiseColorFastNoiseOffset")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isNoiseColorFastNoiseOffset = false;
-		if (value == 1) isNoiseColorFastNoiseOffset = true;
-	}
-	else if (message.checkAddrPattern("/xStep")) {
-		float value = message.get(0).floatValue();
-		nextX = (int) map(value, 0, 127, 1, width/10);			// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
-	}
-	else if (message.checkAddrPattern("/xStepMultiplier")) {
-		float value = message.get(0).floatValue();
-		xStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
-	}
-	else if (message.checkAddrPattern("/isFastNoiseColor")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isFastNoiseColor = false;
-		if (value == 1) isFastNoiseColor = true;
-	}
-	else if (message.checkAddrPattern("/globalBrightnessAndVolume")) {
-		float value = message.get(0).floatValue();
-		globalBrightnessAndVolume = map(value, 0, 127, 1, 0);	// go from 1 to 0 to "fade out" image and sound
+	else if (message.checkAddrPattern("/noiseColorType")) {
+		noiseColorType += 1;
+		if (noiseColorType > 3) {
+			noiseColorType = 0;
+		}
 	}
 	else if (message.checkAddrPattern("/resetFastNoiseType")) {
 		resetFastNoiseType();
-	}
-	else if (message.checkAddrPattern("/yStep")) {
+	}	
+	else if (message.checkAddrPattern("/shaderTimeNoiseInc")) {
 		float value = message.get(0).floatValue();
-		nextY = (int) map(value, 0, 127, 1, height/10);			// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
-	}
-	else if (message.checkAddrPattern("/yStepMultiplier")) {
-		float value = message.get(0).floatValue();
-		yStepMultiplier = map(value, 0, 127, 1, width/100);		// cannot be 0, should depend on the res
-		stepUpdatedManually = true;
-	}
+		shaderTimeNoiseInc = map(value, 0, 127, 0, 1);
+	}	
 	else if (message.checkAddrPattern("/isRandomShaderEachFrame")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isRandomShaderEachFrame = false;
-		if (value == 1) isRandomShaderEachFrame = true;
-	}
-	else if (message.checkAddrPattern("/isShadersOnly")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isShadersOnly = false;
-		if (value == 1) isShadersOnly = true;
-	}
-	else if (message.checkAddrPattern("/shaderTimeMultiplier")) {
-		float value = message.get(0).floatValue();
-		shaderTimeMultiplier = map(value, 0, 127, 1, 10);			// cannot be 0
-	}
-	else if (message.checkAddrPattern("/shaderTimeDivisor")) {
-		float value = message.get(0).floatValue();
-		shaderTimeDivisor = map(value, 0, 127, 1, 0.001);			// cannot be 0
-	}
-	else if (message.checkAddrPattern("/isEvenOffset")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) isEvenOffset = false;
-		if (value == 1) isEvenOffset = true;
+		isRandomShaderEachFrame = !isRandomShaderEachFrame;
 	}
 	else if (message.checkAddrPattern("/globalSpeedDivisor")) {
 		float value = message.get(0).floatValue();
-		globalSpeedDivisor = (int) map(value, 0, 127, 1, 20);				// cannot be 0
+		globalSpeedDivisor = (int) map(value, 0, 127, 1, 20);
 	}
-	else if (message.checkAddrPattern("/isCornerNoiseWalk")) {
+	else if (message.checkAddrPattern("/globalBrightnessAndVolume")) {
 		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);
-		if (value == 0) isCornerNoiseWalk = false;
-		if (value == 1) isCornerNoiseWalk = true;
-	}
-	else if (message.checkAddrPattern("/cornerNoiseWalkAmt")) {
-		float value = message.get(0).floatValue();
-		cornerNoiseWalkAmt = map(value, 0, 127, 0, max(windowWidth, windowHeight));
-	}
-	else if (message.checkAddrPattern("/cornerNoiseWalkSpeed")) {
-		float value = message.get(0).floatValue();
-		cornerNoiseWalkSpeed = map(value, 0, 127, 0, 0.02); // range 0 to 0.01
-	}
-	// else if (message.checkAddrPattern("/audioFrequency")) {
-	// 	float value = message.get(0).floatValue();
-	// 	audioFrequency = map(value, 0, 127, 100, 18000);				// cannot be 0
-	// }
-	// else if (message.checkAddrPattern("/audioBandwidth")) {
-	// 	float value = message.get(0).floatValue();
-	// 	audioBandwidth = map(value, 0, 127, 100, 18000);				// cannot be 0
-	// }
-	// else if (message.checkAddrPattern("/isGeneratingSound")) {
-	// 	float value = message.get(0).floatValue();
-	// 	value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-	// 	if (value == 0) toggleSound(false);						// turn DSP on
-	// 	if (value == 1) toggleSound(true);						// or off
-	// }
-	// else if (message.checkAddrPattern("/isApplyingAudioFilter")) {
-	// 	float value = message.get(0).floatValue();
-	// 	value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-	// 	if (value == 0) isApplyingAudioFilter = false;
-	// 	if (value == 1) isApplyingAudioFilter = true;
-	// }
-	else if (message.checkAddrPattern("/showDebug")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) showDebug = false;
-		if (value == 1) showDebug = true;
-	}	
-	else if (message.checkAddrPattern("/showAudioLine")) {
-		float value = message.get(0).floatValue();
-		value = map(value, 0, 127, 0, 1);						// switch between 0 and 1 with actual button value
-		if (value == 0) showAudioLine = false;
-		if (value == 1) showAudioLine = true;
+		globalBrightnessAndVolume = map(value, 0, 127, 1, 0);
 	}
 
 	// other

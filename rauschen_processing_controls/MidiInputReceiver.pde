@@ -17,80 +17,80 @@ class MidiInputReceiver implements Receiver {
 					String name = "";
 					switch(number) {
 						case 1:
-							name = "/switchTime";
+							name = "/stepChance";
 						break;
 						case 5:
-							name = "/switchTimeMultiplier";
+							name = "/stepNoiseInc";
 						break;
 						case 9:
-							name = "/isAutoMode";
+							name = "/stepDims";
 						break;
-						case 10:
-							name = "/isRandomSwitchTime";
-						break;
+						// case 10:
+						// 	name = "";
+						// break;
 						case 2:
-							name = "/sameStep";
+							name = "/noiseColorChance";
 						break;
 						case 6:
-							name = "/sameStepMultiplier";
+							name = "/noiseColorInc";
 						break;
 						case 11:
-							name = "/isNoiseColorRandomOffset";
+							name = "/noiseColorType";
 						break;
 						case 12:
-							name = "/isNoiseColorFastNoiseOffset";
-						break;
-						case 3:
-							name = "/xStep";
-						break;
-						case 7:
-							name = "/xStepMultiplier";
-						break;
-						case 13:
-							name = "/isFastNoiseColor";
-						break;
-						case 14:
 							name = "/resetFastNoiseType";
 						break;
+						case 3:
+							name = "/shaderChance";
+						break;
+						case 7:
+							name = "/shaderTimeNoiseInc";
+						break;
+						case 13:
+							name = "/isRandomShaderEachFrame";
+						break;
+						// case 14:
+						// 	name = "";
+						// break;
 						case 4:
-							name = "/yStep";
-						break;
-						case 8:
-							name = "/yStepMultiplier";
-						break;
-						case 15:
-							name = "/isShadersOnly";
-						break;
-						case 16:
-							name = "/isRandomShaderEachFrame";
-						break;
-						case 17:
-							name = "/shaderTimeMultiplier";
-						break;
-						case 21:
-							name = "/shaderTimeDivisor";
-						break;
-						case 25:
-							name = "/isShadersOnly";
-						break;
-						case 26:
-							name = "/isRandomShaderEachFrame";
-						break;
-						case 18: 
 							name = "/globalSpeedDivisor";
 						break;
-						case 22:
+						case 8:
 							name = "/globalBrightnessAndVolume";
-						break;						
-						case 19:
-							name = "/cornerNoiseWalkAmt";
 						break;
-						case 23:
-							name = "/cornerNoiseWalkSpeed";
-						break;
-						case 29:
-							name = "/isCornerNoiseWalk";
-						break;
+						// case 15:
+						// 	name = "";
+						// break;
+						// case 16:
+						// 	name = "";
+						// break;
+						// case 17:
+						// 	name = "";
+						// break;
+						// case 21:
+						// 	name = "";
+						// break;
+						// case 25:
+						// 	name = "";
+						// break;
+						// case 26:
+						// 	name = "";
+						// break;
+						// case 18: 
+						// 	name = "";
+						// break;
+						// case 22:
+						// 	name = "";
+						// break;						
+						// case 19:
+						// 	name = "";
+						// break;
+						// case 23:
+						// 	name = "";
+						// break;
+						// case 29:
+						// 	name = "";
+						// break;
 					}
 					
 					// send OSC message with the calculated value

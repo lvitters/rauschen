@@ -68,6 +68,9 @@ int yOffset = 0;
 int yOffsetRecord = 0;
 int maxIndex = width * height * 4;
 int globalSpeedDivisor = 1;
+int stepDims = 0; // 0 = x, 1 = y, 2 = both
+float stepNoiseInc = 0.01;
+float stepDimsNoiseInc = 0.01;
 
 // buffer for display
 PGraphics buffer;
@@ -124,10 +127,9 @@ color c;
 // standard Perlin noises
 ArrayList<Noise> noises = new ArrayList<Noise>();
 Noise autoAutoNoise;
-Noise xStepNoise;
-Noise yStepNoise;
+Noise stepNoise;
+Noise stepDimsNoise;
 Noise stepBiasNoise;
-Noise toggleSameStepDimsNoise;
 Noise toggleNoiseColorNoise;
 Noise redNoise;
 Noise greenNoise;
@@ -176,9 +178,7 @@ Boolean printDebug = false;
 Boolean isAutoAutoMode = false;
 Boolean isAutoMode = true;
 Boolean isRandomSwitchTime = false;
-Boolean isNoiseColorRandomOffset = false;
-Boolean isNoiseColorFastNoiseOffset = false;
-Boolean isFastNoiseColor = false;
+int pixelColorMode = 0;
 Boolean isApplyingShader = false;
 Boolean isShadersOnly = false;
 Boolean isRandomShaderEachFrame = true;
@@ -266,12 +266,10 @@ public void setup() {
 	// init NoiseInstances with starting value and increment, add to list of noises	
 	autoAutoNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(autoAutoNoise);
-	xStepNoise = new Noise(intRandom(0, 100), .01);
-	noises.add(xStepNoise);
-	yStepNoise = new Noise(intRandom(0, 100), .01);
-	noises.add(yStepNoise);
-	toggleSameStepDimsNoise = new Noise(intRandom(0, 100), 1);
-	noises.add(toggleSameStepDimsNoise);
+	stepNoise = new Noise(intRandom(0, 100), stepNoiseInc);
+	noises.add(stepNoise);
+	stepDimsNoise = new Noise(intRandom(0, 100), stepDimsNoiseInc);
+	noises.add(stepDimsNoise);
 	toggleNoiseColorNoise = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleNoiseColorNoise);
 	redNoise = new Noise(intRandom(0, 100), .001);
@@ -339,7 +337,7 @@ public void draw() {
 		if (isAutoMode) timedEvents();
 
 		// limit for performance in certain modes
-		if ((isNoiseColorRandomOffset && isNoiseColorFastNoiseOffset) || (isNoiseColorRandomOffset && isFastNoiseColor)) {
+		if (pixelColorMode >= 2) {
 			if (xStep <= 1 && yStep <= 1) {
 				xStep += 2;
 				yStep += 2;
@@ -421,7 +419,7 @@ void manipulatePixelArray() {
 	// get color in PVector (it stores three floats) for pixels or steps
 	leadingColor = new PVector(0, 0, 0);
 	// generate global color with noise
-	if (isNoiseColorRandomOffset) {
+	if (pixelColorMode > 0) {
 		// get noiseColorOffset
 		noiseColorOffsetNoise.changeInc(floatRandom(.001, .01));
 		noiseColorOffset = noiseColorOffsetNoise.getNoiseRange(0, 255);
@@ -434,7 +432,7 @@ void manipulatePixelArray() {
 		leadingColor.y = greenNoise.getNoiseRange(0, 255); 
 		leadingColor.z = blueNoise.getNoiseRange(0, 255);
 		// inc FastNoise time
-		if (isNoiseColorFastNoiseOffset) {
+		if (pixelColorMode == 2) {
 			noiseColorOffsetFastNoiseTime += noiseColorOffsetNoise.getNoiseRange(.1, 3);
 			
 			// generate random offset so texture "wobbles"
@@ -442,7 +440,7 @@ void manipulatePixelArray() {
 			yOff = noiseColorFastNoiseOffsetYNoise.getNoiseRange(-5, 5);
 		}
 		// inc fastNoiseColor times
-		if (isFastNoiseColor) {
+		if (pixelColorMode == 3) {
 			fastColorNoiseRTime += floatRandom(.1, 10);
 			fastColorNoiseGTime += floatRandom(.1, 10);
 			fastColorNoiseBTime += floatRandom(.1, 10);
@@ -462,8 +460,8 @@ void manipulatePixelArray() {
 				float nX = ((buffer.width/2.0) / 2.0f) * (1.0f - xOff) + (x / 2.0f) * xOff;
 				float nY = ((buffer.height/2.0) / 2.0f) * (1.0f - yOff) + (y / 2.0f) * yOff;
 				// apply global noise color with slight random offset for each pixel/cell
-				if (isNoiseColorRandomOffset) {
-					if (isFastNoiseColor) {
+				if (pixelColorMode > 0) {
+					if (pixelColorMode == 3) {
 						finalCellR = map(fastColorNoiseR.GetNoise(nX, nY, fastColorNoiseRTime), -1, 1, 0, 255);
 						finalCellG = map(fastColorNoiseG.GetNoise(nX, nY, fastColorNoiseGTime), -1, 1, 0, 255);
 						finalCellB = map(fastColorNoiseB.GetNoise(nX, nY, fastColorNoiseBTime), -1, 1, 0, 255);
@@ -474,8 +472,8 @@ void manipulatePixelArray() {
 						finalCellB = leadingColor.z;
 						// change only one value per pixel and constrain to rgb
 						int rand = intRandom(1, 3);
-						if (!isNoiseColorFastNoiseOffset) colorOffset = floatRandom(-noiseColorOffset, noiseColorOffset + 1);
-						else if (isNoiseColorFastNoiseOffset) colorOffset = map(noiseColorOffsetFastNoise.GetNoise(nX, nY, noiseColorOffsetFastNoiseTime), -1, 1, -255, 255);
+						if (pixelColorMode == 1) colorOffset = floatRandom(-noiseColorOffset, noiseColorOffset + 1);
+						else if (pixelColorMode == 2) colorOffset = map(noiseColorOffsetFastNoise.GetNoise(nX, nY, noiseColorOffsetFastNoiseTime), -1, 1, -255, 255);
 						// set to one channel per frame
 						if (rand == 1) 	{
 							finalCellR += colorOffset;
@@ -520,21 +518,27 @@ void manipulatePixelArray() {
 void setNewGridWithNoise() {
 
 	// get new step close to old step with noise, bias towards lower numbers
-	xStep = (int)xStepNoise.getVariableNoiseRange(-maxStep/2, 0, maxStep/2, maxStep, 2);
-	yStep = (int)yStepNoise.getVariableNoiseRange(-maxStep/2, 0, maxStep/2, maxStep, 2);
+	int nextStepValue = (int)stepNoise.getVariableNoiseRange(-maxStep/2, 0, maxStep/2, maxStep, 2);
 
-	// cutoff at minimum step size and apply
-	if (xStep < minStep) xStep = minStep;
-	if (yStep < minStep) yStep = minStep;
+	// cutoff at minimum step size
+	if (nextStepValue < minStep) nextStepValue = minStep;
 
-	if (printDebug) println("setNewGridWithNoise(): xStep: " + xStep + " yStep: " + yStep);
-
-	// determine if step should be the same in both dimensions
-	if (toggleSameStepDimsNoise.getNoiseBool(-4, 3)) {
-		// apply same step to both dimensions
-		yStep = xStep;
-		if (printDebug) println("setNewGridWithNoise(): same step");
+	// determine if step should be the same in both dimensions with noise
+	if (stepDimsNoise.getNoiseBool(-4, 3)) {
+		stepDims = 2; // both
 	}
+
+	// apply to dimensions based on stepDims
+	if (stepDims == 0) {
+		xStep = nextStepValue;
+	} else if (stepDims == 1) {
+		yStep = nextStepValue;
+	} else if (stepDims == 2) {
+		xStep = nextStepValue;
+		yStep = nextStepValue;
+	}
+
+	if (printDebug) println("setNewGridWithNoise(): xStep: " + xStep + " yStep: " + yStep + " stepDims: " + stepDims);
 
 	determineRandomOffset(xStep, yStep);
 }
@@ -780,6 +784,7 @@ void chooseEvent(int event) {
 	switch (event) {
 		case 0:
 			if (!isApplyingShader) {
+				stepDims = intRandom(0, 2);
 				setNewGridWithNoise();
 			} else {
 				resizeBuffer(intRandom(width/4, width), intRandom(height/4, height));
@@ -794,19 +799,11 @@ void chooseEvent(int event) {
 			resizeBuffer(width, height);
 		break;
 		case 2:
-			isNoiseColorRandomOffset = toggleNoiseColorNoise.getNoiseBool(-1, 1);
-		break;
 		case 3:
-			// set new noise type and apply (use toggleNoiseColorNoise because isNoiseColorFastNoiseOffset 
-			// only works when isNoiseColorRandomOffset - previously isNoiseColor - is true anyways)
-			isNoiseColorFastNoiseOffset = toggleNoiseColorNoise.getNoiseBool(-1, 1);
-			resetFastNoiseType();
-		break;
 		case 4:
-			// set new noise type and apply (set isNoiseCOlorFastNoiseOffset to opposite of isFastNoiseColor because only of them can be on)
-			isFastNoiseColor = toggleNoiseColorNoise.getNoiseBool(-1, 1);
-			isNoiseColorFastNoiseOffset = !isFastNoiseColor;
-			resetFastNoiseType();
+			// choose a random color mode (0 to 3)
+			pixelColorMode = intRandom(0, 3);
+			if (pixelColorMode >= 2) resetFastNoiseType();
 		break;
 		case 5:
 			isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1.5);

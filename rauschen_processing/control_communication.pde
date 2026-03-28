@@ -20,15 +20,25 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/fps").add((int)frameRate), controlSketchLocation);
     oscP5.send(new OscMessage("/info/xStep").add(xStep), controlSketchLocation);
     oscP5.send(new OscMessage("/info/yStep").add(yStep), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/stepDims").add(stepDims), controlSketchLocation);
+    String stepDimsStr = "x";
+    if (stepDims == 1) stepDimsStr = "y";
+    else if (stepDims == 2) stepDimsStr = "both";
+    oscP5.send(new OscMessage("/info/stepDimsStr").add(stepDimsStr), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/stepNoiseInc").add(stepNoiseInc), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/stepDimsNoiseInc").add(stepDimsNoiseInc), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isAutoAutoMode").add(isAutoAutoMode ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isAutoMode").add(isAutoMode ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/nextEvent").add(nextEvent), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isRandomSwitchTime").add(isRandomSwitchTime ? 1 : 0), controlSketchLocation);
-    oscP5.send(new OscMessage("/info/isNoiseColorRandomOffset").add(isNoiseColorRandomOffset ? 1 : 0), controlSketchLocation);
-    oscP5.send(new OscMessage("/info/isNoiseColorFastNoiseOffset").add(isNoiseColorFastNoiseOffset ? 1 : 0), controlSketchLocation);
-    if ((!isNoiseColorFastNoiseOffset && !isFastNoiseColor) || isApplyingShader) oscP5.send(new OscMessage("/info/fastNoiseType").add("none"), controlSketchLocation);
+    oscP5.send(new OscMessage("/info/pixelColorMode").add(pixelColorMode), controlSketchLocation);
+    String pixelColorModeStr = "random";
+    if (pixelColorMode == 1) pixelColorModeStr = "noiseColorRandomOffset";
+    else if (pixelColorMode == 2) pixelColorModeStr = "noiseColorFastNoiseOffset";
+    else if (pixelColorMode == 3) pixelColorModeStr = "fastNoiseColor";
+    oscP5.send(new OscMessage("/info/pixelColorModeStr").add(pixelColorModeStr), controlSketchLocation);
+    if (pixelColorMode < 2 || isApplyingShader) oscP5.send(new OscMessage("/info/fastNoiseType").add("none"), controlSketchLocation);
 	else oscP5.send(new OscMessage("/info/fastNoiseType").add(fastNoiseType.toString()), controlSketchLocation);
-    oscP5.send(new OscMessage("/info/isFastNoiseColor").add(isFastNoiseColor ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isApplyingShader").add(isApplyingShader ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isRandomShaderEachFrame").add(isRandomShaderEachFrame ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/shaderTime").add(shaderTime), controlSketchLocation);
@@ -73,6 +83,12 @@ void oscEvent(OscMessage message) {
 	else if (message.checkAddrPattern("/stepNoiseInc")) {
 		float value = message.get(0).floatValue();
 		stepNoiseInc = map(value, 0, 127, 0, 1);
+		stepNoise.changeInc(stepNoiseInc);
+	}
+	else if (message.checkAddrPattern("/stepDimsNoiseInc")) {
+		float value = message.get(0).floatValue();
+		stepDimsNoiseInc = map(value, 0, 127, 0, 1);
+		stepDimsNoise.changeInc(stepDimsNoiseInc);
 	}
 	else if (message.checkAddrPattern("/stepDims")) {
 		stepDims += 1;
@@ -88,19 +104,19 @@ void oscEvent(OscMessage message) {
 		float value = message.get(0).floatValue();
 		noiseColorChance = map(value, 0, 127, 0, 1);
 	}
-	else if (message.checkAddrPattern("/noiseColorType")) {
-		noiseColorType += 1;
-		if (noiseColorType > 3) {
-			noiseColorType = 0;
+	else if (message.checkAddrPattern("/pixelColorMode")) {
+		pixelColorMode += 1;
+		if (pixelColorMode > 3) {
+			pixelColorMode = 0;
 		}
 	}
 	else if (message.checkAddrPattern("/resetFastNoiseType")) {
 		resetFastNoiseType();
 	}	
-	else if (message.checkAddrPattern("/shaderTimeNoiseInc")) {
-		float value = message.get(0).floatValue();
-		shaderTimeNoiseInc = map(value, 0, 127, 0, 1);
-	}	
+	// else if (message.checkAddrPattern("/shaderTimeNoiseInc")) {
+	// 	float value = message.get(0).floatValue();
+	// 	shaderTimeNoiseInc = map(value, 0, 127, 0, 1);
+	// }	
 	else if (message.checkAddrPattern("/isRandomShaderEachFrame")) {
 		isRandomShaderEachFrame = !isRandomShaderEachFrame;
 	}

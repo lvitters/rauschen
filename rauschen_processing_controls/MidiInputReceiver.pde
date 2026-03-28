@@ -35,7 +35,7 @@ class MidiInputReceiver implements Receiver {
 							name = "/noiseColorInc";
 						break;
 						case 11:
-							name = "/noiseColorType";
+							name = "/pixelColorMode";
 						break;
 						case 12:
 							name = "/resetFastNoiseType";

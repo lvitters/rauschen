@@ -25,14 +25,11 @@ class MidiInputReceiver implements Receiver {
 						case 9:
 							name = "/stepDims";
 						break;
-						// case 10:
-						// 	name = "";
-						// break;
 						case 2:
-							name = "/noiseColorChance";
+							name = "/pixelColorModeChance";
 						break;
 						case 6:
-							name = "/noiseColorInc";
+							name = "/noiseColorOffsetInc";
 						break;
 						case 11:
 							name = "/pixelColorMode";
@@ -49,48 +46,18 @@ class MidiInputReceiver implements Receiver {
 						case 13:
 							name = "/isRandomShaderEachFrame";
 						break;
-						// case 14:
-						// 	name = "";
-						// break;
 						case 4:
-							name = "/globalSpeedDivisor";
+							name = "/nextEvent";
 						break;
 						case 8:
-							name = "/globalBrightnessAndVolume";
+							name = "/globalSpeedDivisor";
 						break;
-						// case 15:
-						// 	name = "";
-						// break;
-						// case 16:
-						// 	name = "";
-						// break;
-						// case 17:
-						// 	name = "";
-						// break;
-						// case 21:
-						// 	name = "";
-						// break;
-						// case 25:
-						// 	name = "";
-						// break;
-						// case 26:
-						// 	name = "";
-						// break;
-						// case 18: 
-						// 	name = "";
-						// break;
-						// case 22:
-						// 	name = "";
-						// break;						
-						// case 19:
-						// 	name = "";
-						// break;
-						// case 23:
-						// 	name = "";
-						// break;
-						// case 29:
-						// 	name = "";
-						// break;
+						case 15:
+							name = "/isRandomMode";
+						break;
+						case 16:
+							name = "/isRandomSwitchTime";
+						break;
 					}
 					
 					// send OSC message with the calculated value

@@ -62,15 +62,13 @@ int nextY = 1;
 float xStepMultiplier = 1;							// has to start at 1
 float yStepMultiplier = 1;							// has to start at 1
 Boolean stepUpdatedManually = false;
+float stepDims;
 int xOffset = 0;
 int xOffsetRecord = 0;
 int yOffset = 0;
 int yOffsetRecord = 0;
 int maxIndex = width * height * 4;
 int globalSpeedDivisor = 1;
-int stepDims = 0; // 0 = x, 1 = y, 2 = both
-float stepNoiseInc = 0.01;
-float stepDimsNoiseInc = 0.01;
 
 // buffer for display
 PGraphics buffer;
@@ -102,6 +100,7 @@ int shaderChoice = -1;
 int lastShaderChoice;
 float shaderTimeMultiplier = 1;
 float shaderTimeDivisor = 1;
+float shaderTimeNoiseInc = 0.01;
 String[] shaderNames = {
 		"250408_RectangularCells.glsl", 
 		"250430_GameOfLife.glsl",
@@ -126,7 +125,6 @@ color c;
 
 // standard Perlin noises
 ArrayList<Noise> noises = new ArrayList<Noise>();
-Noise autoAutoNoise;
 Noise stepNoise;
 Noise stepDimsNoise;
 Noise stepBiasNoise;
@@ -175,8 +173,7 @@ Boolean showDebug = false;
 boolean stopped = false;
 Boolean showAudioLine = false;
 Boolean printDebug = false;
-Boolean isAutoAutoMode = false;
-Boolean isAutoMode = true;
+Boolean isRandomMode = false;
 Boolean isRandomSwitchTime = false;
 int pixelColorMode = 0;
 Boolean isApplyingShader = false;
@@ -190,16 +187,15 @@ float globalBrightnessAndVolume = 1.0f;
 
 // timed events
 float switchTime = 1;
-float minSwitchTime = 0;
-float maxSwitchTime = 1;
-float switchTimeMultiplier = 0;
 float nextEvent = 1;		// init with 1 second
 float eventCounter = 0;
 long lastAudioBufferUpdateTime = 0;
 
 // chances
 float stepChance = 0;
-float noiseColorChance = 0;
+float stepNoiseInc = 0.01;
+float pixelColorModeChance = 0;
+float noiseColorOffsetInc = 0.01;
 float shaderChance = 0;
 
 // communication with control sketch
@@ -264,11 +260,9 @@ public void setup() {
 	}
 
 	// init NoiseInstances with starting value and increment, add to list of noises	
-	autoAutoNoise = new Noise(intRandom(0, 100), .001);
-	noises.add(autoAutoNoise);
-	stepNoise = new Noise(intRandom(0, 100), stepNoiseInc);
+	stepNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(stepNoise);
-	stepDimsNoise = new Noise(intRandom(0, 100), stepDimsNoiseInc);
+	stepDimsNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(stepDimsNoise);
 	toggleNoiseColorNoise = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleNoiseColorNoise);
@@ -278,11 +272,11 @@ public void setup() {
 	noises.add(greenNoise);
 	blueNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(blueNoise);
-	noiseColorOffsetNoise = new Noise(intRandom(0, 100), .001);
+	noiseColorOffsetNoise = new Noise(intRandom(0, 100), noiseColorOffsetInc);
 	noises.add(noiseColorOffsetNoise);
 	toggleShader = new Noise(intRandom(0, 100), 1);
 	noises.add(toggleShader);
-	shaderTimeNoise = new Noise(intRandom(0, 100), .01);
+	shaderTimeNoise = new Noise(intRandom(0, 100), shaderTimeNoiseInc);
 	noises.add(shaderTimeNoise);
 	toggleRandomShaderEachFrameNoise = new Noise(intRandom(0, 100), .01);
 	noises.add(toggleRandomShaderEachFrameNoise);
@@ -334,7 +328,8 @@ public void draw() {
 	if (!stopped) {
 
 		// handle any timed events first because it may affect the pixel array manipulation
-		if (isAutoMode) timedEvents();
+		if (isRandomMode) randomEvents();
+		else chanceEvents();
 
 		// limit for performance in certain modes
 		if (pixelColorMode >= 2) {
@@ -421,7 +416,7 @@ void manipulatePixelArray() {
 	// generate global color with noise
 	if (pixelColorMode > 0) {
 		// get noiseColorOffset
-		noiseColorOffsetNoise.changeInc(floatRandom(.001, .01));
+		noiseColorOffsetNoise.changeInc(noiseColorOffsetInc);
 		noiseColorOffset = noiseColorOffsetNoise.getNoiseRange(0, 255);
 		// increment noise
 		redNoise.changeInc(floatRandom(.001, .01));
@@ -523,18 +518,13 @@ void setNewGridWithNoise() {
 	// cutoff at minimum step size
 	if (nextStepValue < minStep) nextStepValue = minStep;
 
-	// determine if step should be the same in both dimensions with noise
-	if (stepDimsNoise.getNoiseBool(-4, 3)) {
-		stepDims = 2; // both
-	}
-
 	// apply to dimensions based on stepDims
-	if (stepDims == 0) {
+	if ((int)stepDims == 0) {
 		xStep = nextStepValue;
-	} else if (stepDims == 1) {
+	} else if ((int)stepDims == 1) {
+		xStep = nextStepValue;
 		yStep = nextStepValue;
-	} else if (stepDims == 2) {
-		xStep = nextStepValue;
+	} else if ((int)stepDims == 2) {
 		yStep = nextStepValue;
 	}
 
@@ -568,7 +558,8 @@ void applyShader(int shader) {
 	}
 
 	// apply shader time (like T in noise)
-    shaderTime += (shaderTimeNoise.getNoiseRange(.05, .3) * shaderTimeMultiplier) * shaderTimeDivisor;
+	shaderTimeNoise.changeInc(shaderTimeNoiseInc);
+    shaderTime += shaderTimeNoise.getNoiseRange(0, shaderTimeNoiseInc * 10.0f);
     shaders.get(shader).set("u_time", shaderTime);
 
     // set resolution uniform just in case it wasn't set universally or needs update
@@ -755,64 +746,96 @@ public void resizeBuffer(float w, float h) {
 }
 
 // choose a random event after a random interval, or set the time until the next event to switchTime
-void timedEvents() {
+void randomEvents() {
+	if (!isRandomSwitchTime) nextEvent = switchTime;
 	eventCounter++;
-	// if manual switch time
-	if (!isRandomSwitchTime) {
-		if (!isAutoAutoMode) {
-			nextEvent = switchTime + (switchTime * switchTimeMultiplier);
-		// if isAutoAutoMode, make nextEvent be dependant on noise, but use switchtime for controlling amount
-		} else {
-			// println(switchTime * switchTimeMultiplier);
-			nextEvent = autoAutoNoise.getNoiseRange(- (switchTime + switchTimeMultiplier) / 2,  switchTime * switchTimeMultiplier);
-			if (nextEvent < 0) nextEvent = 0;
-		}
-	}
 	// apply
 	if (eventCounter > (nextEvent * frameRate)) {
-		chooseEvent(intRandom(0, 5));
-		if (maxSwitchTime > minSwitchTime) nextEvent = floatRandom(minSwitchTime + (minSwitchTime * switchTimeMultiplier), maxSwitchTime + (maxSwitchTime * switchTimeMultiplier));
-		else nextEvent = 0;
+		audioSamplingMode = intRandom(0, 2);	// choose new audio line orientation
+		int event = intRandom(0, 3);
+		switch (event) {
+			// set new grid, resizeBuffer is applying shader
+			case 0:
+				if (!isApplyingShader) {
+					stepDims = intRandom(0, 2);
+					setNewGridWithNoise();
+					if (printDebug) println("randomEvents(): set new grid");
+				} else {
+					resizeBuffer(intRandom(width/4, width), intRandom(height/4, height));
+					if (printDebug) println("randomEvents(): resizeBuffer");
+				}
+			break;
+			// switch between shaders or no shaders
+			case 1:
+				isApplyingShader = toggleShader.getNoiseBool(-1, 1);
+				if (isApplyingShader) {
+					if (printDebug) println("randomEvents(): applying shader");
+					tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
+				}
+				resizeBuffer(width, height);
+			break;
+			// choose a new colorMode
+			case 2:
+				// choose a random color mode (0 to 3)
+				pixelColorMode = intRandom(0, 3);
+				if (pixelColorMode >= 2) resetFastNoiseType();
+			break;
+			// turn randomShaderEachFrame on or off
+			case 3:
+				isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1.5);
+				if (isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();
+			break;
+		}
+		calculateNextInterval();
 		eventCounter = 0;
 	}
 }
 
-// switch between which events to fire
-void chooseEvent(int event) {
-	if (printDebug) println("chooseEvent(): event: " + event);
-	audioSamplingMode = intRandom(0, 2);	// choose new audio line orientation
-	switch (event) {
-		case 0:
-			if (!isApplyingShader) {
-				stepDims = intRandom(0, 2);
+// choose an event according to its chance after a random interval, or set the time until the next event to switchTime
+void chanceEvents() {
+	if (!isRandomSwitchTime) nextEvent = switchTime;
+	eventCounter++;
+	// apply
+	if (eventCounter > (nextEvent * frameRate)) {
+		audioSamplingMode = intRandom(0, 2);	// choose new audio line orientation
+		// decide which event to fire based on chances
+		float total = stepChance + pixelColorModeChance + shaderChance;
+		if (total > 0) {
+			float r = floatRandom(0, total);
+			if (r < stepChance) {
+				if (printDebug) println("chanceEvents(): step event");
+				isApplyingShader = false; // favor seeing the steps
+				stepDimsNoise.changeInc(stepNoiseInc);	//get from stepNoiseInc
+				stepDims = stepDimsNoise.getNoiseRange(0, 3);
 				setNewGridWithNoise();
+				resizeBuffer(width, height);
+			} else if (r < stepChance + pixelColorModeChance) {
+				if (printDebug) println("chanceEvents(): color mode event");
+				isApplyingShader = false; // favor seeing the colors
+				pixelColorMode = intRandom(0, 3);
+				if (pixelColorMode >= 2) resetFastNoiseType();
 			} else {
-				resizeBuffer(intRandom(width/4, width), intRandom(height/4, height));
-			}
-		break;
-		case 1:
-			isApplyingShader = toggleShader.getNoiseBool(-1, 1);
-			if (isApplyingShader) {
-				if (printDebug) println("chooseEvent(): applying shader");
+				if (printDebug) println("chanceEvents(): shader event");
+				isApplyingShader = true; // favor applying shaders
 				tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
+				resizeBuffer(width, height);
+				// randomly toggle random shader each frame
+				isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1.5);
+				if (isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();
 			}
-			resizeBuffer(width, height);
-		break;
-		case 2:
-		case 3:
-		case 4:
-			// choose a random color mode (0 to 3)
-			pixelColorMode = intRandom(0, 3);
-			if (pixelColorMode >= 2) resetFastNoiseType();
-		break;
-		case 5:
-			isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1.5);
-			if (isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();
-		break;
+		}
+		calculateNextInterval();
+		eventCounter = 0;
 	}
 }
 
-void chanceEvents() {}
+void calculateNextInterval() {
+	if (isRandomSwitchTime) {
+		nextEvent = floatRandom(0, switchTime);
+	} else {
+		nextEvent = switchTime;
+	}
+}
 
 // take a screenshot with date and time to special path
 void takeScreenshot() {
@@ -875,7 +898,7 @@ void showDebug() {
 			fill(255, 255, 255);
 			textSize(25);
 			text("fps: " + (int) frameRate, 10, 30);
-			text("isAutoMode: " + isAutoMode, 10, 55);
+			text("isRandomMode: " + isRandomMode, 10, 55);
 		translate(-80, 0);
 }
 
@@ -910,15 +933,11 @@ void keyPressed() {
 	}
 	// use auto mode or not
 	if (key == 'a') {
-		isAutoMode = !isAutoMode;
-	}
-	// use auto auto mode or not
-	if (key == 'y') {
-		isAutoAutoMode = !isAutoAutoMode;
+		isRandomMode = !isRandomMode;
 	}
 	// switch to next mode now!
 	if (key == 's') {
-		chooseEvent(intRandom(0, 6));
+		eventCounter = nextEvent * frameRate + 1;
 	}
 	// stop noise (audio)
 	if (key == 'n') {

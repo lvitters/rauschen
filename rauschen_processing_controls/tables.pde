@@ -33,7 +33,7 @@ public void displayInfoTables() {
         textSize(textSize); // adjust text size for better fit
 
         ArrayList<String> keys = new ArrayList<String>(debugInfo.keySet());
-        java.util.Collections.sort(keys);
+        // java.util.Collections.sort(keys); // alphabetical sorting removed to preserve insertion order
 
         // calculate debug table height
         float headerTextY_debug = currentTopY + internalPadding + 3;

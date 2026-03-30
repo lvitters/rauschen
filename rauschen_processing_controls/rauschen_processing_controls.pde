@@ -69,8 +69,11 @@ ArrayList<Graph> graphs = new ArrayList<Graph>();
 // number of historical points to show in each graph
 int graphLength = 600;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 // HashMap to store debugInfo values
-HashMap<String, Object> debugInfo = new HashMap<String, Object>();
+LinkedHashMap<String, Object> debugInfo = new LinkedHashMap<String, Object>();
 
 // print debug messages or not (this is different from the debug info table);
 Boolean printDebug = false;

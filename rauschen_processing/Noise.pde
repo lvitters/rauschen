@@ -49,6 +49,13 @@ class Noise {
 		return map(biasedValue, 0, 1, low, high);
 	}
 
+	// return boolean according to noise range, >0 is true
+	boolean getNoiseBool(float low, float high) {
+		compute();
+		float range = map(value, 0, 1, low, high);
+		return range > 0;
+	}
+
 	// compute and return noise range where low and high bounds are a range as well
 	float getVariableNoiseRange(float low, float lo, float hi, float high) {
 		return getNoiseRange(
@@ -64,12 +71,5 @@ class Noise {
 			getNoiseRange(hi, high), 
 			bias
 		);
-	}
-
-	// return boolean according to noise range, >0 is true
-	boolean getNoiseBool(float low, float high) {
-		compute();
-		float range = map(value, 0, 1, low, high);
-		return range > 0;
 	}
 }

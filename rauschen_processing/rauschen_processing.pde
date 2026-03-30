@@ -646,105 +646,6 @@ void resetFastNoiseType() {
 	fastColorNoiseB.SetNoiseType(fastNoiseType);
 }
 
-// resize buffer for "zooming into" shader, similar to grid step being higher in manipulatePixelArray()
-public void resizeBuffer(float w, float h) {
-    int newW = (int)w;
-    int newH = (int)h;
-
-    // exit if size hasn't actually changed
-    if (buffer != null && buffer.width == newW && buffer.height == newH) {
-        return;
-    }
-    
-    if (printDebug) println("resizeBuffer(): resizing buffers to: " + newW + "x" + newH + " with content preservation.");
-
-    // store references to the current buffers
-    PGraphics oldBuffer = buffer; 
-    PGraphics oldTempBuffer = tempBuffer;
-
-    // create NEW buffers
-    PGraphics newBuffer = createGraphics(newW, newH, P2D);
-    PGraphics newTempBuffer = createGraphics(newW, newH, P2D);
-
-    // copy content based on resize type
-	// determine if zooming in or out (or same size)
-	boolean zoomIn = (newW < oldBuffer.width || newH < oldBuffer.height);
-	boolean zoomOut = (newW > oldBuffer.width || newH > oldBuffer.height) && !zoomIn; 
-	
-	// also copy state for tempBuffer if it's valid
-	boolean copyTemp = (oldTempBuffer != null && oldTempBuffer.width > 0 && oldTempBuffer.height > 0);
-	if (!copyTemp) println("warning: oldTempBuffer invalid, cannot preserve its state for resize.");
-
-	// zoom in: crop central region from old buffers
-	if (zoomIn) {
-		if (printDebug) println("zooming IN (cropping center)");
-		
-		int sWidth = newW; 
-		int sHeight = newH;
-		int sx = (oldBuffer.width - sWidth) / 2;
-		int sy = (oldBuffer.height - sHeight) / 2;
-		sx = max(0, sx);
-		sy = max(0, sy);
-		sWidth = min(sWidth, oldBuffer.width - sx); 
-		sHeight = min(sHeight, oldBuffer.height - sy);
-
-		newBuffer.beginDraw();
-			newBuffer.copy(oldBuffer, sx, sy, sWidth, sHeight, 0, 0, newW, newH);
-		newBuffer.endDraw();
-		
-		if (copyTemp) {
-			newTempBuffer.beginDraw();
-				newTempBuffer.copy(oldTempBuffer, sx, sy, sWidth, sHeight, 0, 0, newW, newH);
-			newTempBuffer.endDraw();
-		}
-
-	// zoom out: stretch old image to fit new, larger buffer
-	} else if (zoomOut) {
-		if (printDebug) println("zooming OUT (stretching)"); 
-
-		// draw old content stretched onto the entire new buffer
-		newBuffer.beginDraw();
-			// tell image() to draw oldBuffer onto the destination rect (0,0) to (newW, newH)
-			newBuffer.image(oldBuffer, 0, 0, newW, newH); // stretches oldBuffer
-		newBuffer.endDraw();
-		
-		if (copyTemp) {
-			newTempBuffer.beginDraw();
-				// also stretch old temp buffer content
-				newTempBuffer.image(oldTempBuffer, 0, 0, newW, newH); // tretches oldTempBuffer
-			newTempBuffer.endDraw();
-		}
-		
-	} else {
-		// same size: direct copy
-		println("copying content (same size)");
-		newBuffer.beginDraw();
-			newBuffer.image(oldBuffer, 0, 0, newW, newH); // use image or copy
-		newBuffer.endDraw();
-		
-		if (copyTemp) {
-			newTempBuffer.beginDraw();
-				newTempBuffer.image(oldTempBuffer, 0, 0, newW, newH); // use image or copy
-			newTempBuffer.endDraw();
-		}
-	}
-
-
-    // replace main references with the newly created and filled buffers
-    buffer = newBuffer;
-    tempBuffer = newTempBuffer;
-
-    // dispose the old buffers after content is copied
-    if (oldBuffer != null) {
-        oldBuffer.dispose();
-    }
-    if (oldTempBuffer != null) {
-        oldTempBuffer.dispose();
-    }
-
-    if (printDebug) println("buffers resized successfully with content preservation (crop/stretch).");
-}
-
 // choose a random event after a random interval, or set the time until the next event to switchTime
 void randomEvents() {
 	if (!isRandomSwitchTime) nextEvent = switchTime;
@@ -756,14 +657,9 @@ void randomEvents() {
 		switch (event) {
 			// set new grid, resizeBuffer is applying shader
 			case 0:
-				if (!isApplyingShader) {
-					stepDims = intRandom(0, 2);
-					setNewGridWithNoise();
-					if (printDebug) println("randomEvents(): set new grid");
-				} else {
-					resizeBuffer(intRandom(width/4, width), intRandom(height/4, height));
-					if (printDebug) println("randomEvents(): resizeBuffer");
-				}
+				stepDims = intRandom(0, 2);
+				setNewGridWithNoise();
+				if (printDebug) println("randomEvents(): set new grid");
 			break;
 			// switch between shaders or no shaders
 			case 1:
@@ -772,7 +668,6 @@ void randomEvents() {
 					if (printDebug) println("randomEvents(): applying shader");
 					tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
 				}
-				resizeBuffer(width, height);
 			break;
 			// choose a new colorMode
 			case 2:
@@ -808,7 +703,6 @@ void chanceEvents() {
 				stepDimsNoise.changeInc(stepNoiseInc);	//get from stepNoiseInc
 				stepDims = stepDimsNoise.getNoiseRange(0, 3);
 				setNewGridWithNoise();
-				resizeBuffer(width, height);
 			} else if (r < stepChance + pixelColorModeChance) {
 				if (printDebug) println("chanceEvents(): color mode event");
 				isApplyingShader = false; // favor seeing the colors
@@ -818,7 +712,6 @@ void chanceEvents() {
 				if (printDebug) println("chanceEvents(): shader event");
 				isApplyingShader = true; // favor applying shaders
 				tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
-				resizeBuffer(width, height);
 				// randomly toggle random shader each frame
 				isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1.5);
 				if (isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();
@@ -829,8 +722,9 @@ void chanceEvents() {
 	}
 }
 
+// calculate next interval for events
 void calculateNextInterval() {
-	if (isRandomSwitchTime) {
+	if (isRandomSwitchTime && switchTime > 0) {
 		nextEvent = floatRandom(0, switchTime);
 	} else {
 		nextEvent = switchTime;

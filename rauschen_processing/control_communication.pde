@@ -84,7 +84,7 @@ void oscEvent(OscMessage message) {
 	}
 	else if (message.checkAddrPattern("/stepNoiseInc")) {
 		float value = message.get(0).floatValue();
-		stepNoiseInc = map(value, 0, 127, 0, .05);
+		stepNoiseInc = map(value, 0, 127, 0, .01);
 		stepNoise.changeInc(stepNoiseInc);
 	}
 	else if (message.checkAddrPattern("/stepDims")) {
@@ -140,6 +140,17 @@ void oscEvent(OscMessage message) {
 	else if (message.checkAddrPattern("/globalBrightnessAndVolume")) {
 		float value = message.get(0).floatValue();
 		globalBrightnessAndVolume = map(value, 0, 127, 1, 0);
+	}
+	else if (message.checkAddrPattern("/isCornerNoiseWalk")) {
+		isCornerNoiseWalk = !isCornerNoiseWalk;
+	}
+	else if (message.checkAddrPattern("/cornerNoiseWalkAmt")) {
+		float value = message.get(0).floatValue();
+		cornerNoiseWalkAmt = map(value, 0, 127, 0, max(windowWidth, windowHeight));
+	}
+	else if (message.checkAddrPattern("/cornerNoiseWalkSpeed")) {
+		float value = message.get(0).floatValue();
+		cornerNoiseWalkSpeed = map(value, 0, 127, 0, 0.02);
 	}
 
 	// other

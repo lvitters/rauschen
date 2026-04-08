@@ -24,8 +24,8 @@ int screenshotWidth = 1000;
 int displayMode = 0;
 
 // window for displayMode 1
-int windowWidth = 1200;
-int windowHeight = 1200;
+int windowWidth = width + 200;
+int windowHeight = height + 200;
 Window newtWindow = null;
 EDTUtil edtUtil = null;
 volatile boolean isCurrentlyUndecorated = false;
@@ -57,8 +57,6 @@ int maxStep = width;
 int minStep = 2;									// minimum step size to mitigate moiré or performance
 int xStep = 1;
 int yStep = 1;
-int nextX = 1;
-int nextY = 1;
 float xStepMultiplier = 1;							// has to start at 1
 float yStepMultiplier = 1;							// has to start at 1
 Boolean stepUpdatedManually = false;
@@ -179,7 +177,7 @@ Boolean isRandomShaderEachFrame = true;
 Boolean isGeneratingSound = true;
 Boolean isApplyingAudioFilter = true;
 Boolean isTakingScreenshots = true;
-Boolean isEvenOffset = false;
+Boolean isEvenOffset = true;
 float globalBrightnessAndVolume = 1.0f;
 
 // timed events
@@ -400,14 +398,6 @@ public void draw() {
 
 // apply from setNewGridWithNoise() to the pixel array 
 void manipulatePixelArray() {
-	// update steps from controller, if there are new steps
-	if (stepUpdatedManually) {
-		xStep = (int) (nextX * xStepMultiplier);
-		yStep = (int) (nextY * yStepMultiplier);
-		stepUpdatedManually = false;
-		if (isEvenOffset) determineEvenOffset(xStep, yStep);
-		else determineRandomOffset(xStep, yStep);
-	}
 	// get color in PVector (it stores three floats) for pixels or steps
 	leadingColor = new PVector(0, 0, 0);
 	// generate global color with noise
@@ -507,6 +497,13 @@ void manipulatePixelArray() {
 		}
 	buffer.updatePixels();
 }
+// updateSteps
+void updateSteps(int nextX, int nextY) {
+	xStep = nextX;
+	yStep = nextY;
+	if (isEvenOffset) determineEvenOffset(xStep, yStep);
+	else determineRandomOffset(xStep, yStep);
+}
 
 // set canvas and sketch to a new resolution
 void setNewGridWithNoise() {
@@ -529,7 +526,7 @@ void setNewGridWithNoise() {
 
 	if (printDebug) println("setNewGridWithNoise(): xStep: " + xStep + " yStep: " + yStep + " stepDims: " + stepDims);
 
-	determineRandomOffset(xStep, yStep);
+	updateSteps(xStep, yStep);
 }
 
 // determine offset for first iteration of manipulatePixels() that is of random size of the cuttoff cell
@@ -651,7 +648,6 @@ void randomEvents() {
 	eventCounter++;
 	// apply
 	if (eventCounter > (nextEvent * frameRate)) {
-		audioSamplingMode = intRandom(0, 2);	// choose new audio line orientation
 		int event = intRandom(0, 3);
 		switch (event) {
 			// set new grid
@@ -692,7 +688,6 @@ void chanceEvents() {
 	eventCounter++;
 	// apply
 	if (eventCounter > (nextEvent * frameRate)) {
-		audioSamplingMode = intRandom(0, 2);	// choose new audio line orientation
 		// decide which event to fire based on chances
 		float total = stepChance + pixelColorModeChance + shaderChance;
 		if (total > 0) {
@@ -714,15 +709,15 @@ void chanceEvents() {
 				isApplyingShader = true; // favor applying shaders
 				tempBuffer.copy(buffer, 0, 0, buffer.width, buffer.height, 0, 0, tempBuffer.width, tempBuffer.height);
 				// randomly toggle random shader each frame
-				isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1.5);
+				isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1);
 				if (isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();
 			}
 		// everything on neutral
-		} else {
-			xStep = minStep;
-			yStep = minStep;
+		} else if (total == 0) {
+			if (printDebug) println("chanceEvents(): neutral");
 			isApplyingShader = false;
 			pixelColorMode = 0;
+			updateSteps(minStep, minStep);
 		}
 		calculateNextInterval();
 		eventCounter = 0;

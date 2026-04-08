@@ -58,6 +58,27 @@ class MidiInputReceiver implements Receiver {
 						case 16:
 							name = "/isRandomSwitchTime";
 						break;
+						case 22:
+							name = "/globalBrightnessAndVolume";
+						break;
+						case 19:
+							name = "/cornerNoiseWalkSpeed";
+						break;
+						case 23:
+							name = "/cornerNoiseWalkAmt";
+						break;
+						case 29:
+							name = "/isCornerNoiseWalk";
+						break;
+						case 20:
+							name = "/nextEvent";
+						break;
+						case 24:
+							name = "/globalSpeedDivisor";
+						break;
+						case 31:
+							name = "/isRandomMode";
+						break;
 					}
 					
 					// send OSC message with the calculated value

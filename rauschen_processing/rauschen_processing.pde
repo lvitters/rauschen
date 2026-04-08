@@ -108,7 +108,6 @@ String[] shaderNames = {
 		"250501_1DNoiseGrid.glsl",
 		"250501_FlowFieldAdvection.glsl",
 		"250501_SmoothLife.glsl",
-		// "250526_Voronoi_Simple.glsl",
 		"250526_Voronoi_Dimensions_Input.glsl",
 		"250530_FlowField_Direction.glsl",
 		"250603_RectangularCellsLines.glsl",
@@ -193,7 +192,7 @@ long lastAudioBufferUpdateTime = 0;
 float stepChance = 0;
 float stepNoiseInc = 0.01;
 float pixelColorModeChance = 0;
-float noiseColorOffsetInc = 0.01;
+float noiseColorOffsetInc = 0.0001;
 float shaderChance = 0;
 
 // communication with control sketch
@@ -283,9 +282,9 @@ public void setup() {
 	bandwidthNoise = new Noise(intRandom(0, 100), .002);
 	noises.add(bandwidthNoise);
 
-	noiseColorFastNoiseOffsetXNoise = new Noise(intRandom(0, 100), .0008);
+	noiseColorFastNoiseOffsetXNoise = new Noise(intRandom(0, 100), noiseColorOffsetInc);
 	noises.add(noiseColorFastNoiseOffsetXNoise);
-	noiseColorFastNoiseOffsetYNoise = new Noise(intRandom(0, 100), .0008);
+	noiseColorFastNoiseOffsetYNoise = new Noise(intRandom(0, 100), noiseColorOffsetInc);
 	noises.add(noiseColorFastNoiseOffsetYNoise);
 
 	// init 2D texture with random fastNoise type
@@ -429,6 +428,8 @@ void manipulatePixelArray() {
 			noiseColorOffsetFastNoiseTime += noiseColorOffsetNoise.getNoiseRange(.1, 3);
 			
 			// generate random offset so texture "wobbles"
+			noiseColorFastNoiseOffsetXNoise.changeInc(noiseColorOffsetInc);
+			noiseColorFastNoiseOffsetYNoise.changeInc(noiseColorOffsetInc);
 			xOff = noiseColorFastNoiseOffsetXNoise.getNoiseRange(-5, 5);
 			yOff = noiseColorFastNoiseOffsetYNoise.getNoiseRange(-5, 5);
 		}
@@ -557,7 +558,7 @@ void applyShader(int shader) {
 
 	// apply shader time (like T in noise)
 	shaderTimeNoise.changeInc(shaderTimeNoiseInc);
-    shaderTime += shaderTimeNoise.getNoiseRange(0, shaderTimeNoiseInc * 10.0f);
+    shaderTime += shaderTimeNoise.getNoiseRange(0, shaderTimeNoiseInc);
     shaders.get(shader).set("u_time", shaderTime);
 
     // set resolution uniform just in case it wasn't set universally or needs update
@@ -653,11 +654,12 @@ void randomEvents() {
 		audioSamplingMode = intRandom(0, 2);	// choose new audio line orientation
 		int event = intRandom(0, 3);
 		switch (event) {
-			// set new grid, resizeBuffer is applying shader
+			// set new grid
 			case 0:
 				stepDims = intRandom(0, 2);
 				setNewGridWithNoise();
-				if (printDebug) println("randomEvents(): set new grid");
+				if (printDebug) println("randomEvents(): set new grid");				
+				isEvenOffset = toggleEvenOffsetNoise.getNoiseBool(-1.5, 1);
 			break;
 			// switch between shaders or no shaders
 			case 1:

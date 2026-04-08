@@ -19,9 +19,9 @@ void sendDebugOSC() {
     // send each parameter as its own OSC message (booleans need to be converted to 1 and 0)
     oscP5.send(new OscMessage("/info/fps").add((int)frameRate), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/globalSpeedDivisor").add(globalSpeedDivisor), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/isGeneratingSound").add(isGeneratingSound ? 1 : 0), controlSketchLocation);
 
-    oscP5.send(new OscMessage("/info/isRandomMode").add(isRandomMode ? 1 : 0), controlSketchLocation);
-	
+    oscP5.send(new OscMessage("/info/isRandomMode").add(isRandomMode ? 1 : 0), controlSketchLocation);	
     oscP5.send(new OscMessage("/info/switchTime").add(switchTime), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isRandomSwitchTime").add(isRandomSwitchTime ? 1 : 0), controlSketchLocation);
 
@@ -33,6 +33,7 @@ void sendDebugOSC() {
     else if ((int)stepDims == 2) stepDimsStr = "y";
     oscP5.send(new OscMessage("/info/stepDims").add(stepDimsStr), controlSketchLocation);
     oscP5.send(new OscMessage("/info/stepNoiseInc").add(stepNoiseInc), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/isEvenOffset").add(isEvenOffset ? 1 : 0), controlSketchLocation);
 
 	oscP5.send(new OscMessage("/info/pixelColorModeChance").add(pixelColorModeChance), controlSketchLocation);
     String pixelColorModeStr = "random";
@@ -40,7 +41,6 @@ void sendDebugOSC() {
     else if (pixelColorMode == 2) pixelColorModeStr = "noiseColorFastNoiseOffset";
     else if (pixelColorMode == 3) pixelColorModeStr = "fastNoiseColor";
     oscP5.send(new OscMessage("/info/pixelColorMode").add(pixelColorModeStr), controlSketchLocation);
-    
     oscP5.send(new OscMessage("/info/noiseColorOffsetInc").add(noiseColorOffsetInc), controlSketchLocation);
 
     if (pixelColorMode < 2 || isApplyingShader) {
@@ -54,9 +54,6 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/shaderTime").add(shaderTime), controlSketchLocation);
     oscP5.send(new OscMessage("/info/shaderTimeNoiseInc").add(shaderTimeNoiseInc), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isRandomShaderEachFrame").add(isRandomShaderEachFrame ? 1 : 0), controlSketchLocation);
-
-	oscP5.send(new OscMessage("/info/isEvenOffset").add(isEvenOffset ? 1 : 0), controlSketchLocation);
-	oscP5.send(new OscMessage("/info/isGeneratingSound").add(isGeneratingSound ? 1 : 0), controlSketchLocation);
 }
 
 // send shader names and choice over OSC
@@ -102,7 +99,7 @@ void oscEvent(OscMessage message) {
 	}
 	else if (message.checkAddrPattern("/noiseColorOffsetInc")) {
 		float value = message.get(0).floatValue();
-		noiseColorOffsetInc = map(value, 0, 127, 0, .05);
+		noiseColorOffsetInc = map(value, 0, 127, 0.0001, .001);
 		noiseColorOffsetNoise.changeInc(noiseColorOffsetInc);
 	}
 	else if (message.checkAddrPattern("/pixelColorMode")) {
@@ -113,15 +110,15 @@ void oscEvent(OscMessage message) {
 	}
 	else if (message.checkAddrPattern("/resetFastNoiseType")) {
 		resetFastNoiseType();
-	}	
-	else if (message.checkAddrPattern("/shaderTimeNoiseInc")) {
-		float value = message.get(0).floatValue();
-		shaderTimeNoiseInc = map(value, 0, 127, .001, 0);
-		shaderTimeNoise.changeInc(shaderTimeNoiseInc);
-	}	
+	}		
 	else if (message.checkAddrPattern("/shaderChance")) {
 		float value = message.get(0).floatValue();
 		shaderChance = map(value, 0, 127, 0, 1);
+	}
+	else if (message.checkAddrPattern("/shaderTimeNoiseInc")) {
+		float value = message.get(0).floatValue();
+		shaderTimeNoiseInc = map(value, 0, 127, .001, 0.05);
+		shaderTimeNoise.changeInc(shaderTimeNoiseInc);
 	}
 	else if (message.checkAddrPattern("/isRandomShaderEachFrame")) {
 		isRandomShaderEachFrame = !isRandomShaderEachFrame;
@@ -132,13 +129,13 @@ void oscEvent(OscMessage message) {
 	else if (message.checkAddrPattern("/isRandomSwitchTime")) {
 		isRandomSwitchTime = !isRandomSwitchTime;
 	}
-	else if (message.checkAddrPattern("/globalSpeedDivisor")) {
-		float value = message.get(0).floatValue();
-		globalSpeedDivisor = (int) map(value, 0, 127, 1, 20);
-	}
 	else if (message.checkAddrPattern("/nextEvent")) {
 		float value = message.get(0).floatValue();
 		switchTime = map(value, 0, 127, 0, 10);
+	}
+	else if (message.checkAddrPattern("/globalSpeedDivisor")) {
+		float value = message.get(0).floatValue();
+		globalSpeedDivisor = (int) map(value, 0, 127, 1, 20);
 	}
 	else if (message.checkAddrPattern("/globalBrightnessAndVolume")) {
 		float value = message.get(0).floatValue();

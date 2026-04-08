@@ -128,7 +128,7 @@ String formatDisplayValue(Object value) {
     if (value instanceof Boolean) {
         return (Boolean)value ? "TRUE" : "FALSE";
     } else if (value instanceof Float) {
-        return nf((Float)value, 0, 2); // round floats
+        return nf((Float)value, 0, 6); // round floats
     } else {
         return value.toString();
     }

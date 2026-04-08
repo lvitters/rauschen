@@ -13,8 +13,8 @@ import com.jogamp.newt.Window;
 import com.jogamp.newt.util.EDTUtil;
 
 // buffer
-int width = 1000;
-int height = 1000;
+int width = 1200 / 2;
+int height = 1750 / 2;
 
 // screenshots
 int screenshotHeight = 1000;
@@ -24,8 +24,8 @@ int screenshotWidth = 1000;
 int displayMode = 0;
 
 // window for displayMode 1
-int windowWidth = 1000;
-int windowHeight = 1000;
+int windowWidth = 1200;
+int windowHeight = 1200;
 Window newtWindow = null;
 EDTUtil edtUtil = null;
 volatile boolean isCurrentlyUndecorated = false;
@@ -54,7 +54,7 @@ int meshResolution = 20; // subdivision for perspective-correct rendering
 
 // resolution steps
 int maxStep = width;
-int minStep = 1;									// minimum step size to mitigate moiré
+int minStep = 2;									// minimum step size to mitigate moiré or performance
 int xStep = 1;
 int yStep = 1;
 int nextX = 1;
@@ -108,7 +108,7 @@ String[] shaderNames = {
 		"250501_1DNoiseGrid.glsl",
 		"250501_FlowFieldAdvection.glsl",
 		"250501_SmoothLife.glsl",
-		"250526_Voronoi_Simple.glsl",
+		// "250526_Voronoi_Simple.glsl",
 		"250526_Voronoi_Dimensions_Input.glsl",
 		"250530_FlowField_Direction.glsl",
 		"250603_RectangularCellsLines.glsl",
@@ -127,8 +127,6 @@ color c;
 ArrayList<Noise> noises = new ArrayList<Noise>();
 Noise stepNoise;
 Noise stepDimsNoise;
-Noise stepBiasNoise;
-Noise toggleNoiseColorNoise;
 Noise redNoise;
 Noise greenNoise;
 Noise blueNoise;
@@ -136,6 +134,7 @@ Noise noiseColorOffsetNoise;
 Noise toggleShader;
 Noise shaderTimeNoise;
 Noise toggleRandomShaderEachFrameNoise;
+Noise toggleEvenOffsetNoise;
 Noise frequencyNoise;
 Noise bandwidthNoise;
 Noise noiseColorFastNoiseOffsetXNoise;
@@ -177,7 +176,6 @@ Boolean isRandomMode = false;
 Boolean isRandomSwitchTime = false;
 int pixelColorMode = 0;
 Boolean isApplyingShader = false;
-Boolean isShadersOnly = false;
 Boolean isRandomShaderEachFrame = true;
 Boolean isGeneratingSound = true;
 Boolean isApplyingAudioFilter = true;
@@ -264,8 +262,6 @@ public void setup() {
 	noises.add(stepNoise);
 	stepDimsNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(stepDimsNoise);
-	toggleNoiseColorNoise = new Noise(intRandom(0, 100), 1);
-	noises.add(toggleNoiseColorNoise);
 	redNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(redNoise);
 	greenNoise = new Noise(intRandom(0, 100), .001);
@@ -279,7 +275,9 @@ public void setup() {
 	shaderTimeNoise = new Noise(intRandom(0, 100), shaderTimeNoiseInc);
 	noises.add(shaderTimeNoise);
 	toggleRandomShaderEachFrameNoise = new Noise(intRandom(0, 100), .01);
-	noises.add(toggleRandomShaderEachFrameNoise);
+	noises.add(toggleRandomShaderEachFrameNoise);	
+	toggleEvenOffsetNoise = new Noise(intRandom(0, 100), .003);
+	noises.add(toggleEvenOffsetNoise);
 	frequencyNoise = new Noise(intRandom(0, 100), .002);
 	noises.add(frequencyNoise);
 	bandwidthNoise = new Noise(intRandom(0, 100), .002);
@@ -333,10 +331,10 @@ public void draw() {
 
 		// limit for performance in certain modes
 		if (pixelColorMode >= 2) {
-			if (xStep <= 1 && yStep <= 1) {
+			if (xStep <= minStep - 1 && yStep <= minStep - 1) {
 				xStep += 2;
 				yStep += 2;
-			} else if (xStep <= 2 && yStep <= 2) {
+			} else if (xStep <= minStep&& yStep <= minStep) {
 				xStep += 1;
 				yStep += 1;
 			}
@@ -345,7 +343,7 @@ public void draw() {
 		// apply globalSpeed to buffer manipulation
 		if (frameCount % globalSpeedDivisor == 0) {
 			// manipulate buffer's pixels
-			if (isApplyingShader || isShadersOnly || frameCount < 10) {
+			if (isApplyingShader || frameCount < 10) {
 				// reset shader time occasionally
 				if (shaderTime > 1000) shaderTime = intRandom(0, 10);		// don't start at the same spot every time
 				// apply shaders
@@ -700,9 +698,10 @@ void chanceEvents() {
 			if (r < stepChance) {
 				if (printDebug) println("chanceEvents(): step event");
 				isApplyingShader = false; // favor seeing the steps
-				stepDimsNoise.changeInc(stepNoiseInc);	//get from stepNoiseInc
+				stepDimsNoise.changeInc(stepNoiseInc);	// get from stepNoiseInc
 				stepDims = stepDimsNoise.getNoiseRange(0, 3);
 				setNewGridWithNoise();
+				isEvenOffset = toggleEvenOffsetNoise.getNoiseBool(-1.5, 1);
 			} else if (r < stepChance + pixelColorModeChance) {
 				if (printDebug) println("chanceEvents(): color mode event");
 				isApplyingShader = false; // favor seeing the colors
@@ -716,6 +715,12 @@ void chanceEvents() {
 				isRandomShaderEachFrame = toggleRandomShaderEachFrameNoise.getNoiseBool(-1, 1.5);
 				if (isRandomShaderEachFrame) shaderChoice = pickRandomActiveShader();
 			}
+		// everything on neutral
+		} else {
+			xStep = minStep;
+			yStep = minStep;
+			isApplyingShader = false;
+			pixelColorMode = 0;
 		}
 		calculateNextInterval();
 		eventCounter = 0;

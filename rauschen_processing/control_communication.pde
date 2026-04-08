@@ -54,7 +54,6 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/shaderTime").add(shaderTime), controlSketchLocation);
     oscP5.send(new OscMessage("/info/shaderTimeNoiseInc").add(shaderTimeNoiseInc), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isRandomShaderEachFrame").add(isRandomShaderEachFrame ? 1 : 0), controlSketchLocation);
-	oscP5.send(new OscMessage("/info/isShadersOnly").add(isShadersOnly ? 1 : 0), controlSketchLocation);
 
 	oscP5.send(new OscMessage("/info/isEvenOffset").add(isEvenOffset ? 1 : 0), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isGeneratingSound").add(isGeneratingSound ? 1 : 0), controlSketchLocation);

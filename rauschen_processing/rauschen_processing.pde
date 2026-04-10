@@ -13,8 +13,8 @@ import com.jogamp.newt.Window;
 import com.jogamp.newt.util.EDTUtil;
 
 // buffer
-int width = 1200 / 2;
-int height = 1750 / 2;
+int width = 1000;
+int height = 1000;
 
 // screenshots
 int screenshotHeight = 1000;
@@ -187,6 +187,7 @@ float eventCounter = 0;
 long lastAudioBufferUpdateTime = 0;
 
 // chances
+float total = 0;
 float stepChance = 0;
 float stepNoiseInc = 0.01;
 float pixelColorModeChance = 0;
@@ -689,7 +690,7 @@ void chanceEvents() {
 	// apply
 	if (eventCounter > (nextEvent * frameRate)) {
 		// decide which event to fire based on chances
-		float total = stepChance + pixelColorModeChance + shaderChance;
+		total = stepChance + pixelColorModeChance + shaderChance;
 		if (total > 0) {
 			float r = floatRandom(0, total);
 			if (r < stepChance) {

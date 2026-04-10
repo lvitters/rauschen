@@ -25,7 +25,11 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/switchTime").add(switchTime), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isRandomSwitchTime").add(isRandomSwitchTime ? 1 : 0), controlSketchLocation);
 
+    oscP5.send(new OscMessage("/info/chanceTotal").add(total), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/stepChance").add(stepChance), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/pixelColorModeChance").add(pixelColorModeChance), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/shaderChance").add(shaderChance), controlSketchLocation);
+
     oscP5.send(new OscMessage("/info/xStep").add(xStep), controlSketchLocation);
     oscP5.send(new OscMessage("/info/yStep").add(yStep), controlSketchLocation);
     String stepDimsStr = "x";
@@ -35,21 +39,18 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/stepNoiseInc").add(stepNoiseInc), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isEvenOffset").add(isEvenOffset ? 1 : 0), controlSketchLocation);
 
-	oscP5.send(new OscMessage("/info/pixelColorModeChance").add(pixelColorModeChance), controlSketchLocation);
     String pixelColorModeStr = "random";
     if (pixelColorMode == 1) pixelColorModeStr = "noiseColorRandomOffset";
     else if (pixelColorMode == 2) pixelColorModeStr = "noiseColorFastNoiseOffset";
     else if (pixelColorMode == 3) pixelColorModeStr = "fastNoiseColor";
     oscP5.send(new OscMessage("/info/pixelColorMode").add(pixelColorModeStr), controlSketchLocation);
     oscP5.send(new OscMessage("/info/noiseColorOffsetInc").add(noiseColorOffsetInc), controlSketchLocation);
-
     if (pixelColorMode < 2 || isApplyingShader) {
         oscP5.send(new OscMessage("/info/fastNoiseType").add("none"), controlSketchLocation);
     } else {
         oscP5.send(new OscMessage("/info/fastNoiseType").add(fastNoiseType.toString()), controlSketchLocation);
     }
-
-	oscP5.send(new OscMessage("/info/shaderChance").add(shaderChance), controlSketchLocation);
+	
     oscP5.send(new OscMessage("/info/isApplyingShader").add(isApplyingShader ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/shaderTime").add(shaderTime), controlSketchLocation);
     oscP5.send(new OscMessage("/info/shaderTimeNoiseInc").add(shaderTimeNoiseInc), controlSketchLocation);
@@ -135,7 +136,7 @@ void oscEvent(OscMessage message) {
 	}
 	else if (message.checkAddrPattern("/globalSpeedDivisor")) {
 		float value = message.get(0).floatValue();
-		globalSpeedDivisor = (int) map(value, 0, 127, 1, 20);
+		globalSpeedDivisor = (int) map(value, 0, 127, 1, 25);
 	}
 	else if (message.checkAddrPattern("/globalBrightnessAndVolume")) {
 		float value = message.get(0).floatValue();

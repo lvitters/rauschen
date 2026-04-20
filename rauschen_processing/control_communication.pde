@@ -22,6 +22,7 @@ void sendDebugOSC() {
 	oscP5.send(new OscMessage("/info/isGeneratingSound").add(isGeneratingSound ? 1 : 0), controlSketchLocation);
 
     oscP5.send(new OscMessage("/info/isRandomMode").add(isRandomMode ? 1 : 0), controlSketchLocation);	
+    oscP5.send(new OscMessage("/info/isAutoMode").add(isAutoMode ? 1 : 0), controlSketchLocation);
     oscP5.send(new OscMessage("/info/switchTime").add(switchTime), controlSketchLocation);
     oscP5.send(new OscMessage("/info/isRandomSwitchTime").add(isRandomSwitchTime ? 1 : 0), controlSketchLocation);
 
@@ -126,6 +127,9 @@ void oscEvent(OscMessage message) {
 	}
 	else if (message.checkAddrPattern("/isRandomMode")) {
 		isRandomMode = !isRandomMode;
+	}
+	else if (message.checkAddrPattern("/isAutoMode")) {
+		isAutoMode = !isAutoMode;
 	}
 	else if (message.checkAddrPattern("/isRandomSwitchTime")) {
 		isRandomSwitchTime = !isRandomSwitchTime;

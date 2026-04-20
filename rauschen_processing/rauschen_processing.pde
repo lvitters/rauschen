@@ -136,6 +136,10 @@ Noise frequencyNoise;
 Noise bandwidthNoise;
 Noise noiseColorFastNoiseOffsetXNoise;
 Noise noiseColorFastNoiseOffsetYNoise;
+Noise stepChanceNoise;
+Noise pixelColorModeChanceNoise;
+Noise shaderChanceNoise;
+Noise switchTimeNoise;
 
 // FastNoiseLite for fast 2D noise textures 
 FastNoiseLite noiseColorOffsetFastNoise;
@@ -170,6 +174,7 @@ boolean stopped = false;
 Boolean showAudioLine = false;
 Boolean printDebug = false;
 Boolean isRandomMode = false;
+Boolean isAutoMode = false;
 Boolean isRandomSwitchTime = false;
 int pixelColorMode = 0;
 Boolean isApplyingShader = false;
@@ -286,6 +291,15 @@ public void setup() {
 	noiseColorFastNoiseOffsetYNoise = new Noise(intRandom(0, 100), noiseColorOffsetInc);
 	noises.add(noiseColorFastNoiseOffsetYNoise);
 
+	stepChanceNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(stepChanceNoise);
+	pixelColorModeChanceNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(pixelColorModeChanceNoise);
+	shaderChanceNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(shaderChanceNoise);
+	switchTimeNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(switchTimeNoise);
+
 	// init 2D texture with random fastNoise type
 	noiseColorOffsetFastNoise = new FastNoiseLite();
 	fastNoiseType = fastNoiseTypes[intRandom(0, fastNoiseTypes.length -1)];
@@ -324,8 +338,21 @@ public void draw() {
 	if (!stopped) {
 
 		// handle any timed events first because it may affect the pixel array manipulation
-		if (isRandomMode) randomEvents();
-		else chanceEvents();
+		if (isRandomMode) {
+			if (isAutoMode) {
+				switchTime = switchTimeNoise.getNoiseRange(-switchTime, switchTime);
+			}
+			randomEvents();
+		}
+		else {
+			if (isAutoMode) {
+				stepChance = stepChanceNoise.getNoise();
+				pixelColorModeChance = pixelColorModeChanceNoise.getNoise();
+				shaderChance = shaderChanceNoise.getNoise();
+				switchTime = switchTimeNoise.getNoiseRange(-switchTime, switchTime);
+			}
+			chanceEvents();
+		}
 
 		// limit for performance in certain modes
 		if (pixelColorMode >= 2) {
@@ -791,11 +818,12 @@ void cleanupImageFolder() {
 void showDebug() {
 		translate(80, 0);
 			fill(0, 0, 0);
-			rect(0, 0, 210, 65);
+			rect(0, 0, 250, 90);
 			fill(255, 255, 255);
 			textSize(25);
 			text("fps: " + (int) frameRate, 10, 30);
 			text("isRandomMode: " + isRandomMode, 10, 55);
+			text("isAutoMode: " + isAutoMode, 10, 80);
 		translate(-80, 0);
 }
 
@@ -828,9 +856,13 @@ void keyPressed() {
 	if (key == 'p') {
 		printDebug = !printDebug;
 	}
+	// use random mode or not
+	if (key == 'q') {
+		isRandomMode = !isRandomMode;
+	}
 	// use auto mode or not
 	if (key == 'a') {
-		isRandomMode = !isRandomMode;
+		isAutoMode = !isAutoMode;
 	}
 	// switch to next mode now!
 	if (key == 's') {

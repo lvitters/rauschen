@@ -112,7 +112,10 @@ String[] shaderNames = {
 		"250606_RotationCenter.glsl",
 		"250611_RotationChaos.glsl",
 		"250613_GradientCellularAutomaton.glsl",
-		"250613_RotationalPropagation.glsl"
+		"250613_RotationalPropagation.glsl",
+		"260420_RecursiveSubdivision.glsl",
+		"260420_CellularDisplacement.glsl",
+		"260420_BitwiseXRay.glsl"
 };
 
 // color

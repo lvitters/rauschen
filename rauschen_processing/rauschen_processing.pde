@@ -57,8 +57,6 @@ int maxStep = width;
 int minStep = 2;									// minimum step size to mitigate moiré or performance
 int xStep = 1;
 int yStep = 1;
-float xStepMultiplier = 1;							// has to start at 1
-float yStepMultiplier = 1;							// has to start at 1
 Boolean stepUpdatedManually = false;
 float stepDims;
 int xOffset = 0;
@@ -140,6 +138,9 @@ Noise stepChanceNoise;
 Noise pixelColorModeChanceNoise;
 Noise shaderChanceNoise;
 Noise switchTimeNoise;
+Noise stepNoiseIncNoise;
+Noise noiseColorOffsetIncNoise;
+Noise shaderTimeNoiseIncNoise;
 
 // FastNoiseLite for fast 2D noise textures 
 FastNoiseLite noiseColorOffsetFastNoise;
@@ -261,7 +262,7 @@ public void setup() {
 	}
 
 	// init NoiseInstances with starting value and increment, add to list of noises	
-	stepNoise = new Noise(intRandom(0, 100), .001);
+	stepNoise = new Noise(intRandom(0, 100), stepNoiseInc);
 	noises.add(stepNoise);
 	stepDimsNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(stepDimsNoise);
@@ -299,6 +300,12 @@ public void setup() {
 	noises.add(shaderChanceNoise);
 	switchTimeNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(switchTimeNoise);
+	stepNoiseIncNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(stepNoiseIncNoise);
+	noiseColorOffsetIncNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(noiseColorOffsetIncNoise);
+	shaderTimeNoiseIncNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(shaderTimeNoiseIncNoise);
 
 	// init 2D texture with random fastNoise type
 	noiseColorOffsetFastNoise = new FastNoiseLite();
@@ -338,12 +345,7 @@ public void draw() {
 	if (!stopped) {
 
 		// handle autoMode noise updates
-		if (isAutoMode) {
-			stepChance = constrain(stepChanceNoise.getVariableNoiseRange(-0.4, 0.2, 0.8, 1.4), 0, 1);
-			pixelColorModeChance = constrain(pixelColorModeChanceNoise.getVariableNoiseRange(-0.4, 0.2, 0.8, 1.4), 0, 1);
-			shaderChance = constrain(shaderChanceNoise.getVariableNoiseRange(-0.4, 0.2, 0.8, 1.4), 0, 1);
-			switchTime = constrain(switchTimeNoise.getVariableNoiseRange(-8.0, -2.0, 8.0, 10.0), 0, 10);
-		}
+		updateAutoModeNoises();
 
 		// ensure nextEvent is always up to date with manual or noise-driven switchTime if not in random interval mode (which is only for randomMode)
 		if (!isRandomMode || !isRandomSwitchTime) nextEvent = switchTime;
@@ -523,6 +525,7 @@ void manipulatePixelArray() {
 		}
 	buffer.updatePixels();
 }
+
 // updateSteps
 void updateSteps(int nextX, int nextY) {
 	xStep = nextX;
@@ -534,8 +537,8 @@ void updateSteps(int nextX, int nextY) {
 // set canvas and sketch to a new resolution
 void setNewGridWithNoise() {
 
-	// get new step close to old step with noise, bias towards lower numbers
-	int nextStepValue = (int)stepNoise.getVariableNoiseRange(-maxStep/2, 0, maxStep/2, maxStep, 2);
+	// get new step close to old step with noise, bias towards lower numbers heavily
+	int nextStepValue = (int)stepNoise.getVariableNoiseRange(-maxStep, minStep, maxStep/4, maxStep, 2.0);
 
 	// cutoff at minimum step size
 	if (nextStepValue < minStep) nextStepValue = minStep;
@@ -754,6 +757,26 @@ void calculateNextInterval() {
 		nextEvent = floatRandom(0, switchTime);
 	} else {
 		nextEvent = switchTime;
+	}
+}
+
+// update all noise-driven parameters when isAutoMode is active
+void updateAutoModeNoises() {
+	if (isAutoMode) {
+		stepChance = constrain(stepChanceNoise.getVariableNoiseRange(-0.4, 0.2, 0.8, 1.4), 0, 1);
+		pixelColorModeChance = constrain(pixelColorModeChanceNoise.getVariableNoiseRange(-0.4, 0.2, 0.8, 1.4), 0, 1);
+		shaderChance = constrain(shaderChanceNoise.getVariableNoiseRange(-0.4, 0.2, 0.8, 1.4), 0, 1);
+		switchTime = constrain(switchTimeNoise.getVariableNoiseRange(-8.0, -2.0, 8.0, 10.0), 0, 10);
+
+		// update increments
+		stepNoiseInc = constrain(stepNoiseIncNoise.getVariableNoiseRange(-0.005, 0.002, 0.008, 0.015), 0, 0.01);
+		noiseColorOffsetInc = constrain(noiseColorOffsetIncNoise.getVariableNoiseRange(-0.0001, 0.0002, 0.0008, 0.0011), 0.0001, 0.001);
+		shaderTimeNoiseInc = constrain(shaderTimeNoiseIncNoise.getVariableNoiseRange(-0.01, 0.01, 0.04, 0.06), 0.001, 0.05);
+
+		// apply increments to underlying noise instances
+		stepNoise.changeInc(stepNoiseInc);
+		noiseColorOffsetNoise.changeInc(noiseColorOffsetInc);
+		shaderTimeNoise.changeInc(shaderTimeNoiseInc);
 	}
 }
 

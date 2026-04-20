@@ -67,7 +67,7 @@ RAUSCHEN ("noise") is a real-time emergent media system exploring the probabilit
 
 ## RAUSCHEN_processing
 
-*RAUSCHEN* is driven by a *Processing 4.3.2* application running on *macOS* that creates a buffer of custom dimensions and fills it with randomly colored cells of pixels each frame, called *Rauschen_processing*.
+*RAUSCHEN* is driven by a *Processing 4.3.2* application running on *macOS* that creates a buffer of custom dimensions and fills it with randomly colored cells of pixels each frame, called *rauschen_processing*.
 
 <br>
 
@@ -107,17 +107,37 @@ Occasionally, instead of displayed the grid of cells, *RAUSCHEN* will apply a ra
 
 ### events
 
-A random event happens every X seconds if **Auto Mode** **(isAutoMode)** is active. These include:
+**Random Mode**
 
-- setting up new dimensions for either the grid of cells or the buffer **setNewGridWithNoise()** / **resizeBuffer()**
+A random event happens every X seconds if **Random Mode** **(isRandomMode)** is active. These include:
 
-- switch to applying shaders instead of displaying the grid of cells **isApplyingShaders**
+- setting up new dimensions for the grid of cells **setNewGridWithNoise()**
 
 - switch between the grid of cells' colors being determined by the options described in "colors" **isNoiseColorRandomOffset** / **isNoiseColorRandomOffset** / **isFastNoiseColor** / **isFastNoiseColorFastNoiseOffset**
+
+- switch to applying shaders instead of displaying the grid of cells **isApplyingShaders**
 
 - switch between using the same shader in consecutive frames or using a random different shader each frame **isRandomShaderEachFrame**
 
 The time between two events can either be set manually, or be picked at random between each frame and a maximum interval.
+
+<br>
+
+**Chance Mode**
+
+If **Chance Mode** **(!isRandomMode)** is active, an event is fired every X seconds from three categories determined by their chance values from 0 to 1:
+
+- stepChance
+
+- pixelColorModeChance
+
+- shaderChance
+
+<br>
+
+**Auto Mode**
+
+If **Auto Mode** **(isAutoMode)** is active, the time interval for the above events to happen is determined by another Noise object. If it is inactive, the **switchTime** can be controlled manually. For **Chance Mode**, if **Auto Mode** is active, the chance values themselves are determined by another Noise object each. If it is inactive, the chance values can be controlled manually.
 
 <br>
 
@@ -159,9 +179,9 @@ Although there is a separate application to control *RAUSCHEN*, there are some r
 
 - **'P' key:** print debug info to console
 
-- **'A' key:** toggle *Auto Mode* (enable/disable automatic events)
+- **'A' key:** toggle *Auto Mode*
   
-- **'Y' key:** toggle *Auto Auto Mode* (like *Auto Mode*, but with an event interval determined by Noise)
+- **'Q' key:** toggle *Random Mode* and *chanceMode*
 
 - **'S' key:** choose a random event now
 
@@ -204,15 +224,13 @@ The last saved setup can be loaded via the **'L' key**.
 
 - **'/info'** contains the variable names and their values, which are determined manually or by events, plus some debug information, and is displayed as a list of variable names and their values
 
-- **'/shaderNames'** contains the names of the shaders added to the main application and is displayed as a list of available shaders
-
-- **'/shaderChoice'** contains the value determining which shader is currently in use, shown by the corresponding shader being highlighted in the list of available shaders
+- **'/shaderNames'** contains the names of the shaders added to the main application and is displayed as a list of available shaders, highlighting which one is currently in use
 
 <br>
 
 ### controls
 
-The variables present in the **'/info'** message can be set by *RAUSCHEN_processing_controls* sending *OSC* messages containing the corresponding key and value pairs back to *RAUSCHEN*. These variables will be overridden by the events from **Auto Mode** if it is active.
+The variables present in the **'/info'** message can be set by *RAUSCHEN_processing_controls* sending *OSC* messages containing the corresponding key and value pairs back to *RAUSCHEN*. These variables will be overridden by the events from **Random Mode** or **Chance Mode** if either is active.
 
 The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons to **SOLO** and **MUTE** them, similar to audio tracks in a DAW. This enables to mix and match shaders freely when **isRandomShaderEachFrame** is active, or determine which random shaders can be chosen for consecutive frames when it is not active.
 
@@ -229,7 +247,7 @@ The list of shaders displayed in *RAUSCHEN_Processing_controls* contains buttons
 </tr>
 </table>
 
-Some logic, mainly for enabling short and long presses, as well as saving variable values across page changes, is applied and saved directly to the controller in the form of *LUA* scripts.
+Some logic, mainly for enabling short and long presses, is applied and saved directly to the controller in the form of *LUA* scripts.
 
 <table>
 <tr>

@@ -337,22 +337,20 @@ public void draw() {
 	// stop (almost) everything
 	if (!stopped) {
 
+		// handle autoMode noise updates
+		if (isAutoMode) {
+			stepChance = constrain(stepChanceNoise.getVariableNoiseRange(-0.4, 0.2, 0.8, 1.4), 0, 1);
+			pixelColorModeChance = constrain(pixelColorModeChanceNoise.getVariableNoiseRange(-0.4, 0.2, 0.8, 1.4), 0, 1);
+			shaderChance = constrain(shaderChanceNoise.getVariableNoiseRange(-0.4, 0.2, 0.8, 1.4), 0, 1);
+			switchTime = constrain(switchTimeNoise.getVariableNoiseRange(-8.0, -2.0, 8.0, 10.0), 0, 10);
+		}
+
+		// ensure nextEvent is always up to date with manual or noise-driven switchTime if not in random interval mode (which is only for randomMode)
+		if (!isRandomMode || !isRandomSwitchTime) nextEvent = switchTime;
+
 		// handle any timed events first because it may affect the pixel array manipulation
-		if (isRandomMode) {
-			if (isAutoMode) {
-				switchTime = switchTimeNoise.getNoiseRange(-switchTime, switchTime);
-			}
-			randomEvents();
-		}
-		else {
-			if (isAutoMode) {
-				stepChance = stepChanceNoise.getNoise();
-				pixelColorModeChance = pixelColorModeChanceNoise.getNoise();
-				shaderChance = shaderChanceNoise.getNoise();
-				switchTime = switchTimeNoise.getNoiseRange(-switchTime, switchTime);
-			}
-			chanceEvents();
-		}
+		if (isRandomMode) randomEvents();
+		else chanceEvents();
 
 		// limit for performance in certain modes
 		if (pixelColorMode >= 2) {
@@ -672,7 +670,6 @@ void resetFastNoiseType() {
 
 // choose a random event after a random interval, or set the time until the next event to switchTime
 void randomEvents() {
-	if (!isRandomSwitchTime) nextEvent = switchTime;
 	eventCounter++;
 	// apply
 	if (eventCounter > (nextEvent * frameRate)) {
@@ -712,7 +709,6 @@ void randomEvents() {
 
 // choose an event according to its chance after a random interval, or set the time until the next event to switchTime
 void chanceEvents() {
-	if (!isRandomSwitchTime) nextEvent = switchTime;
 	eventCounter++;
 	// apply
 	if (eventCounter > (nextEvent * frameRate)) {
@@ -754,7 +750,7 @@ void chanceEvents() {
 
 // calculate next interval for events
 void calculateNextInterval() {
-	if (isRandomSwitchTime && switchTime > 0) {
+	if (isRandomMode && isRandomSwitchTime && switchTime > 0) {
 		nextEvent = floatRandom(0, switchTime);
 	} else {
 		nextEvent = switchTime;

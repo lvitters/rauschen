@@ -68,6 +68,8 @@ int globalSpeedDivisor = 1;
 
 // buffer for display
 PGraphics buffer;
+PGraphics prevBuffer;
+PGraphics interpolationBuffer;
 PGraphics tempBuffer;
 PGraphics screenshotBuffer; // for clean screenshots when video mapping is active
 
@@ -144,6 +146,7 @@ Noise switchTimeNoise;
 Noise stepNoiseIncNoise;
 Noise noiseColorOffsetIncNoise;
 Noise shaderTimeNoiseIncNoise;
+Noise globalSpeedDivisorNoise;
 
 // FastNoiseLite for fast 2D noise textures 
 FastNoiseLite noiseColorOffsetFastNoise;
@@ -234,6 +237,8 @@ public void setup() {
 
 	// create buffers
 	buffer = createGraphics((int)width, (int)height, P2D);
+	prevBuffer = createGraphics((int)width, (int)height, P2D);
+	interpolationBuffer = createGraphics((int)width, (int)height, P2D);
 	tempBuffer = createGraphics((int)width, (int)height, P2D);
 	screenshotBuffer = createGraphics(screenshotWidth, screenshotHeight, P2D);
 
@@ -309,6 +314,8 @@ public void setup() {
 	noises.add(noiseColorOffsetIncNoise);
 	shaderTimeNoiseIncNoise = new Noise(intRandom(0, 100), .001);
 	noises.add(shaderTimeNoiseIncNoise);
+	globalSpeedDivisorNoise = new Noise(intRandom(0, 100), .001);
+	noises.add(globalSpeedDivisorNoise);
 
 	// init 2D texture with random fastNoise type
 	noiseColorOffsetFastNoise = new FastNoiseLite();
@@ -347,9 +354,6 @@ public void draw() {
 	// stop (almost) everything
 	if (!stopped) {
 
-		// handle autoMode noise updates
-		updateAutoModeNoises();
-
 		// ensure nextEvent is always up to date with manual or noise-driven switchTime if not in random interval mode (which is only for randomMode)
 		if (!isRandomMode || !isRandomSwitchTime) nextEvent = switchTime;
 
@@ -370,6 +374,15 @@ public void draw() {
 
 		// apply globalSpeed to buffer manipulation
 		if (frameCount % globalSpeedDivisor == 0) {
+			// before updating, copy current buffer to prevBuffer for interpolation
+			prevBuffer.beginDraw();
+			prevBuffer.noTint();
+			prevBuffer.image(buffer, 0, 0);
+			prevBuffer.endDraw();
+
+			// handle autoMode noise updates only on logic ticks to keep interpolation stable
+			updateAutoModeNoises();
+
 			// manipulate buffer's pixels
 			if (isApplyingShader || frameCount < 10) {
 				// reset shader time occasionally
@@ -400,14 +413,18 @@ public void draw() {
 		makeBufferCopyForAudio();
 		applyAudioFilter();
 
-		// display buffer
-		tint(255 * globalBrightnessAndVolume);
+		// determine final buffer to display
+		interpolateBuffers();
+		PGraphics finalDisplayBuffer = (globalSpeedDivisor > 1) ? interpolationBuffer : buffer;
+
+		// display the final baked buffer
 		if (displayMode == 0) {
-			image(buffer, 0, 0, width, height);
+			tint(255 * globalBrightnessAndVolume);
+			image(finalDisplayBuffer, 0, 0, width, height);
 		} else if (displayMode == 1) {
 			// clear background to black first
 			background(0);
-			drawMappedBuffer();
+			drawMappedBuffer(finalDisplayBuffer, 1.0f);
 		}
 		noTint();
 
@@ -780,6 +797,39 @@ void updateAutoModeNoises() {
 		stepNoise.changeInc(stepNoiseInc);
 		noiseColorOffsetNoise.changeInc(noiseColorOffsetInc);
 		shaderTimeNoise.changeInc(shaderTimeNoiseInc);
+
+		// update globalSpeedDivisor
+		globalSpeedDivisor = (int) constrain(globalSpeedDivisorNoise.getVariableNoiseRange(-15.0, 1.0, 12.0, 30.0), 1, 25);
+	}
+}
+
+// blend prev and current states into interpolationBuffer for smooth slow-motion
+void interpolateBuffers() {
+	// calculate interpolation alpha for smooth transition between states (0.0 to 1.0)
+	float interpolationAlpha = (float)(frameCount % globalSpeedDivisor) / (float)globalSpeedDivisor;
+	// clamp strictly to avoid over-brightening
+	interpolationAlpha = constrain(interpolationAlpha, 0.0f, 1.0f);
+
+	// if speed is reduced, blend prev and current states into a single stable interpolationBuffer
+	if (globalSpeedDivisor > 1) {
+		interpolationBuffer.beginDraw();
+		interpolationBuffer.background(0); // clear to solid black
+		
+		// use ADD blend mode for a perfect linear cross-fade over a black background
+		// this ensures (prev * alpha_out) + (current * alpha_in) = 1.0 intensity
+		interpolationBuffer.blendMode(ADD);
+		
+		// layer 1: draw starting state (fading out)
+		interpolationBuffer.tint(255, (1.0f - interpolationAlpha) * 255);
+		interpolationBuffer.image(prevBuffer, 0, 0);
+		
+		// layer 2: draw target state (fading in) on top
+		interpolationBuffer.tint(255, interpolationAlpha * 255);
+		interpolationBuffer.image(buffer, 0, 0);
+		
+		// important: reset blendMode back to default for next frame or other draws
+		interpolationBuffer.blendMode(BLEND);
+		interpolationBuffer.endDraw();
 	}
 }
 
@@ -1132,8 +1182,11 @@ void drawVideoMappingControls() {
 }
 
 // draw the mapped buffer using the corner positions with perspective-correct subdivision
-void drawMappedBuffer() {
+void drawMappedBuffer(PGraphics tex, float alpha) {
 	if (corners[0] == null) return; // not initialized yet
+
+	// use alpha for the entire draw call
+	tint(255 * globalBrightnessAndVolume, alpha * 255);
 
 	// create a subdivided mesh for better perspective approximation
 	// the more subdivisions, the more accurate the perspective transformation
@@ -1142,7 +1195,7 @@ void drawMappedBuffer() {
 
 	for (int row = 0; row < meshResolution; row++) {
 		beginShape(TRIANGLE_STRIP);
-		texture(buffer);
+		texture(tex);
 
 		for (int col = 0; col <= meshResolution; col++) {
 			// calculate normalized coordinates in the grid (0.0 to 1.0)
@@ -1165,6 +1218,11 @@ void drawMappedBuffer() {
 	}
 
 	textureMode(IMAGE); // reset to default
+}
+
+// original simple version (calls the new parameterized one for compatibility)
+void drawMappedBuffer() {
+	drawMappedBuffer(buffer, 1.0f);
 }
 
 // bilinear interpolation for mapping normalized (u,v) coordinates to the quadrilateral

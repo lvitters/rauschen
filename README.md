@@ -181,7 +181,7 @@ Although there is a separate application to control *RAUSCHEN*, there are some r
 
 - **'A' key:** toggle *Auto Mode*
   
-- **'Q' key:** toggle *Random Mode* and *chanceMode*
+- **'Q' key:** toggle between *Random Mode* and *Chance Mode*
 
 - **'S' key:** choose a random event now
 

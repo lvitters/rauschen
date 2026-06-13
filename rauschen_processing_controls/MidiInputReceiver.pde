@@ -23,6 +23,9 @@ class MidiInputReceiver implements Receiver {
 							name = "/stepNoiseInc";
 						break;
 						case 9:
+							name = "/isSineSteps";
+						break;
+						case 10:
 							name = "/stepDims";
 						break;
 						case 2:

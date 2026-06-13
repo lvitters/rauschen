@@ -58,6 +58,8 @@ int minStep = 2;									// minimum step size to mitigate moiré or performance
 int xStep = 1;
 int yStep = 1;
 Boolean stepUpdatedManually = false;
+Boolean isSineSteps = false;
+float stepSinTime = 0.0f;
 float stepDims;
 int xOffset = 0;
 int xOffsetRecord = 0;
@@ -189,7 +191,7 @@ Boolean isRandomShaderEachFrame = true;
 Boolean isGeneratingSound = true;
 Boolean isApplyingAudioFilter = true;
 Boolean isTakingScreenshots = true;
-Boolean isEvenOffset = true;
+Boolean isEvenOffset = false;
 float globalBrightnessAndVolume = 1.0f;
 
 // timed events
@@ -382,6 +384,11 @@ public void draw() {
 
 			// handle autoMode noise updates only on logic ticks to keep interpolation stable
 			updateAutoModeNoises();
+
+			if (isSineSteps) {
+				stepSinTime += stepNoiseInc;
+				setNewGridWithSine();
+			}
 
 			// manipulate buffer's pixels
 			if (isApplyingShader || frameCount < 10) {
@@ -578,6 +585,33 @@ void setNewGridWithNoise() {
 	updateSteps(xStep, yStep);
 }
 
+// set canvas and sketch to a new resolution using a sine wave
+void setNewGridWithSine() {
+
+	float sinVal = sin(stepSinTime);
+	int nextStepValue = (int)map(sinVal, -1, 1, 0, maxStep);
+
+	// cutoff at minimum step size
+	if (nextStepValue < minStep) nextStepValue = minStep;
+
+	// apply to dimensions based on stepDims
+	if ((int)stepDims == 0) {
+		xStep = nextStepValue;
+	} else if ((int)stepDims == 1) {
+		xStep = nextStepValue;
+		yStep = nextStepValue;
+	} else if ((int)stepDims == 2) {
+		yStep = nextStepValue;
+	}
+
+	if (printDebug) println("setNewGridWithSine(): xStep: " + xStep + " yStep: " + yStep + " stepDims: " + stepDims);
+
+	// mask sine transitions
+	isEvenOffset = false;
+
+	updateSteps(xStep, yStep);
+}
+
 // determine offset for first iteration of manipulatePixels() that is of random size of the cuttoff cell
 // so that the "cells" are cutoff not only on the right and bottom edge
 void determineRandomOffset(int x, int y) {
@@ -701,7 +735,8 @@ void randomEvents() {
 			// set new grid
 			case 0:
 				stepDims = intRandom(0, 2);
-				setNewGridWithNoise();
+				if (isSineSteps) setNewGridWithSine();
+				else setNewGridWithNoise();
 				if (printDebug) println("randomEvents(): set new grid");				
 				isEvenOffset = toggleEvenOffsetNoise.getNoiseBool(-1.5, 1);
 			break;
@@ -744,7 +779,8 @@ void chanceEvents() {
 				isApplyingShader = false; // favor seeing the steps
 				stepDimsNoise.changeInc(stepNoiseInc);	// get from stepNoiseInc
 				stepDims = stepDimsNoise.getNoiseRange(0, 3);
-				setNewGridWithNoise();
+				if (isSineSteps) setNewGridWithSine();
+				else setNewGridWithNoise();
 				isEvenOffset = toggleEvenOffsetNoise.getNoiseBool(-1.5, 1);
 			} else if (r < stepChance + pixelColorModeChance) {
 				if (printDebug) println("chanceEvents(): color mode event");

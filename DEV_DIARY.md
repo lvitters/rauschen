@@ -460,3 +460,7 @@ Changed up some of the controls in preparation for a performance. There is now a
 ## 260420
 
 An update to the software of the MIDI controller changed how its software works. Instead of figuring out how to reproduce its previous behavior, I took it as a chance to rethink some stuff for two showings. The controls are now one way only, meaning the sketch does not update the controller LEDs anymore. Nobody except for me will notice, but it makes changing the controls much easier and the code has a lot less bloat. In addition to autoMode (now called randomMode), there is another mode called chanceMode, where the events from the previous autoMode are categorized into step, pixelColorMode and shader events, with a value for each determining its chance of happening as the next event. autoMode now just controls wether the two modes happen automatically or are controlled manually. (see update to README). AT LAST, there is actually a way to interpolate between two buffers (I did not find it myself)! Now, globalSpeedDivisor only affects logic, while the next image shown will be an interpolation between the previous and next frame. Essentially, this is finally a way to make the sketch slower without feeling 'choppy' due to less FPS.
+
+## 260613
+
+Added an option to have steps change with sine instead of noise for more control at performances.

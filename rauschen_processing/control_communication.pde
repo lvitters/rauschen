@@ -39,6 +39,7 @@ void sendDebugOSC() {
     oscP5.send(new OscMessage("/info/stepDims").add(stepDimsStr), controlSketchLocation);
     oscP5.send(new OscMessage("/info/stepNoiseInc").add(stepNoiseInc), controlSketchLocation);
 	oscP5.send(new OscMessage("/info/isEvenOffset").add(isEvenOffset ? 1 : 0), controlSketchLocation);
+	oscP5.send(new OscMessage("/info/isSineSteps").add(isSineSteps ? 1 : 0), controlSketchLocation);
 
     String pixelColorModeStr = "random";
     if (pixelColorMode == 1) pixelColorModeStr = "noiseColorRandomOffset";
@@ -94,6 +95,9 @@ void oscEvent(OscMessage message) {
 		if (stepDims > 2) {
 			stepDims = 0;
 		}
+	}
+	else if (message.checkAddrPattern("/isSineSteps")) {
+		isSineSteps = !isSineSteps;
 	}
 	else if (message.checkAddrPattern("/pixelColorModeChance")) {
 		float value = message.get(0).floatValue();

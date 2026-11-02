@@ -14,12 +14,12 @@ import netP5.*;
 
 // sketch window
 int manualWidth = 2560;
-int manualHeight = 1440 - 28 - 31;	// minus menu bar minus (tahoe) window bar, sequoia is 24
+int manualHeight = 1440 - 28 - 31;	// minus menu bar minus window bar
 
 // UI changes
 int textSize = 12;
 // debug table
-float debugRowHeight = textSize + 5;
+float debugRowHeight = textSize + 4;
 
 // main sketch communication
 OscP5 oscP5;
@@ -146,11 +146,12 @@ int yStep;
 public void settings() {
 	size(manualWidth, manualHeight, P2D);
 	smooth(16);	// AA
+	pixelDensity(displayDensity());
 }
 
 public void setup() {	
 	// set this window title
-	windowTitle("RAUSCHEN controls");
+	windowTitle("RAUSCHEN");
 
 	// determine window location on screen
 	//surface.setLocation(0, 0);
